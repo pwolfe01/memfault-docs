@@ -28,16 +28,19 @@ module.exports = {
             items: [
                 {
                     to: "docs/platform/memfault-terminology",
+                    activeBasePath: "docs/platform",
                     label: "Platform",
                     position: "left",
                 },
                 {
                     to: "docs/embedded/introduction",
+                    activeBasePath: "docs/embedded",
                     label: "Embedded",
                     position: "left",
                 },
                 {
                     to: "docs/android/introduction",
+                    activeBasePath: "docs/android",
                     label: "Android",
                     position: "left",
                 },
