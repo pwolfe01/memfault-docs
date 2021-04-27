@@ -24,7 +24,7 @@ https://github.com/memfault/memfault-firmware-sdk.git
 
 ### Add Memfault SDK to the ESP-IDF CMake Build System
 
-In your top level CMakeLists.txt, you can register the Memfault esp-idf port as
+In your top level `CMakeLists.txt`, you can register the Memfault esp-idf port as
 a "component" by simply including `ports/esp_idf/memfault.cmake`:
 
 ```c
@@ -36,6 +36,37 @@ include(<PATH_TO_MEMFAULT_FIRMARE_SDK>/ports/esp_idf/memfault.cmake)
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 project(<YOUR_PROJECT>)
 ```
+### Add Memfault Build ID to the ESP-IDF CMake Build System
+
+You can also include Memfault build ID generation by adding a custom post-build step
+to your top level `CMakeLists.txt`.
+
+```c
+# CMakeLists.txt
+# [...]
+
+include(<PATH_TO_MEMFAULT_FIRMARE_SDK>/ports/esp_idf/memfault.cmake)
+
+include($ENV{IDF_PATH}/tools/cmake/project.cmake)
+project(<YOUR_PROJECT>)
+
+add_custom_command(TARGET <YOUR_PROJECT>.elf
+  POST_BUILD
+  COMMAND python <PATH_TO_MEMFAULT_FIRMARE_SDK>/scripts/fw_build_id.py <YOUR_PROJECT>.elf)
+```
+
+The `fw_build_id.py` script adds a build ID that changes whenever the binary changes.
+You can use this build ID as part of your software version reported by
+`memfault_platform_get_device_info()`. See the demo app in
+`<PATH_TO_MEMFAULT_FIRMARE_SDK>/examples/esp32/apps/memfault_demo_app` for an
+example of how to use the build ID in your code.
+
+:::note
+
+`fw_build_id_py` depends on `pyelftools` so you may need to install it
+by running `pip install pyelftools`.
+
+:::
 
 ### Enable Coredump Collection in sdkconfig
 
@@ -96,7 +127,7 @@ $ touch ${PATH_INCLUDED_IN_BUILD}/memfault_trace_reason_user_config.def
 
 When a panic occurs, information is collected to uniquely identify the device
 and version of software running. Create a file, (i.e `memfault_platform_info.c`)
-and add it to your projects `main` component CMakeLists.txt.
+and add it to your projects `main` component `CMakeLists.txt`.
 
 Then implement the following function:
 
