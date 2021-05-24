@@ -28,8 +28,8 @@ repository from:
 https://github.com/memfault/memfault-firmware-sdk.git
 ```
 
-The Memfault SDK does not need to be located within the `esp` directory, you
-may place it anywhere.
+The Memfault SDK does not need to be located within the `esp` directory, you may
+place it anywhere.
 
 ### Add Memfault SDK to the ESP-IDF CMake Build System
 
@@ -49,9 +49,9 @@ project(<YOUR_PROJECT>)
 
 ### Add Memfault Build ID to the ESP-IDF CMake Build System
 
-It is recommended that you use a build ID to uniquely identify each
-build. Do this by including Memfault build ID generation by adding a
-custom post-build step to your top level `CMakeLists.txt`.
+It is recommended that you use a build ID to uniquely identify each build. Do
+this by including Memfault build ID generation by adding a custom post-build
+step to your top level `CMakeLists.txt`.
 
 ```c
 # CMakeLists.txt (top-level)
@@ -86,9 +86,9 @@ running `pip install pyelftools`.
 ### Add the Memfault Porting Files
 
 There are a few files that you must fill in that Memfault requires. There are
-template versions in `<PATH_TO_MEMFAULT_FIRMWARE_SDK>/ports/templates/`. Assuming
-a typical ESP32 project structure with a root directory and a `main` project
-sub-directory it is simplest to copy these files into `main`, e.g.
+template versions in `<PATH_TO_MEMFAULT_FIRMWARE_SDK>/ports/templates/`.
+Assuming a typical ESP32 project structure with a root directory and a `main`
+project sub-directory it is simplest to copy these files into `main`, e.g.
 
 ```bash
 cp <PATH_TO_MEMFAULT_FIRMWARE_SDK>/ports/templates/* .
@@ -115,10 +115,11 @@ project-root/
 
 ### Add Sources to Build System
 
-Edit the project-level `CMakeLists.txt` file in `main` and add `memfault_platform_port.c`
-to the `SRCS` variable and `${MEMFAULT_FIRMWARE_SDK}/ports/include` to the `INCLUDE_DIRS`
-variable. It should look something like below. You defined the variable `MEMFAULT_FIRMWARE_SDK`
-in the top-level `CMakeLists.txt` file.
+Edit the project-level `CMakeLists.txt` file in `main` and add
+`memfault_platform_port.c` to the `SRCS` variable and
+`${MEMFAULT_FIRMWARE_SDK}/ports/include` to the `INCLUDE_DIRS` variable. It
+should look something like below. You defined the variable
+`MEMFAULT_FIRMWARE_SDK` in the top-level `CMakeLists.txt` file.
 
 ```c
 # CMakeLists.txt (project-level)
@@ -162,16 +163,15 @@ index a49446d..83a81a8 100644
 
 ### Create a Coredump Flash Partition
 
-You will need to allocate an internal flash partition to store panic
-data. Edit your `partition.csv` file to add a _coredump_ partion. If
-you do not have a `partions.csv` file you can create one from the
-template below and place it in your top-level project directory where the
-`sdkconfig` file is located. Depending on your chip's Flash size you
-may need to modify the _storage_ partition size in order to fit the
-_coredump_ partition. Check the Flash chip size in `menuconfig`, see
-`(Top) -> Serial flasher config` and check the "Flash Size" entry. Be
-sure to specify a custom partition file in the sdkconfig (see note
-below).
+You will need to allocate an internal flash partition to store panic data. Edit
+your `partition.csv` file to add a _coredump_ partion. If you do not have a
+`partions.csv` file you can create one from the template below and place it in
+your top-level project directory where the `sdkconfig` file is located.
+Depending on your chip's Flash size you may need to modify the _storage_
+partition size in order to fit the _coredump_ partition. Check the Flash chip
+size in `menuconfig`, see `(Top) -> Serial flasher config` and check the "Flash
+Size" entry. Be sure to specify a custom partition file in the sdkconfig (see
+note below).
 
 ```bash
 # Name,   Type, SubType, Offset,  Size,  Flags
@@ -181,29 +181,28 @@ factory,  app,  factory, 0x10000, 1M,
 storage,  data, fat,     ,        1M,
 coredump, data, coredump,,        256K,
 ```
+
 :::note
 
-Be sure to indicate the actual name you chose for the partion
-file in the `sdkconfig` file. This can be done easily by running
-`idf.py menuconfig`, selecting `(Top) -> Partition Table`, and
-setting the name of the "Custom partition CSV file". Optionally,
-you can edit the sdkconfig file directly (search for the variables
-prefixed with `CONFIG_PARTITION_TABLE_`).
+Be sure to indicate the actual name you chose for the partion file in the
+`sdkconfig` file. This can be done easily by running `idf.py menuconfig`,
+selecting `(Top) -> Partition Table`, and setting the name of the "Custom
+partition CSV file". Optionally, you can edit the sdkconfig file directly
+(search for the variables prefixed with `CONFIG_PARTITION_TABLE_`).
 
 :::
 
 ### Implement Changes for Your Project to Incorporate Memfault
 
-#### *Metrics and Trace Definitions*
+#### _Metrics and Trace Definitions_
 
 The [device metrics](/docs/embedded/metrics-api) and
 [trace event](/docs/embedded/trace-events) subsystems require configuration
 files to be added to your include path (`memfault_metrics_heartbeat_config.def`
-& `memfault_trace_reason_user_config.def`, respectively). Because
-you copied them to your `main` directory these files' locations should be
-known to CMake.
+& `memfault_trace_reason_user_config.def`, respectively). Because you copied
+them to your `main` directory these files' locations should be known to CMake.
 
-#### *memfault_platform_get_device_info()*
+#### _memfault_platform_get_device_info()_
 
 When a panic occurs, information is collected to uniquely identify the device
 and version of software running. Update the implementation of the function
@@ -232,12 +231,13 @@ void memfault_platform_get_device_info(sMemfaultDeviceInfo *info) {
 }
 ```
 
-#### *g_mflt_http_client_config*
+#### _g_mflt_http_client_config_
 
 An API key will need to be included in order to communicate with Memfault's web
 services. Go to https://app.memfault.com/, navigate to the project you want to
 use and select 'Settings'. Copy the 'Project Key' and replace
-`<YOUR API KEY HERE>` below and then add the following to `memfault_platform_port.c`.
+`<YOUR API KEY HERE>` below and then add the following to
+`memfault_platform_port.c`.
 
 ```c
 // memfault_platform_port.c
@@ -262,7 +262,7 @@ $ idf.py build
 
 ### Testing things out
 
-*With UART console*
+_With UART console_
 
 If you built a project with a UART console the Memfault esp-idf port registers
 some extra CLI commands so you can easily try things out! Flash and connect to
@@ -291,10 +291,10 @@ esp32> join <SSID> <PASSWORD>
 esp32> post_chunks
 ```
 
-*No UART console*
+_No UART console_
 
-If you built a project without a UART console you can test a coredump by inserting
-an assert that will fail, e.g.
+If you built a project without a UART console you can test a coredump by
+inserting an assert that will fail, e.g.
 
 ```c
    // [...]
