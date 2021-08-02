@@ -251,7 +251,7 @@ directory included in your project.
 
 ```bash
 $ cd $YOUR_PROJECT_ROOT
-$ mkdir config
+$ mkdir -p config
 $ touch config/memfault_trace_reason_user_config.def
 ```
 
@@ -275,6 +275,21 @@ MEMFAULT_TRACE_REASON_DEFINE(critical_log)
 MEMFAULT_TRACE_REASON_DEFINE(flash_error)
 // ...
 ```
+
+### Add Additional Config Files
+
+Two other config files are required to build with the Memfault SDK:
+
+```bash
+$ cd $YOUR_PROJECT_ROOT
+$ mkdir -p config
+$ touch config/memfault_platform_config.h
+$ touch config/memfault_metrics_heartbeat_config.def
+```
+
+See the [nRF Connect
+Docs](https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/nrf/include/memfault_ncs.html#configuration-files)
+for more information.
 
 ### Generate Some Trace Events
 
