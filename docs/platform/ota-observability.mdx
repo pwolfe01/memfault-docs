@@ -1,0 +1,74 @@
+---
+id: ota-observability
+title: OTA Observability
+sidebar_label: OTA Observability
+---
+
+# OTA Observability
+
+## Deployment Matrix
+
+The deployment matrix provides an overview of current and future device versions
+per Cohort. To access the deployment matrix, navigate to **Fleet > Cohorts** and
+select a Cohort to explore.
+
+![Deployment Matrix](/img/docs/platform/deployment-matrix.png)
+
+Matrix columns represent a filtered representation of Releases.
+
+Generally, Releases are displayed as matrix columns if devices are on or will
+upgrade to a Software Version associated with the displayed Release. If a
+Release has an active Deployment, the `Active` button is visible below the
+version number of the Release. If the Release has an associated Deployment that
+is marked as Must Pass Through (MPT), a button with the label `MPT` is
+displayed.
+
+The rows of the matrix (Current Versions) represent versions that devices
+report, grouped by Software Type and Hardware Version.
+
+**Example**: A device with the primary Software Type `proto` that reports to be
+on version `0.9.0` will appear in the row `0.9.0 (proto)`. If the cohort has an
+active Release for a later version with the version name `1.0.0`, the device
+will appear in the column `1.0.0`.
+
+In short, the deployment matrix provides a conclusive summary of the versions
+devices are currently on and will eventually upgrade to - if an update is
+available.
+
+Available actions in the deployment matrix are:
+
+- Abort a deployment for a release
+- Clicking on a device count to see a filtered-down list of devices
+
+## Inspect Devices That Aren’t in the Expected Column
+
+If a device shows up in a column you weren’t expecting it to, additional
+information can be obtained via the device detail page. By clicking on the
+deployment matrix cell with the affected devices, you navigate to a filtered
+device list.
+
+Here you can choose an affected device to inspect:
+
+![Device List](/img/docs/platform/filtered-device-list.png)
+
+On the device detail page, open the update inspector panel by clicking on the
+icon next to “Last Seen Software Version”.
+
+The inspector panel provides a high-level overview of a device’s update history
+and future. On the left side of the popover, you can inspect the Software
+Versions a device has reported recently. On the right side of the popover, you
+find the next available update to the device.
+
+![Update Panel](/img/docs/platform/update-debug-panel.png)
+
+To retrieve further information, click on “Inspect Details''. The displayed
+dialog provides detailed information about the device’s update behavior.
+
+![Update Dialog](/img/docs/platform/update-debug-dialog.png)
+
+Common reasons for unexpected upgrade behavior are:
+
+- **Min version not met**: The minimum version associated with a release was not
+  met.
+- **Not newer**: The newest available release would lead to a version lower than
+  the device’s current version.

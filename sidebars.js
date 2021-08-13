@@ -12,6 +12,7 @@ module.exports = {
             "platform/create-new-project",
             "platform/software-version-hardware-version",
             "platform/alerts",
+            "platform/ota-observability",
             "platform/jira-integration",
             "platform/fleet-wide-metrics",
             "platform/user-management",
