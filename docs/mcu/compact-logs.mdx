@@ -25,7 +25,7 @@ Today, once enabled, compact logs will be used when capturing
 Let's take a look at a quick example:
 
 ```c
-MEMFAULT_TRACE_EVENT_WITH_LOG("QSPI Flash Erase Failure: error code: 0x%x", 0x5);
+MEMFAULT_TRACE_EVENT_WITH_LOG(flash_error, "QSPI Flash Erase Failure: error code: 0x%x", 0x5);
 ```
 
 With a formatted string we need to encode the string length as well as the
