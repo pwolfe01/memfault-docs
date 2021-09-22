@@ -1,0 +1,79 @@
+---
+id: heap-stats
+title: Heap Allocation Tracking
+sidebar_label: Heap Allocation Tracking
+---
+
+import IntegrationCompletePrerequisite from "@site/src/pages/_partials/_integration-complete-prerequisite.mdx";
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+<IntegrationCompletePrerequisite />
+
+This feature of the Memfault SDK provides insight into heap allocations when
+viewing coredumps, for example:
+
+![](/img/docs/mcu/heap-stats-example.png)
+
+## Usage
+
+### 1. Enable the config flag
+
+Set this in `memfault_platform_config.h`:
+
+```c
+#define MEMFAULT_COREDUMP_COLLECT_HEAP_STATS 1
+```
+
+### 2. Instrument the `malloc`/`free` calls
+
+<Tabs
+  defaultValue="baremetal"
+  values={[
+    {label: 'Other/Bare Metal', value: 'baremetal'},
+    {label: 'FreeRTOS', value: 'freertos'},
+  ]}>
+  <TabItem value="baremetal">
+For newlib or other typical libc-provided `malloc`/`free`, you can add the
+following wrapper functions (same would apply to other malloc implementations):
+
+```c
+#include "memfault/components.h"
+
+extern void __real_free(void *ptr);
+extern void *__real_malloc(size_t size);
+void __wrap_free(void *ptr) {
+  MEMFAULT_HEAP_STATS_FREE(ptr);
+  __real_free(ptr);
+}
+
+void *__wrap_malloc(size_t size) {
+  void *ptr = __real_malloc(size);
+  MEMFAULT_HEAP_STATS_MALLOC(ptr, size);
+  return ptr;
+}
+```
+
+The `MEMFAULT_HEAP_STATS_*` macros will record the `malloc`/`free` operations.
+
+To enable the wrappers, add these flags to the linker command flags:
+
+```bash
+-Wl,--wrap=malloc,--wrap=free
+```
+
+  </TabItem>
+  <TabItem value="freertos">
+For systems using the Memfault FreeRTOS port, and a  FreeRTOS heap
+implementation, to enable heap tracking you will want to set this config:
+
+```c
+#define MEMFAULT_FREERTOS_PORT_HEAP_STATS_ENABLE 1
+```
+
+For reference, the Memfault SDK port implements the `traceMALLOC`/`traceFREE`
+wrappers
+[here](https://github.com/memfault/memfault-firmware-sdk/blob/907c880f6de2e4fe98c1b96f5e1bbcf5918a50f6/ports/include/memfault/ports/freertos_trace.h#L41-L55).
+
+  </TabItem>
+</Tabs>
