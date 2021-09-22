@@ -62,6 +62,16 @@ To enable the wrappers, add these flags to the linker command flags:
 -Wl,--wrap=malloc,--wrap=free
 ```
 
+:::note
+
+The `MEMFAULT_HEAP_STATS_*` macros extract the Link Register at the call site
+where they're placed. If your `malloc`/`free` calls are being aggressively
+inlined (eg if using LTO and/or high optimzation levels `-O3`), you might see
+incorrect "Allocation site" values. Adding `__attribute__((noinline))` or
+similar can help address that.
+
+:::
+
   </TabItem>
   <TabItem value="freertos">
 For systems using the Memfault FreeRTOS port, and a  FreeRTOS heap
