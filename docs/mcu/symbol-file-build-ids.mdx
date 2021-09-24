@@ -81,6 +81,33 @@ memfault --org-token $ORG_TOKEN --org acme-inc --project smart-sink \
   build/symbols.elf
 ```
 
+:::note
+
+<details>
+  <summary>If you are using Link-Time Optimzation in your build, you may get an
+error when uploading the symbol file</summary>
+
+Using
+[link-time optimization (`-flto`)](https://interrupt.memfault.com/blog/best-and-worst-gcc-clang-compiler-flags#-flto)
+can cause the symbol upload to fail:
+
+```plaintext
+ERROR: main-with-lto.elf: Build Id missing. Specify --software-version and
+--software-type options or add a Build Id (see https://mflt.io/symbol-file-build-ids)
+Usage: memfault upload-mcu-symbols [OPTIONS] PATH
+
+Error: Upload failed!
+```
+
+`-flto` can inline the contents of the build id variable, removing the symbol
+from the executable. To work around this, add this flag to the linker args:
+
+`-Wl,--require-defined=g_memfault_build_id`
+
+</details>
+
+:::
+
 ### Uploading Symbol File with Software Type & Version
 
 To associate a Software Type & Software Version with a Symbol File, the
