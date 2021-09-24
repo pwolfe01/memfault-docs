@@ -1,0 +1,96 @@
+---
+id: ota-observability
+title: OTA Observability
+sidebar_label: OTA Observability
+---
+
+# Incremental Over the Air Updates
+
+## Incremental OTA
+
+Memfault provides two release entities when working with over-the-air payloads:
+Full Releases & Delta Releases.
+
+### Full Releases
+
+Full Releases provide a way to upgrade device software versions regardless of
+the version the device is currently on.
+
+According to the Hardware Version and other factors (see below), each device
+will find the newest Release and eventually install payloads belonging to that
+Release.
+
+It is important to understand that adding a new Full Release affects devices
+with multiple different Software Versions.
+
+In theory, every device with a software version lower than the version of the
+latest Release will eventually update to the version associated with the full
+Release.
+
+When we define the version of the most current Release as _B_ and every Version
+lower than B as _∞_, we can describe the behavior as a Full Release as: [∞ ->
+B].
+
+In practice, the updating behavior is more complex and depends on:
+
+- Minimum Software Version the device reports to be eligible for a Release
+- Must pass through Releases
+
+### Delta Releases
+
+A delta software Release (e.g. Inc 1.1→1.2) describes a transition from exactly
+one From Version to exactly one Target Version. The behavior can be described
+as: [A -> B].
+
+A Delta Release is only applied when the device's current version matches the
+Release's From Version.
+
+Note that a Delta Release can contain any software update as payload. Typically,
+a Delta Release will contain delta updates but it is possible, sometimes even
+desired, to deliver full updates via a Delta Release.
+
+Delta Releases allow for more fine-grained control over the update paths of
+devices. Additionally, Delta Releases generally contain smaller payloads,
+reducing required bandwidth and costs associated with rolling out updates.
+
+### Updating behavior
+
+When a device has multiple possible update paths, the following rules of
+precedence are applied to determine which release is applied.
+
+The following rules apply to all active Releases per cohort (activated per
+deployment each):
+
+1. If present and applicable, use Delta Release starting at the current version.
+2. If present and applicable, use must-pass-through (MPT) Full Release with
+   lowest target version number that's greater than the current version.
+3. Return applicable Full Release with the highest version greater than current
+   version.
+
+Note: It is possible to skip activated must pass through Releases by defining a
+Delta Release to a newer Target Version.
+
+## Managing incremental OTA with Memfault
+
+### Create Delta Releases
+
+To create a new Delta Release click on the top-level tab "Software" and select
+"OTA Releases". Click on "Add new release" and select "Add delta release".
+
+Follow the dialog instructions by entering a valid From and Target Version.
+After confirming your inputs and clicking on "Create" you will be redirected to
+the Release Detail Page.
+
+### Managing Delta Releases
+
+On Memfault, it's possible to manage the update paths of your devices via the
+Deployment Matrix. You can find the Deployment Matrix on the Cohort Detail Page.
+
+Navigate to the Cohort Detail Page and open the tab "Version Management". Note
+that the Deployment Matrix will be hidden, if your cohort has no reporting
+devices.
+
+To activate a Delta Release for an existing Software Version click on the small
+arrow button next to the name of the Software Version. Here, you can either
+activate existing Delta Releases or create a new Delta Release for a given From
+Version.
