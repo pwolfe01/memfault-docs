@@ -6,7 +6,7 @@ sidebar_label: Getting Started
 
 import ProjectAwareCreateAProject from "@site/src/components/ProjectAwareCreateAProject";
 
-This tutorial will cover integrating the [Bort SDK](android-bort.mdx) into a
+This tutorial will cover integrating the [Bort SDK](android-bort) into a
 system running Android 10. For other versions, simply change the input to the
 `patch-aosp` below to the correct version.
 
@@ -44,7 +44,7 @@ necessary. We suggest appending `bort` to your
 For example, `com.mycorp.bort`.
 
 The OTA application ID must also be set, if using the
-[OTA Update Client](android-ota-update-client.mdx). For example,
+[OTA Update Client](android-ota-update-client). For example,
 `com.mycorp.bort.ota`.
 
 Patch the default application ID with your own:
@@ -157,7 +157,7 @@ storePassword=mySecretStorePassword
 ### Create a keystore for the OTA Update Client app
 
 **This step is only required if using the
-[OTA Update Client](android-ota-update-client.mdx)**
+[OTA Update Client](android-ota-update-client)**
 
 If using the OTA Update Client, a separate keystore should be created, following
 the same steps as for the Bort app.
