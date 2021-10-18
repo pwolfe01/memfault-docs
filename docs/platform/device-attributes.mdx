@@ -33,10 +33,77 @@ definition can have a few properties:
 
 ## Viewing an Attribute
 
+There are two ways to view Attributes for a device:
+
+1. using the web application
+2. using the REST API
+
+### Using the web application
+
 Find the device you want to view the attributes for (for example by browsing
 your devices on the **Devices** page) and select the **Attributes** tab. You'll
 see all the properties known for this project and the respective value for the
 device you're currently looking at.
+
+### Using the REST API
+
+Below is an example of how attributes can be read using the Project Key and the
+REST API:
+
+:::note
+
+Be sure to replace `${MEMFAULT_ORG_TOKEN}` with an
+[Organization Auth Token](/docs/ci/authentication#organization-auth-token) and
+`${ORG_SLUG}` / `${PROJECT_SLUG}` / `${DEVICE_SERIAL}` if re-using the example
+below.
+
+:::
+
+```bash
+curl --user ":${MEMFAULT_ORG_TOKEN}" --location --request GET \
+'https://api.memfault.com/api/v0/organizations/${ORG_SLUG}/projects/${PROJECT_SLUG}/devices/${DEVICE_SERIAL}/attributes'
+```
+
+The response will be JSON-encoded data, example below:
+
+```json
+{
+  "data": [
+    {
+      "custom_metric": {
+        "data_type": "INT",
+        "description": "",
+        "display_name": "",
+        "favorite": false,
+        "id": "5e8b5af5-c686-43a7-8ba4-7878f7f9105e",
+        "ignored_values": [],
+        "range": {
+          "max": null,
+          "min": null
+        },
+        "string_key": "TimerTaskCpuUsage",
+        "updatable": true
+      },
+      "state": {
+        "created_date": "2021-09-20T13:25:37.517191+00:00",
+        "time": "2021-09-20T14:15:17.586209+00:00",
+        "updated_date": "2021-09-20T14:15:17.611765+00:00",
+        "value": 679
+      }
+    },
+    ...
+  ]
+}
+```
+
+You can select individual metric values by appending a URL query parameter:
+
+```bash
+https://api.memfault.com/api/v0/organizations/${ORG_SLUG}/projects/${PROJECT_SLUG}/devices/${DEVICE_SERIAL}/attributes?q=TimerTaskCpuUsage`
+```
+
+Only metrics with matching `string_key` will be returned (wildcard `*`
+supported).
 
 ## Setting an Attribute
 
@@ -49,7 +116,8 @@ There are three ways to write an attribute.
 :::note
 
 Because devices can update attributes, anyone who holds your **Project Key** can
-write or overwrite these attributes.
+write or overwrite these attributes (**unless** the attribute is set to
+non-`updatable`; writes from all sources to such metrics are ignored)
 
 :::
 
