@@ -1,0 +1,22 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.4.0
+    hooks:
+      - id: check-added-large-files # Prevent giant files from being committed
+      - id: check-case-conflict # Check for files that would conflict in case-insensitive filesystems
+      - id: check-executables-have-shebangs # Ensures that (non-binary) executables have a shebang.
+      - id: check-json # This hook checks json files for parseable syntax.
+      - id: check-yaml # This hook checks yaml files for parseable syntax.
+      - id: end-of-file-fixer # Ensures that a file is either empty, or ends with one newline.
+      - id: trailing-whitespace # This hook trims trailing whitespace.
+
+  - repo: local
+    hooks:
+      - id: prettier
+        name: prettier
+        language: system
+        entry: node_modules/prettier/bin-prettier.js
+        args: [--write]
+        files: \.(js|ts|jsx|tsx|css|less|html|json|markdown|md|mdx|yaml|yml)$

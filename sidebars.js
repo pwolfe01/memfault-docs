@@ -53,7 +53,10 @@ module.exports = {
             {
                 type: "category",
                 label: "User Guides",
-                items: ["mcu/coredump-elf-with-gdb"],
+                items: [
+                    "mcu/coredump-elf-with-gdb",
+                    "mcu/uploading-data-with-mqtt",
+                ],
             },
             {
                 type: "category",
