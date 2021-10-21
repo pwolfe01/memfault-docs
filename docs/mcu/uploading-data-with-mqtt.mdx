@@ -1,0 +1,76 @@
+---
+id: uploading-data-with-mqtt
+title: Uploading Data With MQTT
+sidebar_label: Uploading Data With MQTT
+---
+
+import MqttTopic from "@site/src/pages/_partials/_mqtt/_topic.mdx";
+import MqttAws from "@site/src/pages/_partials/_mqtt/_aws.mdx";
+
+## Introduction
+
+Devices that utilize an MQTT connection may prefer to re-use it to send Memfault
+chunk data. This has the following advantages:
+
+- It doesn't require an HTTP client implementation on the device.
+- It doesn't require a separate TLS session (possibly concurrent) and
+  certificate management, which can reduce memory requirements.
+
+Since the data is not flowing directly from the device to Memfault's
+[chunk REST endpoint](https://api-docs.memfault.com/?version=latest#66b0e390-2c3e-4c0d-b6c2-836a287b9e5f)
+endpoint, some additional work is required to forward the data from the MQTT
+server to Memfault.
+
+Here are some example projects that use MQTT to post Memfault data:
+
+- [Cypress PSoC64 + AWS IoT](https://github.com/memfault/memfault-firmware-sdk/tree/master/examples/cypress/CY8CKIT-064S0S2-4343W)
+- [Laird Pinnacle 100 + AWS IoT](/docs/mcu/pinnacle-100-guide)
+
+## Recommended Topic Format
+
+We recommend the following topic format for publishing Memfault chunk data (the
+following examples assume this topic is used):
+
+<MqttTopic />
+
+## Publishing Memfault Chunks
+
+An example of publishing Memfault chunks with an MQTT client (here it's based on
+the
+[ESP32 MQTT client example](https://github.com/espressif/esp-idf/blob/b4d792446c324934fd75e36219254547a54e738c/examples/protocols/mqtt/ssl_mutual_auth/main/app_main.c)):
+
+```c
+static char memfault_mqtt_topic[128];
+
+// construct the topic string; can be done once on system initialization
+void initialize_mqtt_topic(void) {
+  // could be use to control routing for different board types
+  const char *board_str = "example";
+  const char *device_serial = "DEMOSERIAL";
+  const char *memfault_project_key = "<memfault project key>";
+
+  sprintf(memfault_mqtt_topic, "prod/%s/%s/memfault/%s/chunk", board_str,
+          device_serial, memfault_project_key);
+}
+
+void publish_memfault_data(esp_mqtt_client_handle_t client) {
+  // fetch memfault chunk data
+  uint8_t chunk_buffer[128]; // size appropriately
+  size_t chunk_len = sizeof(chunk_buffer);
+
+  bool data_available = memfault_packetizer_get_chunk(chunk_buffer, &chunk_len);
+
+  if (data_available) {
+    // publish the data
+    int msg_id = esp_mqtt_client_publish(client, memfault_mqtt_topic,
+                                         chunk_buffer, chunk_len, 0, 0);
+    assert(msg_id >= 0);
+  }
+}
+```
+
+## Integration With Specific MQTT Brokers
+
+### AWS-IoT
+
+<MqttAws />
