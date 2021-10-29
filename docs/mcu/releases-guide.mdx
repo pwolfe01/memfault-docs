@@ -223,9 +223,10 @@ parameters:
   situations when the device has not been seen before.
 - `software_type` - The software component on the device responsible for
   performing OTA updates.
-- `current_version` - The current `software_version` of the `software_type` that
-  performs OTA updates. This is used to determine if there is a newer
-  `software_version` available to be installed.
+- `current_version` (optional)- The current `software_version` of the
+  `software_type` that performs OTA updates. This is used to determine if there
+  is a newer `software_version` available to be installed. If omitted, the
+  latest version is returned for the device.
 
 We can test this out from our computer to see the exact response a device will
 see. Let's assume we have the following test device:
