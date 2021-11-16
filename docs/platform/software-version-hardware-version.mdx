@@ -4,6 +4,16 @@ title: Software Version & Hardware Version
 sidebar_label: Software Version & Hardware Version
 ---
 
+:::info
+
+This document describes the version identifiers used by Memfault. For
+information on which values are permitted in each of the version specifiers, see
+the documentation here:
+
+https://api-docs.memfault.com/#memfault-resources
+
+:::
+
 ## Hardware Version
 
 The "Hardware Version" is used to identify the type of hardware on which
@@ -30,7 +40,7 @@ on a given device. This can be images running on different MCUs (i.e
 (i.e `main-mcu-bootloader` & `main-mcu-app`). You can also use "Software Type"
 to distinguish between build variants (i.e. `main-mcu-dvt` & `main-mcu-evt`).
 
-### RTOS
+### MCU
 
 The software running on your devices will need to report its Software Type
 correctly such that it matches with what has been configured in the Project.
@@ -61,7 +71,172 @@ to:
   firmware, the firmware's Software Version is used to determine if a device
   requires an update
 
-### RTOS
+### Version Schemes
+
+#### Ordering
+
+We recommend using a [SemVer](https://semver.org/) for your software version,
+[see details here](#recommended-versioning-scheme).
+
+If you do not use SemVer, we fallback to using natural sort, as implemented by
+[natsort](https://pypi.org/project/natsort/) to resolve ordering.
+
+This means that a device will not receive a previous OTA release, even if it's
+deployed to the cohort (or the device cohort changes); in other words,
+**downgrades are not permitted**.
+
+To override this logic, there's a per-cohort setting _"Disable Version
+Checking"_ which will always return the currently-deployed release to a device,
+even if it's older (downgrades will then be possible! so be sure the affected
+devices can tolerate the downgrade).
+
+Memfault uses a slight tweak on top of `natsort` to support `rc` or `dev`
+versioning schemes. This is achieved by
+[appending a character `z`](https://natsort.readthedocs.io/en/master/examples.html#sorting-more-expressive-versioning-schemes).
+
+For example, these versions are sorted from oldest to newest:
+
+```plaintext
+1.0.0rc1
+1.0.0
+1.0.1-dev
+1.0.1-rc2
+1.0.1
+1.0.12
+1.0.20
+```
+
+To implement a "release candidate" or "alpha/beta" versioning scheme, the
+recommended option is to follow the semver 2.0 specification, for example:
+
+```plaintext
+1.0.0-alpha.1
+1.0.0-alpha.2
+```
+
+Or:
+
+```plaintext
+1.0.0-rc.0
+1.0.0-rc.1
+```
+
+Be cautious about more exotic versioning schemes! natsort will only handle the
+common scenarios.
+
+For example, the semver 2.0 spec permits appending build metadata to a version
+number:
+
+```plaintext
+1.0.0+092ced197518c8e304232239315c611af6ff2404
+```
+
+But natsort will apply lexical ordering (under the default settings), which may
+not result in the expected OTA response
+([see _"Disable Version Checking"_](#ordering)).
+
+#### Recommended Versioning Scheme
+
+Memfault recommends using [Semver 2.0](https://semver.org/) for versioning.
+Specifically, using these forms will result in the least confusion:
+
+1. for official releases, strict semver ("normal version number" per the spec):
+
+   ```plaintext
+   1.0.0
+   ```
+
+   Exactly 3 digit groups, leading zeros permitted, delimited by periods (see
+   the spec for details).
+
+2. "beta" or "release candidate", etc., pre-release versions:
+
+   ```plaintext
+   1.0.0-beta.0
+   1.0.0-rc.0
+   ```
+
+3. automated nightly builds that are deployed over Memfault OTA to a cohort:
+
+   ```bash
+   # using a build number (eg CI build number, or monontonically incrementing
+   # based on git tag, etc.)
+   1.0.0-nightly.0
+
+   # using a calendar version. always increments, and can be generated without
+   # context (assuming only 1 build is deployed per day)
+   1.0.0-nightly.20220123
+
+   ```
+
+4. development builds generated locally (using git sha or other identifier):
+
+   ```plaintext
+   1.2.3+092ced197518c8e304232239315c611af6ff2404
+   ```
+
+   And set the _"Disable Version Checking"_ setting for the cohort.
+
+:::info
+
+Note that for these schemes, the `device_info.software_version` field may need
+to be populated at build time by the build script. For example, you might have a
+C preprocessor token that holds the string for the software version, where the
+value is populated by a build script:
+
+```bash
+# a C compiler option setting the SOFTWARE_VERSION token to a string
+-DSOFTWARE_VERSION=\"1.0.0-nightly-20220123\"`
+```
+
+Some potentially useful things to consider:
+
+- if using git tags, see information on `git rev-parse` for generating tag
+  strings
+- if using a calendar version, the unix `date` command could be used, for
+  example `date --utc +%Y%m%d`.
+
+:::
+
+#### Testing
+
+To test version ordering, two approaches are recommended:
+
+1. locally, using the `natsort`
+   [command line utility](https://natsort.readthedocs.io/en/master/shell.html):
+
+   ```bash
+   ❯ natsort 2022.04.01 2022.10.02 2022.05.05 2022.05.04
+   2022.04.01
+   2022.05.04
+   2022.05.05
+   2022.10.02
+   ```
+
+   _Note: For exotic versioning schemes, to mimic the way Memfault's system
+   operates, it may be necessary to append a `z` to the versions being compared_
+
+2. using Memfault's API, test using a dummy device (assign it to the appropriate
+   cohort you are testing):
+
+   ```bash
+   # use --get and --data-urlencode to encode the query params correctly
+   ❯ curl --silent -i -X GET --get \
+     --header "Memfault-Project-Key: ${MEMFAULT_PROJECT_KEY}" \
+     'https://device.memfault.com/api/v0/releases/latest/url' \
+     --data-urlencode device_serial=OTA_TEST_DEVICE \
+     --data-urlencode hardware_version=${HARDWARE_VERSION} \
+     --data-urlencode software_type=${SOFTWARE_TYPE} \
+     --data-urlencode current_version=${SOFTWARE_VERSION}
+   ```
+
+   See details on the
+   [Releases API](https://api-docs.memfault.com/#89d8dfa4-10d7-41d3-9c20-7cc356030c4b)
+   for more information.
+
+### Platform Specific Considerations
+
+#### MCU
 
 A single Software Version is associated with one Symbol Software Artifact (.elf
 file).
@@ -84,20 +259,16 @@ Please see the
 of the Firmware SDK for details on how to set this up on the device's software
 side.
 
-### Android
+#### Android
 
 Memfault supports extracting the Software Version for the `android-build`
 Software Type from several different sources in order to suit different build
 configurations.
 
-By default, irrespective of the source, the Software Version will be ordered
-using natural sort, as implemented by
-[natsort](https://pypi.org/project/natsort/). It is possible to customize how
-the Software Version is interpreted and sorted, for example using
-[SemVer](https://semver.org/). If you would like to make these changes, please
-let us know.
+By default, irrespective of the source, the Software Version will be ordered per
+[Version Schemes](#version-schemes).
 
-#### Recommended: Build Fingerprint and System Property
+##### Recommended: Build Fingerprint and System Property
 
 We recommend using both the build fingerprint and a custom system property for
 situations where the build fingerprint does not contain a meaningful identifier;
@@ -117,7 +288,7 @@ comparison purposes.
 The fingerprint must uniquely identify the build, and the specified system
 property must also uniquely identify the build.
 
-#### Recommended: Build Fingerprint Only
+##### Recommended: Build Fingerprint Only
 
 Memfault supports using the
 [Android build fingerprint](https://developer.android.com/reference/android/os/Build#FINGERPRINT)
@@ -136,13 +307,13 @@ will show only the most relevant part. By default, the "incremental" component
 is used for display and ordering; this can be customized to instead use e.g. the
 "ID" component.
 
-#### System Property Only
+##### System Property Only
 
 The Software Version can be sourced from any system property. The specified
 property must be able to uniquely identify the build (the value must be unique
 for each build).
 
-### Android Applications
+#### Android Applications
 
 For an Android application, Memfault stores both the
 [`versionCode` and `versionName`](https://developer.android.com/studio/publish/versioning);
