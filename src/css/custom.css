@@ -19,6 +19,14 @@
     src: url("/static/binary-assets/Inter-roman.var.woff2") format("woff2");
 }
 
+@font-face {
+    font-family: "Inter var";
+    font-style: italic;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url("/static/binary-assets/Inter-italic.var.woff2") format("woff2");
+}
+
 /* You can override the default Infima variables here. */
 :root {
     --ifm-font-family-base: Inter var, system-ui, -apple-system, Segoe UI,
