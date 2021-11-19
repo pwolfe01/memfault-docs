@@ -39,7 +39,7 @@ bool try_send_memfault_data(void) {
 }
 
 void send_memfault_data(void) {
-  if (memfault_packetizer_data_available()) {
+  if (!memfault_packetizer_data_available()) {
     return false; // no new data to send
   }
 
