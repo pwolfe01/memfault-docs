@@ -47,35 +47,37 @@ different information depending on your device, please see the pages for
 
 ### Comparing multiple devices with TimeSync mode
 
-Sometimes it's fruitful to debug two or more Devices at the same time. They may for example be
-[Linked Devices](#linked-devices), or devices that received a firmware update at the
-same time, among many other possibilities.
+Sometimes it's fruitful to debug two or more Devices at the same time. They may
+for example be [Linked Devices](#linked-devices), or devices that received a
+firmware update at the same time, among many other possibilities.
 
-Whenever one wishes to view many Device Details pages at the same time, the solution is delightfully
-low-tech: just open up multiple browser windows and lay them out as needed! However, this gets
-complicated very quickly, especially if one wants the windows to show the same time and date ranges
-while looking at debugging data.
+Whenever one wishes to view many Device Details pages at the same time, the
+solution is delightfully low-tech: just open up multiple browser windows and lay
+them out as needed! However, this gets complicated very quickly, especially if
+one wants the windows to show the same time and date ranges while looking at
+debugging data.
 
-To help, we have developed a feature called **TimeSync**, which synchronizes time-related aspects
-of the UI between browser windows.
+To help, we have developed a feature called **TimeSync**, which synchronizes
+time-related aspects of the UI between browser windows.
 
 ![Animation showing the mouse hovering over a Device timeline and changing date range settings, with the same things happening in a separate browser window as well](/img/docs/platform/timesync-demo.gif)
 
-To see this in action, go to a Device's **Timeline** tab and click on the small clock icon next
-to the date picker. You can also use the Timezone picker in the upper right corner to enable
-TimeSync. Whenever TimeSync is enabled, the little clock icon stops showing the current time
-(for your selected timezone) and starts spinning quickly.
+To see this in action, go to a Device's **Timeline** tab and click on the small
+clock icon next to the date picker. You can also use the Timezone picker in the
+upper right corner to enable TimeSync. Whenever TimeSync is enabled, the little
+clock icon stops showing the current time (for your selected timezone) and
+starts spinning quickly.
 
 ![Animation showing the TimeSync button being clicked](/img/docs/platform/timesync-button.gif)
 
-
-Now, if you open a new browser window and view another Device's Timeline, you will see that
-the date range stays the same in both windows, and that hovering your mouse pointer over the timeline shows
-the "needle" in both places.
+Now, if you open a new browser window and view another Device's Timeline, you
+will see that the date range stays the same in both windows, and that hovering
+your mouse pointer over the timeline shows the "needle" in both places.
 
 :::note
 
-TimeSync is currently enabled for the Timeline tab in the Device details page. This feature only works across
-windows of _the same browser_. Mixing Chrome and Edge will not work, for example.
+TimeSync is currently enabled for the Timeline tab in the Device details page.
+This feature only works across windows of _the same browser_. Mixing Chrome and
+Edge will not work, for example.
 
 :::
