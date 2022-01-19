@@ -59,6 +59,7 @@ module.exports = {
                 items: [
                     "mcu/coredump-elf-with-gdb",
                     "mcu/uploading-data-with-mqtt",
+                    "mcu/sdk-submodule",
                 ],
             },
             {

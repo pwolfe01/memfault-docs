@@ -1,0 +1,63 @@
+---
+id: sdk-submodule
+title: Managing the Memfault SDK as a Git Submodule
+sidebar_label: Memfault SDK as a Git Submodule
+---
+
+## Installing the SDK as a Git Submodule
+
+Using a Git Submodule to manage the Memfault SDK can be useful, especially if
+your build system doesn't natively support using Git Repositories as sources.
+
+To add the Memfault SDK as a Git Submodule:
+
+```bash
+# the last argument sets the path to the submodule, here "third_party/memfault-firmware-sdk"
+git submodule add https://github.com/memfault/memfault-firmware-sdk.git third_party/memfault-firmware-sdk
+```
+
+The submodule add is now staged in the Git index, and can be committed as usual.
+
+## Specifying the version of the Memfault SDK
+
+By default, the submodule add command will checkout the latest commit on the
+default branch.
+
+See the Memfault SDK releases page for the latest release version:
+
+https://github.com/memfault/memfault-firmware-sdk/releases
+
+To select a specific tag for the submodule, follow these commands:
+
+```bash
+# change directory to the submodule
+cd path/to/memfault/submodule
+
+# checkout a particular tag
+git checkout <tag>
+
+# cd back to the parent repo root
+cd -
+
+# add the updated submodule to the index (and commit if appropriate)
+git add path/to/memfault/submodule
+```
+
+## Considerations when cloning the parent repo
+
+To initialize the repo after adding a submodule, the following commands should
+be used:
+
+```bash
+# Option 1: clone and update in one command by using the '--recursive' flag
+git clone --recursive <repo remote URL>
+
+# Option 2: clone, then update after
+git clone <repo remote URL>
+cd path-to-newly-cloned-repo
+git submodule update --init --recursive
+```
+
+To learn more about working with submodules, check out
+[GitHub's blog post](https://github.blog/2016-02-01-working-with-submodules/)
+about them.
