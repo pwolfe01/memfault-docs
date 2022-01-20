@@ -482,6 +482,35 @@ to help!
 
 <SendingDataOverUdp />
 
+## Built-in Metrics for the nRF9160
+
+The nRF Connect SDK optionally provides some pre-enabled metrics for the nRF9160
+example:
+
+- `Ncs_AtCmdUnusedStack`
+- `Ncs_ConnectionPollUnusedStack`
+- `Ncs_LteTimeToConnect, kMemfaultMetricType_Timer`
+- `Ncs_LteConnectionLossCount`
+- `Ncs_LtePsmTauSec`
+- `Ncs_LtePsmActiveTimeSec`
+- `Ncs_LteEdrxIntervalMsec`
+- `Ncs_LteEdrxPtwMsec`
+- `Ncs_LteMode`
+
+These Kconfig flags control whether those metrics are enabled:
+
+- [`CONFIG_MEMFAULT_NCS_LTE_METRICS`](https://developer.nordicsemi.com/nRF_Connect_SDK/doc/1.8.0/kconfig/CONFIG_MEMFAULT_NCS_LTE_METRICS.html)
+- [`CONFIG_MEMFAULT_NCS_STACK_METRICS`](https://developer.nordicsemi.com/nRF_Connect_SDK/doc/1.8.0/kconfig/CONFIG_MEMFAULT_NCS_STACK_METRICS.html)
+
+When setting up a Project in the Memfault app, selecting the `nRF91` MCU will
+pre-populate a few fleet metrics charts matching the optional metrics above:
+
+![Image showing the pre-populated fleet metric charts](/img/docs/mcu/nrf91-preset-fleet-metrics.png)
+
+See the list in this file in the NCS repo:
+
+- [`modules/memfault-firmware-sdk/config/memfault_metrics_heartbeat_extra.def`](https://github.com/nrfconnect/sdk-nrf/blob/b034248f8b5524785dbb8e95be6ef719808848d4/modules/memfault-firmware-sdk/config/memfault_metrics_heartbeat_extra.def)
+
 ## Useful links
 
 - [nRF Connect SDK documentation on built-in Memfault Firmware SDK integration](https://developer.nordicsemi.com/nRF_Connect_SDK/doc/1.8.0/nrf/libraries/others/memfault_ncs.html)
