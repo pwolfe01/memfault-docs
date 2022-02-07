@@ -1,0 +1,53 @@
+---
+title: January 2022
+---
+
+## Improved OTA with Version Matrix and Delta Releases
+
+Memfault steps up [OTA observability and release management](/docs/platform/ota). Use the new [Version Matrix](/docs/platform/ota#cohort-version-management) (Fleet → Cohorts → Cohort Details) to learn about the version distribution of your devices (rows) and which version your devices will be updated to via OTA (columns).
+
+![Version Matrix as part of Cohort details page](/img/blog/2022-01-31-CohortDetailsMatrixScenarioE.png)
+
+Changes to your software rollout (including [percentages for staged rollouts](/docs/platform/ota/#staged-rollout-of-a-release)) are reflected in the matrix immediately. This is especially helpful when using the newly introduced [Delta Releases](/docs/platform/ota/#delta-releases) that describe a path between specific versions. Every software version, OTA release, and number in the matrix is clickable to get to more details if needed.
+
+![Creating a new Delta Release](/img/blog/2022-01-31-createDeltaRelease.png)
+
+Even complex and unusual scenarios are visible at a glance: devices with no compatible OTA payload, devices with a higher version than the cohort’s target release, must-pass-through releases and their effect, as well as many other edge cases are represented with data that is always live.
+
+![Version Matrix with two Delta Releases, one of them staged](/img/blog/2022-01-31-versionMatrixScenarioC.png)
+
+The Version Matrix gives you confidence both while preparing your software rollout and during the ongoing rollout, and it still helps you understand the version distribution of your fleet when no further updates are planned.
+
+<!-- truncate -->
+
+## General
+
+- Added: Support for heap regions In [MCU heap allocation tracker](/docs/mcu/heap-stats/)
+- Added: Support for reboot reason in [Device Sets](/docs/platform/projects-and-fleets/#device-sets)
+- Improved: Search for metrics on device details page for MCU now case-insensitive
+- Improved: Memfault email alerts contain project name now
+- Improved: [Memfault documentation homepage](https://docs.memfault.com)
+- Improved: [Documentation for built-in metrics on Android](/docs/android/android-builtin-metrics)
+- Improved: Processing of DWARF files (more robust if `DW_AT_byte_size` is missing)
+- Fixed: Several minor UI glitches (identifier, MCU symbol tree, UI flow when activating releases, meaning of “Upload Device CSV”)
+- Security: Users now need to re-login every 3 days
+- Security: New passwords are required to contain at least 12 characters
+- Security: Forced browser refresh after user logs out
+- Removed: Filtering from “Events Debug” page
+- Removed: “Seen Devices” overview chart and “Received Events” from dashboard
+
+## MCU SDK
+
+In January, two SDK versions [0.28.0](https://github.com/memfault/memfault-firmware-sdk/blob/master/CHANGES.md#changes-between-memfault-sdk-0280-and-sdk-0273---jan-4-2022) and [0.28.1](https://github.com/memfault/memfault-firmware-sdk/blob/master/CHANGES.md#changes-between-memfault-sdk-0281-and-sdk-0280---jan-20-2022) were released. Here are some highlights:
+
+- Added: Support for [custom string metrics](/docs/mcu/metrics-api/) via `memfault_metrics_heartbeat_set_string()`
+- Added: Optional override flag to support unusual Zephyr data region setups
+- Updated: `memfault_metrics_heartbeat_debug_print()` to also print current timer values
+- Fix: Example for [STM32 QP/C](https://github.com/memfault/memfault-firmware-sdk/blob/master/examples/qp)
+- Fix: Proper URL encode all query params when checking for OTA via HTTP
+- Fixes for STM32F7xx and STM32L4 ([reported](https://github.com/memfault/memfault-firmware-sdk/pull/22) by [@schultetwin](https://github.com/schultetwin))
+- Fix: Outdated comment in cmake/Memfault.cmake ([reported](https://github.com/memfault/memfault-firmware-sdk/issues/21) by [@C47D](https://github.com/C47D))
+
+## Android SDK
+
+There was no new version of [Bort, the Memfault AOSP SDK](https://github.com/memfault/bort), in January.
