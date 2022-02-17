@@ -33,6 +33,26 @@ at compile time by the SDK for populating the build id.
 </details>
 
 <details>
+  <summary>IAR EWARM Python Script Run on ELF in Post-Build Action</summary>
+
+1. install python (eg python3.9 from the Microsoft app store)
+2. install the `pyelftools` python package by:
+
+   1. open git bash or cmd.exe
+   2. `python3.9.exe -m pip install pyelftools==0.27`
+
+3. then add the appropriate post-build action, for example:
+
+   ```bash
+   # double check the path to the `fw_build_id.py` script
+   python3.9.exe $PROJ_DIR$/third-party/memfault-firmware-sdk/scripts/fw_build_id.py $TARGET_PATH$`
+   ```
+
+   [![/img/docs/mcu/iar-post-build-id.png](/img/docs/mcu/iar-post-build-id.png)](/img/docs/mcu/iar-post-build-id.png)
+
+</details>
+
+<details>
   <summary>Python Script Run on ELF (Compiler Agnostic)</summary>
 
 Update your build system to invoke the `scripts/fw_build_id.py` script on your

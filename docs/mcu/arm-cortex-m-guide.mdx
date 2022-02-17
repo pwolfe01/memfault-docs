@@ -141,3 +141,79 @@ automatically to the Memfault cloud for analysis.
 ### Post Data to Cloud via Device Transport
 
 <PublishDataToCloud />
+
+## Frequently Asked Questions
+
+### Linker "Duplicate definition" error for `HardFault_Handler` etc.
+
+The Memfault SDK includes definitions for several exception handlers, for
+example:
+
+- `HardFault_Handler`
+- `MemoryManagement_Handler`
+
+etc.
+
+See
+[here](https://github.com/memfault/memfault-firmware-sdk/blob/24f2c2627c9f20e921e61d1b635cab58f34af3b8/components/panics/src/memfault_fault_handling_arm.c#L399-L427)
+for the implementation.
+
+These handlers should replace the existing ones in your project. You can remove
+the existing implementations entirely, or you can for mark them with the `weak`
+attribute (eg, using the `MEMFAULT_WEAK` compiler-agnostic define) to avoid the
+linker error.
+
+### What is `memfault_platform_coredump_get_regions()` / `memfault_platform_sanitize_address_range()`?
+
+#### `memfault_platform_coredump_get_regions()`
+
+`memfault_platform_coredump_get_regions()` tells the Memfault fault handler
+which memory regions should be collected as part of a coredump. The Memfault SDK
+by default will collect the CPU registers and various fault registers of
+interest. `memfault_platform_coredump_get_regions()` provides additional memory
+regions, which could be the entire contents of RAM, or selected sections only
+(the RAM-backed coredump storage provides a default implementation that collects
+a portion of the current stack). Typically, if sufficient storage is available,
+including the entire RAM regions in the coredump will provide the most
+information on a crash.
+
+#### `memfault_platform_sanitize_address_range()`
+
+`memfault_platform_sanitize_address_range()` is used to filter out sections of
+memory that should not be captured by the Memfault fault handler as part of a
+coredump. It's necessary to prevent the core dump writer from attempting to copy
+data from inaccessible memory regions, which would cause the core dump to fail.
+We highly recommend implementing it; usually it's sufficient to set it up with
+the accessible memory regions for that device, for example, a chip with a single
+`0x40000` byte RAM section, starting at address `0x20000000`, would have an
+implementation like:
+
+```c
+size_t memfault_platform_sanitize_address_range(void *start_addr,
+                                                size_t desired_size) {
+  // these values can be provided by the linker script, or explicitly defined
+  const uint32_t RAM_ORIGIN = 0x20000000;
+  const uint32_t RAM_LENGTH = 0x40000;
+
+  struct {
+    uint32_t start_addr;
+    size_t length;
+  } s_mcu_mem_regions[] = {
+      {
+          .start_addr = RAM_ORIGIN,
+          .length = RAM_LENGTH,
+      },
+  };
+
+  for (size_t i = 0; i < MEMFAULT_ARRAY_SIZE(s_mcu_mem_regions); i++) {
+    const uint32_t lower_addr = s_mcu_mem_regions[i].start_addr;
+    const uint32_t upper_addr = lower_addr + s_mcu_mem_regions[i].length;
+    if ((uint32_t)start_addr >= lower_addr &&
+        ((uint32_t)start_addr < upper_addr)) {
+      return MEMFAULT_MIN(desired_size, upper_addr - (uint32_t)start_addr);
+    }
+  }
+
+  return 0;
+}
+```
