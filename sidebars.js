@@ -57,6 +57,7 @@ module.exports = {
                 type: "category",
                 label: "User Guides",
                 items: [
+                    "mcu/composite-devices",
                     "mcu/coredump-elf-with-gdb",
                     "mcu/uploading-data-with-mqtt",
                     "mcu/sdk-submodule",

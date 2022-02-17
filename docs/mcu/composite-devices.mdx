@@ -1,0 +1,99 @@
+---
+id: composite-devices
+title: Composite Devices
+sidebar_label: Composite Devices
+---
+
+## Managing Composite Devices
+
+A Composite Device is composed of multiple MCU devices within the same system.
+
+<!--
+%% mermaid syntax
+%% https://kroki.io/
+flowchart TB
+    subgraph Composite Device
+    %% remove spaces in arrows below
+    a[MCU 1]<- ->|UART|b[MCU 2]
+    a[MCU 1]<- ->|SPI|c[MCU 3]
+    end
+ -->
+
+![](/binary-assets/embedded/composite-device.svg)
+
+For example, a Device might have an nRF9160 for LTE connectivity, and an
+nRF52480 for BLE.
+
+This document describes a few aspects of the Memfault platform that should be
+considered when using it on these types of device.
+
+## Device Serial
+
+Typically this device should be represented by a single Device Serial. Any MCUs
+residing in the same the Device should report Memfault data with the same Device
+Serial.
+
+Some considerations here:
+
+- the Device Serial may reside on one of the MCUs in the system, and would need
+  to be propagated to the other MCUs that are using Memfault
+- the Device Serial is used in a few locations:
+  - when saving a coredump, it's written into the coredump header
+  - when uploading data to Memfault, the Device Serial is usually used as part
+    of the HTTP POST request
+  - _[OPTIONALLY]_ if the `MEMFAULT_EVENT_INCLUDE_DEVICE_SERIAL` configuration
+    flag is enabled, the Device Serial will be encoded into every serialized
+    packet
+    - during chunk serialization (see
+      [Data Transport](/docs/mcu/data-from-firmware-to-the-cloud))
+    - when a Heartbeat, Trace, or other Event is serialized; this can happen on
+      the Heartbeat interval, when a Trace event is stored, or eg. when a Reboot
+      Reason is recorded inside `memfault_reboot_tracking_collect_reset_info()`
+
+## Software Type
+
+For each MCU in the Composite Device that reports Memfault data, a unique
+Software Type should be used. See more information on
+[Software Type](/docs/platform/software-version-hardware-version).
+
+For example, you might use something as simple as `nrf91` + `nrf52` to
+distinguish the two MCUs in that example system.
+
+## Symbol Files
+
+Symbol Files should be uploaded for every MCU application that will be reporting
+Memfault data (i.e. every application that integrates the Memfault SDK). It's
+highly recommended to use [Build IDs](/docs/mcu/symbol-file-build-ids/) in the
+symbol files to simplify this process.
+
+## Software Version
+
+_**TODO: we may have to require devices to report a combined version identifier
+for our current update scheme, since we can only apply a single OTA version to a
+device 🤔**_
+
+Typically, each MCU in the system should report the Software Version of the
+application on that MCU; this will enable filtering Issues + Metrics by the
+appropriate Software Version + Software Type.
+
+Memfault recommends using a Semver versioning scheme, see more information on
+Memfault [Software Version](docs/platform/software-version-hardware-version).
+
+An exception to this is if the devices _exclusively_ install a combined update
+image (sometimes called an update "bundle", composed of multiple sub-images). In
+this case, it may make sense to report the Software Version of the update
+bundle, especially if the individual components do not have separate Software
+Version identifiers.
+
+## Over-the-Air Update (OTA)
+
+OTA requirements vary considerably from system to system for OTA:
+
+- some systems will always OTA a bundle containing images for every upgradeable
+  component in the system
+- some systems will OTA each upgradeable component separately
+
+Memfault's OTA system is flexible and can support many different update schemes.
+
+_TODO add recommendations on using our OTA scheme to update combined image vs.
+independent based on Software Type_
