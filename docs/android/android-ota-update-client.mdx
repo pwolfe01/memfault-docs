@@ -5,8 +5,9 @@ sidebar_label: OTA Update Client
 ---
 
 The Bort SDK includes a full OTA Update Client since version 3.7.0, which uses
-the [Memfault Android OTA service](android-releases-integration-guide) to manage
-the OTA update process. This supports:
+the
+[Memfault Android OTA service](/docs/android/android-releases-integration-guide)
+to manage the OTA update process. This supports:
 
 - [`RecoverySystem`-based updates](https://source.android.com/devices/tech/ota/nonab).
 - [Update Engine-based updates](https://source.android.com/devices/tech/ota/ab#life-of-an-a-b-update)
@@ -81,11 +82,11 @@ running, in order to function correctly.
 ## Enable OTA Update Client
 
 Ensure that the Bort OTA application ID is set (see
-[Patch the SDK](android-getting-started-guide#patch-the-sdk) or manually update
-`BORT_OTA_APPLICATION_ID` in `bort.properties`).
+[Patch the SDK](/docs/android/android-getting-started-guide#patch-the-sdk) or
+manually update `BORT_OTA_APPLICATION_ID` in `bort.properties`).
 
 The OTA app also needs to be configured with a keystore. See
-[Create a keystore for the OTA Update Client app](android-getting-started-guide#create-a-keystore-for-the-bort-ota-update-client-app).
+[Create a keystore for the OTA Update Client app](/docs/android/android-getting-started-guide#create-a-keystore-for-the-bort-ota-update-client-app).
 
 Once the OTA application is configured, setting the `TARGET_USES_MFLT_OTA`
 environment variable will include it in the system image. e.g.
@@ -96,7 +97,7 @@ export TARGET_USES_MFLT_OTA=1
 
 After building and installing the system image, the Memfault OTA app will be
 active. A Release can now be
-[activated in the Cohort](android-releases-integration-guide#activate-the-release)
+[activated in the Cohort](/docs/android/android-releases-integration-guide#activate-the-release)
 containing this device.
 
 ## Customizing the OTA Update Client
