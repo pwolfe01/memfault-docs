@@ -1,8 +1,23 @@
 Memfault can automatically capture crash information on asserts by calling
-`MEMFAULT_ASSERT()` from your platforms assert handler:
+`MEMFAULT_ASSERT()` from your platform's assert handler:
 
 ```c
 #include "memfault/panics/assert.h"
 
 #define YOUR_PLATFORM_ASSERT(x) MEMFAULT_ASSERT(x)
 ```
+
+:::info
+
+If the system uses an assert implementation provided by the C standard library
+(`<assert.h>`), it may be necessary to override the `abort()` or `_exit()`
+implementation to use `MEMFAULT_ASSERT()`:
+
+```c
+// C stdlib abort implementation that calls MEMFAULT_ASSERT(0)
+void abort(void) {
+    MEMFAULT_ASSERT(0);
+}
+```
+
+:::
