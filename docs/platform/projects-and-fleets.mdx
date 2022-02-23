@@ -1,15 +1,48 @@
 ---
 id: projects-and-fleets
-title: Projects and Fleets
-sidebar_label: Projects and Fleets
+title: How to Organize Devices
+sidebar_label: How to Organize Devices
 ---
 
-## What is a Project, and what is a Fleet?
+## Categorization Schemes
+
+<!-- Ugly inline HTML below to put a list inside a table cell in Markdown 😕 -->
+
+| Method       | Primary Use                    | Comment                                                                                                                                                                                                                                                                                            |
+| ------------ | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Organization | Different companies            | Users can belong to one or more Organizations.                                                                                                                                                                                                                                                     |
+| Project      | Different Products             | Devices based on a different SW codebase and hardware. Devices will use a different Project Key to upload to their respective Project.                                                                                                                                                             |
+| Cohort       | OTA Segments (beta, prod, etc) | Specifically designed for OTA control (in the future, Device Configuration will also apply at the cohort level). A device is always assigned to exactly one Cohort but can be re-assigned at any time. Cohorts also can be used for filtering data (for example on the Overview and Metric pages). |
+| Device Sets  | Logical groups of devices      | <ul><li>Create filters on Attributes and Metics</li><li>Used for eg co-deployments, geolocal groups, "all devices manufactured in February with battery state-of-health below 80%"</li><li>A device can belong to multiple Device Sets</li></ul>                                                   |
+
+## Organizations
+
+At the highest level, you have your Organization. This maps directly to the
+organization that has a Memfault license. For most users, you will only have one
+Organization, the company you work for.
+
+There are a few scenarios where you may have access to multiple organizations
+such as if you are a contractor and have a Memfault account for different
+companies you are working with or if you have a personal Memfault account in
+addition to the one for the company you work with.
+
+You can see which organizations you have access to by clicking on your name in
+the top right hand corner, and clicking **Change Organization** from the drop
+down. Select the organization you wish to navigate to.
+
+To change to a different organization, simply click on the name and the selected
+organization will load. To set the organization loaded by default when
+navigating to https://app.memfault.com, click on the star icon next to that
+organization in the drop down.
+
+![/img/docs/platform/navigating-orgs.png](/img/docs/platform/navigating-orgs.png)
+
+## Projects
 
 A **Project** is the umbrella under which Memfault organizes all the data
 related to a particular hardware product. Individual **Devices** check in
-periodically to the Project via the Memfault API, and the set of all checked-in
-Devices is called the **Fleet**.
+periodically to the Project using one of the Memfault SDKs or the Memfault API,
+and the set of all checked-in Devices is called the **Fleet**.
 
 A Fleet often consists of homogeneous devices, like a certain model of an AC
 unit or a games console. Fleets may also consist of different but related
@@ -39,7 +72,7 @@ Probably best to document the "Settings" page (which is basically Project Settin
 refer to that in the project creation docs, instead of duplicating it.
 -->
 
-## Organizing your Fleet
+## Organizing Devices Within a Project
 
 ### Cohorts
 
@@ -57,6 +90,14 @@ software to the right Devices at the right time. Devices can only belong to one
 cohort at a time.
 
 :::
+
+With Cohorts you can:
+
+- Filter Overview Page by Cohort
+- Filter [Metrics Charts](docs/platform/charts) by Cohort
+- Compare Metrics Charts across Cohorts and Software Versions
+- Set [Alerts](/docs/platform/alerts) by Cohorts
+- Filter [Issue](docs/platform/issue-management) and Device Page by Cohorts
 
 <!-- TODO: how does one create cohorts, how do devices end up in them? -->
 
