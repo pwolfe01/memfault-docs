@@ -20,10 +20,6 @@ module.exports = {
             apiKey: "2028276a4fc7f09eeb0bd082fbd85164",
             indexName: "memfault",
         },
-        gtag: {
-            trackingID: "G-R5JYJ06TDJ",
-            anonymizeIP: true,
-        },
         prism: {
             theme: require("prism-react-renderer/themes/oceanicNext"),
         },
@@ -174,6 +170,10 @@ module.exports = {
                     sidebarPath: require.resolve("./sidebars.js"),
                     editUrl:
                         "https://github.com/memfault/memfault-docs/edit/main/",
+                },
+                gtag: {
+                    trackingID: "G-R5JYJ06TDJ",
+                    anonymizeIP: true,
                 },
                 theme: {
                     customCss: require.resolve("./src/css/custom.css"),

@@ -1,9 +1,9 @@
 import React from "react";
 
-import useThemeContext from "@theme/hooks/useThemeContext";
+import { useColorMode } from "@docusaurus/theme-common";
 
 export default function TargetVersionFilled() {
-    const { isDarkTheme } = useThemeContext();
+    const { isDarkTheme } = useColorMode();
     const color = isDarkTheme ? "#fff" : "#000";
     return (
         <svg
