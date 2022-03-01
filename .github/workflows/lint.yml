@@ -26,6 +26,21 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          # Make sure the actual branch is checked out when running on pull requests
+          ref: ${{ github.head_ref }}
+
+      - name: Check IDs
+        # check all mdx files have an id: tag matching the filename
+        run: |
+          ./check-id.py $(find . -name '*.mdx' | sort)
+
   # For pull requests generated from a fork, we run the prettier linter
   # but leave it up to the user to fix locally since we would need extra
   # permissions to be able to push a auto-fix commit to the forked repo

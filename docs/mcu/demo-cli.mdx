@@ -191,9 +191,9 @@ are no equivalents for the event storage.
 
 The `print_chunk` command reads out all data from both the coredump storage and
 the event storage. It then formats this data into a
-[chunk](data-from-firmware-to-cloud.mdx) that can be sent to the Memfault cloud.
-Since not all devices have direct internet connectivity, `print_chunk` encodes
-the chunk into shell command that sends it to Memfault using
+[chunk](data-from-firmware-to-the-cloud.mdx) that can be sent to the Memfault
+cloud. Since not all devices have direct internet connectivity, `print_chunk`
+encodes the chunk into shell command that sends it to Memfault using
 [`curl`](https://curl.haxx.se/):
 
 ```
@@ -228,8 +228,8 @@ mflt>
 ```
 
 ⚠️ The `print_chunk` command has the side effect of clearing the data. After the
-[packetizer](data-from-firmware-to-cloud.mdx) consumes the coredump storage and
-the event storage, they will both be cleared and ready for new data.
+[packetizer](data-from-firmware-to-the-cloud.mdx) consumes the coredump storage
+and the event storage, they will both be cleared and ready for new data.
 
 ⚠️ If the upload succeeds but you don't see the data processed on Memfault, go
 to the Issues page and click on "Queue Status" to see the status of recent
@@ -255,8 +255,8 @@ Memfault cloud servers. A valid Memfault project key must also be configured.
 See the instructions in the reference implementation for how to do this.
 
 ⚠️ The `post_chunk` command has the side effect of clearing the data. After the
-[packetizer](data-from-firmware-to-cloud.mdx) consumes the coredump storage and
-the event storage, they will both be cleared and ready for new data.
+[packetizer](data-from-firmware-to-the-cloud.mdx) consumes the coredump storage
+and the event storage, they will both be cleared and ready for new data.
 
 ⚠️ If the upload succeeds but you don't see the data processed on Memfault, you
 probably need to
