@@ -52,7 +52,8 @@ HTTP API is the only integration work which needs to be done to get the data
   [chunks HTTP API](https://api-docs.memfault.com/) sequentially, in the order
   in which the Firmware SDK's packetizer created the chunks. When posting chunks
   concurrently, ensure that requests for _the same device_ cannot happen
-  concurrently, to avoid violating the ordering requirement.
+  concurrently, to avoid violating the ordering requirement. Out of order chunks
+  will be best-effort reordered on the Memfault server.
 - To minimize overhead and optimize throughput, batch-upload chunks to the
   [chunks HTTP API](https://api-docs.memfault.com/) using `multipart/mixed`
   requests and re-use HTTP connections to Memfault's servers.
