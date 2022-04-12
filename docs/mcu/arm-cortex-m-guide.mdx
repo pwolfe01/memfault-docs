@@ -217,3 +217,34 @@ size_t memfault_platform_sanitize_address_range(void *start_addr,
   return 0;
 }
 ```
+
+### FreeRTOS Task Decoding Not Working
+
+This is often due to missing variables in the uploaded coredump/symbol file.
+
+If the device is not capturing the entirely of RAM for a coredump, make sure
+that the FreeRTOS task state is captured- see this file for instructions:
+
+[`${MEMFAULT_SDK_ROOT}/ports/freertos/src/memfault_freertos_ram_regions.c`](https://github.com/memfault/memfault-firmware-sdk/blob/13f3a9bb348b6545e1091513fa282f8809f15134/ports/freertos/src/memfault_freertos_ram_regions.c)
+
+The task decoder relies on the following symbols to be present in the coredump
+and symbol file:
+
+- `uxCurrentNumberOfTasks`
+- `pxCurrentTCB`
+- `uxTopUsedPriority`
+- `pxReadyTasksLists`
+- `xDelayedTaskList1`
+- `xDelayedTaskList2`
+- `xPendingReadyList`
+- `TCB_t`
+
+There were several releases of FreeRTOS that did not include
+`uxTopUsedPriority`, see this GitHub issue:
+
+https://github.com/FreeRTOS/FreeRTOS-Kernel/issues/33#issue-583304006
+
+If the version of FreeRTOS in use doesn't include the fix, add the sample file
+(for example, [this
+copy](https://github.com/arduino/OpenOCD/blob/c404ff5d3a2ec568daa106455845dd403b08dab4/contrib/rtos-helpers/FreeRTOS-openocd.c))
+and relevant linker flags.
