@@ -91,13 +91,13 @@ Local core dump file:
 	0xe000ed24 - 0xe000ed40 is load2
 ```
 
-# Installing multi-architecture GDB with Conda
+## Installing multi-architecture GDB with Conda
 
 Memfault publishes GDB binaries using the [Conda](https://conda.io/) package
 management system. If you do not have a Conda installer set up, check out
 [these installation instructions](https://docs.conda.io/en/latest/miniconda.html).
 
-## environment.yml
+### environment.yml
 
 Create a file `environment.yml` with these contents:
 
@@ -111,7 +111,7 @@ dependencies:
   - python=3.6.9
 ```
 
-## Create the Conda environment
+### Create the Conda environment
 
 Run this command to install GDB and the dependencies from the `environment.yml`
 file:
@@ -127,7 +127,7 @@ You can override this by passing `-n <NAME>` to the "create" command.
 
 :::
 
-## Activate the Conda environment
+### Activate the Conda environment
 
 To activate the Conda environment in your current shell, just run:
 
@@ -137,7 +137,7 @@ $ conda activate memfault-multi-arch-gdb
 
 This commands adds `gdb` to your shell's `PATH`.
 
-## Run GDB
+### Run GDB
 
 Once activated, you can run `gdb`:
 
