@@ -33,7 +33,7 @@ module.exports = {
                 {
                     to: "docs/platform/memfault-terminology",
                     activeBasePath: "docs/platform",
-                    label: "Dashboard",
+                    label: "Web Application",
                     position: "left",
                 },
                 {
