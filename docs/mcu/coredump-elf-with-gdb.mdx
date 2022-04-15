@@ -151,3 +151,26 @@ For help, type "help".
 Type "apropos word" to search for commands related to "word".
 (gdb)
 ```
+
+## Multi-architecture GDB Using Docker
+
+There is a Docker image available as an alternative to Conda, if conda install
+is problematic or the package is not available for a particular platform.
+
+To use it, first install Docker:
+
+<https://docs.docker.com/get-docker/>
+
+Then run this command from a terminal (on Windows, WSL2 recommended):
+
+```bash
+# the first line below is the docker run command. the second line is the gdb
+# command running from the current working directory, which is mounted inside
+# the container ('--volume' argument)
+$ docker run --rm --tty --interactive --volume "$PWD":/data memfault:multi-arch-gdb \
+  gdb --se example/symbol_file.elf --core example/coredump.elf
+```
+
+Example usage:
+
+[![](/img/docs/mcu/coredump-elf-with-gdb-docker-example.png)](/img/docs/mcu/coredump-elf-with-gdb-docker-example.png)
