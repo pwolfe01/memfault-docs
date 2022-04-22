@@ -190,23 +190,22 @@ to download the Release on a device!
   <TabItem value="swupdate">
 
 Memfault supports [SWUpdate][3] as a way to update the software on an Embedded
-Linux device using its [Suricatta][4] daemon in [general-purpose HTTP server
-mode][5].
+Linux device using its [Suricatta][4] daemon. It communicates with the server
+using the hawkBit[5] API standard. 
 
 Suricatta is a daemon mode of SWUpdate that runs on a device and polls a remote
-server for updates, downloads them, and installs them. It then reboots the
-system with updated software.
+server for updates, downloads them, and installs them. Once an update is
+downloaded, SWUpdate reboots the system with updated software.
 
-#### Building SWUpdate to include Suricatta in general-purpose HTTP server mode
+#### Building SWUpdate to include Suricatta
 
 Find the following options, either via `menuconfig` or by modifying `defconfig`:
 
 - `CONFIG_SURICATTA=y`: configures SWUpdate to include the Suricatta daemon in
   the build.
-- `CONFIG_SURICATTA_GENERAL=y`: configures Suricatta to use general-purpose HTTP
-  server mode.
-- Unset `CONFIG_SURICATTA_HAWKBIT`: SWUpdate works either in general-purpose
-  HTTP server mode or in Hawkbit mode. Disable Hawkbit support.
+- `CONFIG_SURICATTA_HAWKBIT=y`: configures Suricatta to use hawkBit server mode.
+- Unset `CONFIG_SURICATTA_GENERAL`: SWUpdate works either in hawkBit mode or a
+general-purpose HTTP server mode. Disable general-purpose HTTP server support.
 
 #### Configuring the Suricatta on-device daemon to use Memfault
 
@@ -215,6 +214,7 @@ Three sections are required in the configuration file:
 - `globals`: contains general settings for SWUpdate that are required for the
   daemon to start. In the example below, we've configured SWUpdate to output
   plenty of logs. You may want to tone this down for a production build.
+# TODO: update this for hawkBit
 - `gservice`: through which Suricatta's general-purpose HTTP server mode is
   configured.
 - `identify`: is used to uniquely identify the device in Memfault servers, and
@@ -280,18 +280,7 @@ Memfault.
 We have prepared [a `Dockerfile`][8] that serves as an example of using
 `meta-memfault-swupdate-example` as part of a Poky build. Read more about
 `meta-memfault-swupdate-example` in [the project `README`][6].
-
-[1]: https://github.com/sbabic/meta-swupdate-boards
-[2]: https://www.yoctoproject.org/
-[3]: https://sbabic.github.io/swupdate
-[4]: https://sbabic.github.io/swupdate/suricatta.html
-[5]:
-  https://sbabic.github.io/swupdate/suricatta.html?highlight=general#support-for-general-purpose-http-server
-[6]:
-  https://github.com/memfault/memfault-yocto/tree/main/meta-memfault-swupdate-example
-[7]: https://sbabic.github.io/swupdate/building-with-yocto.html
-[8]: https://github.com/memfault/memfault-yocto/blob/main/Dockerfile.swupdate
-
+  
   </TabItem>
   <TabItem value="custom">
 
@@ -368,3 +357,10 @@ memfault-reason: latest
 Aborting or Rolling back from a Release which has a firmware regression is easy
 to do from the UI. Simply navigate to "Fleet" -> "Cohorts", click on the picker
 under "Options" and select the "Abort Rollout" option.
+
+[3]: https://sbabic.github.io/swupdate
+[4]: https://sbabic.github.io/swupdate/suricatta.html
+[5]: https://www.eclipse.org/hawkbit/apis/ddi_api/
+[6]: https://github.com/memfault/memfault-yocto/tree/main/meta-memfault-swupdate-example
+[7]: https://sbabic.github.io/swupdate/building-with-yocto.html
+[8]: https://github.com/memfault/memfault-yocto/blob/main/Dockerfile.swupdate
