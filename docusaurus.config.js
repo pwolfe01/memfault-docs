@@ -22,6 +22,7 @@ module.exports = {
         },
         prism: {
             theme: require("prism-react-renderer/themes/oceanicNext"),
+            additionalLanguages: ["linker-script"],
         },
         navbar: {
             title: "Memfault Docs",
