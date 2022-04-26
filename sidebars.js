@@ -122,6 +122,7 @@ module.exports = {
             items: [
                 "linux/introduction",
                 "linux/linux-releases-integration-guide",
+                "linux/linux-memfault-hawkbit-comparison",
             ],
         },
         {

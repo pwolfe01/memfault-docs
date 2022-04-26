@@ -1,0 +1,26 @@
+---
+id: linux-memfault-hawkbit-comparison
+title: Memfault OTA for hawkBit users
+sidebar_label: Memfault OTA for hawkBit users
+---
+
+Memfault's Embedded Linux OTA solution is hawkBit API compatable. For
+information on Linux OTA, please see
+[Embedded Linux OTA Integration Guide](/docs/linux/linux-releases-integration-guide).
+
+This page is aimed at users who are already familiar with the hawkBit API and
+UI. We demonstrate the differences between Memfault and hawkBit.
+
+| hawkBit             | Memfault      | What it's used for                                                                                                                                                                                                                         |
+| ------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Tenant              | Project ID    | Namespacing groups of devices.                                                                                                                                                                                                             |
+| Provisioning Target | Device        | System to update.                                                                                                                                                                                                                          |
+| Controller ID       | Device serial | Identifying specific devices. This value must be unique per Project.                                                                                                                                                                       |
+| Artifact            | OTA Payload   | Uploaded binary file. A Memfault OTA Payload targets a specific Software Type.                                                                                                                                                             |
+| Software Module     | OTA Payload   | A hawkBit Software Module is a versioned collection of Artifacts. A Software Module has an assignment (firmware/OS or software/Application). Memfault OTA Payloads include a Software Type, removing the need to group by Software Module. |
+| Distribution        | Release       | A hawkBit Distribution is a versioned set of Software Modules. A Memfault Release is a versioned set of OTA Payloads.                                                                                                                      |
+
+## Reference
+
+- hawkBit API docs: https://www.eclipse.org/hawkbit/apis/ddi_api
+- hawkBit Management UI: https://www.eclipse.org/hawkbit/ui/
