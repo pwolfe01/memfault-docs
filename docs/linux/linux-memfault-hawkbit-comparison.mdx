@@ -9,10 +9,22 @@ Device Integration (DDI) API compatable. For information on Linux OTA, please
 see
 [Embedded Linux OTA Integration Guide](/docs/linux/linux-releases-integration-guide).
 
+For general information about Memfault OTA, including all the features
+available, please see our [OTA Update docs](/docs/platform/ota).
+
 This page is aimed at users who are already familiar with the
 [hawkBit DDI API](https://www.eclipse.org/hawkbit/apis/ddi_api/) and
 [Management UI](https://www.eclipse.org/hawkbit/ui/). We demonstrate the
 differences between Memfault and hawkBit.
+
+## Differences between the platforms
+
+For migrations to Memfault, hawkBit Clients on the device remain unchanged but
+need to be configured to point to Memfault; Memfault acts as a hawkBit update
+server by implementing the hawkBit DDI API.
+
+Users leverage the Memfault Web Application as a replacement of the hawkBit
+Management UI.
 
 | hawkBit             | Memfault                                                                       | What it's used for                                                                                                                                                                                                                         |
 | ------------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -24,8 +36,9 @@ differences between Memfault and hawkBit.
 | Distribution        | [Release](/docs/platform/ota)                                                  | A hawkBit Distribution is a versioned set of Software Modules. A Memfault Release is a versioned set of OTA Payloads.                                                                                                                      |
 | Target Filter       | [Cohort](/docs/platform/projects-and-fleets#cohorts)                           | Identifying which devices to update in a Release.                                                                                                                                                                                          |
 
-For general information about Memfault OTA, including all the features
-available, please see our [OTA Update docs](/docs/platform/ota).
+Memfault does not implement the hawkBit Management API; for headless OTA
+management, one should exercise the
+[Memfault Releases API](https://api-docs.memfault.com/?__hstc=76629258.1d46e440b11097fd49358ba7ed143381.1651010291525.1651010291525.1651092778738.2&__hssc=76629258.3.1651092778738&__hsfp=2826783498#8f4664ba-92cf-4b9d-bf07-89bfdacf11d4).
 
 ## Reference
 
