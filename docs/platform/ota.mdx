@@ -26,23 +26,12 @@ To deliver OTA Updates:
 
 - Memfault users have different ways to configure which OTA payloads to
   distribute to which devices.
-- Each device polls Memfault's [Latest Release endpoint][latest-endpoint].
+- Each device polls Memfault's [Device OTA Endpoint](#device-ota-endpoint).
 - Memfault uses [various inputs](#updating-behavior), predominantly the current
   Software Version of the device, to decide what to return.
 - Each device may receive information about a new available payload.
 - Ultimately, this process is meant to replace or update the software running on
   a device.
-
-Read more about integrating with Memfault's OTA Updates system on each supported
-platform:
-
-- [OTA Updates for MCU devices][docs-mcu],
-- [OTA Updates for Android (AOSP)][docs-android],
-- [OTA Updates for Embedded Linux][docs-linux].
-
-[docs-mcu]: /docs/mcu/releases-integration-guide
-[docs-android]: /docs/android/android-releases-integration-guide
-[docs-linux]: /docs/linux/linux-releases-integration-guide
 
 Read about related Memfault-specific terminology that you may need to refer to
 to better grasp the contents of this document:
@@ -52,6 +41,23 @@ to better grasp the contents of this document:
   to understand Software Version ordering.
 - Generic
   [Memfault terminology documentation](/docs/platform/memfault-terminology).
+
+### Device OTA Endpoint
+
+Memfault provides different types of Device OTA Endpoints; which you use depends
+on your requirements and existing setup.
+
+| Device Family                                  | Typical OTA Update Endpoint                                                            |
+| ---------------------------------------------- | -------------------------------------------------------------------------------------- |
+| [OTA Updates for MCU devices][docs-mcu]        | [Latest Release Endpoint][latest-endpoint]                                             |
+| [OTA Updates for Android (AOSP)][docs-android] | [Latest Release Endpoint][latest-endpoint]                                             |
+| [OTA Updates for Embedded Linux][docs-linux]   | [hawkBit DDI Compatable API][docs-linux] or [Latest Release Endpoint][latest-endpoint] |
+
+[docs-mcu]: /docs/mcu/releases-integration-guide
+[docs-android]: /docs/android/android-releases-integration-guide
+[docs-linux]: /docs/linux/linux-releases-integration-guide
+
+## Release Types
 
 Memfault provides two Release entities to solve the challenges of over-the-air
 updates: Full Releases and Delta Releases.
@@ -151,7 +157,7 @@ percentage.
 
 ## Updating Behavior
 
-When a device queries the [Latest Release endpoint][latest-endpoint], the
+When a device queries the [Device OTA Endpoint](#device-ota-endpoint), the
 Memfault platform needs to decide which OTA payload to send it. This section
 covers the behavior of our backend when receiving one such query.
 
@@ -172,7 +178,8 @@ details** view.
 
 ### Applicability of an OTA Release
 
-Along with the query to the Latest Release endpoint, a device sends:
+Along with the query to the [Device OTA Endpoint](#device-ota-endpoint), a
+device sends:
 
 - the Device ID (often the device serial number) to determine its Cohort,
 - the [Software Type][terminology] to determine the set of Releases against
@@ -253,7 +260,7 @@ view. To add an OTA payload, click on the _Add OTA payload to Release_ button on
 the top-right corner of the _OTA payloads_ card.
 
 Alongside the actual payload file, you'll be prompted for different inputs that
-a device querying the [Latest Release endpoint][latest-endpoint] must match for
+a device querying the [Device OTA Endpoint](#device-ota-endpoint) must match for
 this Release to be applicable to it.
 
 See the [updating behavior](#updating-behavior) section for more details.
