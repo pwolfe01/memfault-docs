@@ -42,21 +42,6 @@ to better grasp the contents of this document:
 - Generic
   [Memfault terminology documentation](/docs/platform/memfault-terminology).
 
-### Device OTA Endpoint
-
-Memfault provides different types of Device OTA Endpoints; which you use depends
-on your requirements and existing setup.
-
-| Device Family                                  | Typical OTA Update Endpoint                                                            |
-| ---------------------------------------------- | -------------------------------------------------------------------------------------- |
-| [OTA Updates for MCU devices][docs-mcu]        | [Latest Release Endpoint][latest-endpoint]                                             |
-| [OTA Updates for Android (AOSP)][docs-android] | [Latest Release Endpoint][latest-endpoint]                                             |
-| [OTA Updates for Embedded Linux][docs-linux]   | [hawkBit DDI Compatable API][docs-linux] or [Latest Release Endpoint][latest-endpoint] |
-
-[docs-mcu]: /docs/mcu/releases-integration-guide
-[docs-android]: /docs/android/android-releases-integration-guide
-[docs-linux]: /docs/linux/linux-releases-integration-guide
-
 ## Release Types
 
 Memfault provides two Release entities to solve the challenges of over-the-air
@@ -425,3 +410,18 @@ Release endpoint as this device.
 
 [latest-endpoint]:
   https://api-docs.memfault.com/#89d8dfa4-10d7-41d3-9c20-7cc356030c4b
+
+### Device OTA Endpoint
+
+Memfault provides different types of Device OTA Endpoints; which gets uses
+depends on your requirements and existing setup.
+
+| Device Family                                  | Typical OTA Update Endpoint                                                                                                                                                                     |
+| ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [OTA Updates for MCU devices][docs-mcu]        | The MCU SDK uses the [Latest Release Endpoint][latest-endpoint].                                                                                                                                |
+| [OTA Updates for Android (AOSP)][docs-android] | The Android Bort SDK [Latest Release Endpoint][latest-endpoint].                                                                                                                                |
+| [OTA Updates for Embedded Linux][docs-linux]   | SWUpdate users typically use our [hawkBit DDI Compatable API][docs-linux] (recommended!), or anyone can choose to make generic HTTP requests to our [Latest Release Endpoint][latest-endpoint]. |
+
+[docs-mcu]: /docs/mcu/releases-integration-guide
+[docs-android]: /docs/android/android-releases-integration-guide
+[docs-linux]: /docs/linux/linux-releases-integration-guide
