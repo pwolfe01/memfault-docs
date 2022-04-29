@@ -161,13 +161,19 @@ To use it, first install Docker:
 
 <https://docs.docker.com/get-docker/>
 
-Then run this command from a terminal (on Windows, WSL2 recommended):
+Then run this command from a terminal:
 
 ```bash
-# the first line below is the docker run command. the second line is the gdb
-# command running from the current working directory, which is mounted inside
-# the container ('--volume' argument)
-$ docker run --rm --tty --interactive --volume "$PWD":/data memfault:multi-arch-gdb \
+# the first line in each example below is the docker run command. the second
+# line is the gdb command running from the current working directory, which is
+# mounted inside the container ('--volume' argument)
+
+# Powershell or bash:
+$ docker run --rm --tty --interactive --volume "${PWD}":/data memfault:multi-arch-gdb \
+  gdb --se example/symbol_file.elf --core example/coredump.elf
+
+# Windows cmd.exe:
+$ docker run --rm --tty --interactive --volume "%cd%":/data memfault:multi-arch-gdb \
   gdb --se example/symbol_file.elf --core example/coredump.elf
 ```
 
