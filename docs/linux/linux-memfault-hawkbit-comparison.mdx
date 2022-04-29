@@ -5,7 +5,7 @@ sidebar_label: Memfault OTA for hawkBit users
 ---
 
 Memfault's Embedded Linux Over-the-Air updates (OTA) solution is hawkBit Direct
-Device Integration (DDI) API compatable. For information on Linux OTA, please
+Device Integration (DDI) API compatible. For information on Linux OTA, please
 see [Embedded Linux OTA Integration Guide][memfault-linux-ota-guide].
 
 For general information about Memfault OTA, including all the features
@@ -14,7 +14,7 @@ available, please see our [OTA Update docs][memfault-release-management-ui].
 This page is aimed at users who are already familiar with the [hawkBit DDI
 API][hawkbit-ddi-api] and [Management UI][hawkbit-management-ui].
 
-## Differences between the platforms
+## Differences between hawkBit and Memfault
 
 For migrations to Memfault, hawkBit Clients on the device remain unchanged but
 need to be configured to point to Memfault;
@@ -27,6 +27,12 @@ a replacement of the [hawkBit Management UI][hawkbit-management-ui].
 Memfault does not implement the [hawkBit Management
 API][hawkbit-management-api]; for headless OTA management, one should exercise
 the [Memfault Releases API][memfault-linux-ota-guide].
+
+Memfault relies on the [Gateway Security Token
+Authentication][hawkbit-ddi-api-security-token-auth] system as defined by
+hawkBit.
+
+Here is an overview of hawkBit concepts and how they map to Memfault:
 
 | hawkBit                                                                                          | Memfault                                                                       | What it's used for                                                                                                                                                                                                                                                 |
 | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -42,6 +48,8 @@ the [Memfault Releases API][memfault-linux-ota-guide].
 - [Memfault Terminology](/docs/platform/memfault-terminology)
 
 [hawkbit-ddi-api]: https://www.eclipse.org/hawkbit/apis/ddi_api
+[hawkbit-ddi-api-security-token-auth]:
+  https://www.eclipse.org/hawkbit/concepts/authentication
 [hawkbit-management-ui]: https://www.eclipse.org/hawkbit/ui
 [hawkbit-management-api]: https://www.eclipse.org/hawkbit/apis/management_api
 [memfault-release-management-ui]: /docs/platform/ota
