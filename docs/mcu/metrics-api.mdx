@@ -62,6 +62,7 @@ out over a bluetooth connection.
 // File $PROJECT_ROOT/third_party/memfault/memfault_metrics_heartbeat_config.def
 MEMFAULT_METRICS_KEY_DEFINE(MainTaskStackHwm, kMemfaultMetricType_Unsigned)
 MEMFAULT_METRICS_KEY_DEFINE(BtBytesSent, kMemfaultMetricType_Unsigned)
+MEMFAULT_METRICS_STRING_KEY_DEFINE(ManufDate, sizeof("2022-05-09"))
 ```
 
 ### Dependency Function Overview
@@ -95,6 +96,33 @@ void bluetooth_driver_send_bytes(const void *data, size_t data_len) {
   // [ ... code to send bluetooth data ... ]
 }
 ```
+
+String metrics are stored in the same heartbeat snapshot. The process for
+setting a string metric might look like this, for example:
+
+```c
+#include "memfault/metrics/metrics.h"
+void set_manufacturing_date_metric(const char *manufacturing_date) {
+  // set the manufacturing date string metric
+  memfault_metrics_heartbeat_set_string(MEMFAULT_METRICS_KEY(ManufDate),
+                                        manufacturing_date);
+
+  // optionally, trigger a heartbeat to immediately capture the metric record
+  memfault_metrics_heartbeat_debug_trigger();
+
+  // optionally, trigger an upload of Memfault chunk data
+  // [ ... code to trigger memfault upload ... ]
+}
+```
+
+:::note Note
+
+If a string metric is not reported in a heartbeat interval, the previously
+reported value will not be overwritten by Memfault's backend. This can be used
+as a bandwidth optimization by only reporting values on bootup or when they
+change.
+
+:::
 
 ### Including Sampled Values in a Heartbeat
 
