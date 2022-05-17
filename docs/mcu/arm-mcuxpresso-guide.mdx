@@ -1,0 +1,359 @@
+---
+id: arm-mcuxpresso-guide
+title: MCUXpresso Getting Started Guide for ARM
+sidebar_label: MCUXpresso SDK for i.MX RT
+---
+
+This tutorial will go over integrating the
+[Memfault Firmware SDK](https://github.com/memfault/memfault-firmware-sdk) into
+an NXP RT1060 project using NXP's MCUXpresso IDE.
+
+:::note
+
+Note: these instructions were written using `mcuxpressoide-11.4.0_6224.x86_64`
+on ubuntu 22.04, using the
+[MIMXRT1060-EVKB](https://www.nxp.com/part/MIMXRT1060-EVKB#/)
+
+:::
+
+The full example project can be found here:
+[https://github.com/memfault/mcuxpresso-rt1060-example](https://github.com/memfault/mcuxpresso-rt1060-example)
+
+These instructions should also apply to other NXP RT family boards (ex:
+MIMXRT1020-EVK), though there may be adjustments needed to the reset logic or
+linker script.
+
+## Overview
+
+This document describes how to add the Memfault SDK to an MCUXpresso project.
+The strategy documented here follows these high-level steps:
+
+**Part 1: generate a sample project**
+
+1. Download MCUXpresso SDK from NXP
+2. Generate a sample project from that SDK
+
+**Part 2: add the Memfault SDK**
+
+1. Add the Memfault SDK sources to the project using the `eclipse_patch.py`
+   script from the Memfault SDK
+2. Configure a few build settings (gnu build id, debug level)
+3. (optional, for RT1060 network demo) Add the
+   [example HTTPS client port](https://github.com/memfault/mcuxpresso-rt1060-example/blob/e1302d2d832ade87cbc49974b270b11fef3c3891/lwip_httpscli_mbedTLS/httpsclient.c)
+   and associated
+   [application changes](https://github.com/memfault/mcuxpresso-rt1060-example/blob/e1302d2d832ade87cbc49974b270b11fef3c3891/source/lwip_httpscli_mbedTLS_freertos.c)
+   for the RT1060 LwIP project, and configure Memfault Project Key for uploading
+   Memfault data from the EVK
+
+## Part 1: Setup and Verify LwIP Sample Application
+
+:::note
+
+👉 This section describes setting up the `lwip_httpscli_mbedTLS_freertos` sample
+project provided by the NXP SDK.
+
+The integration steps in [Part 2](#part-2-integrate-the-memfault-sdk) can be
+applied to other projects (including projects not based on an NXP sample), so
+skip to that section if necessary.
+
+:::
+
+1. install mcuxpresso:
+   [https://www.nxp.com/design/software/development-software/mcuxpresso-software-and-tools-/mcuxpresso-integrated-development-environment-ide:MCUXpresso-IDE](https://www.nxp.com/design/software/development-software/mcuxpresso-software-and-tools-/mcuxpresso-integrated-development-environment-ide:MCUXpresso-IDE)
+2. download the SDK for the MIMXRT1060-EVKB (select all to download all
+   components, and select “mcuxpresso” as the target toolchain). I downloaded
+   `SDK_2.10.1_MIMXRT1060-EVKB` (**NOTE: v2.11.1 was not compatible with
+   MCUXpresso v11.4.0**)
+
+   ![Untitled](/img/docs/mcu/mcuxpresso/download_sdk-min.png)
+
+3. import the SDK into MCUXpresso:
+
+   ![Untitled](/img/docs/mcu/mcuxpresso/installed_sdks-min.png)
+
+4. to create the sample project, click “Import SDK example(s)...”, then select
+   our board, and select `lwip_httpscli_mbedTLS_freertos`:
+
+   ![Untitled](/img/docs/mcu/mcuxpresso/sdk_import_wizard-min.png)
+
+5. default settings in the next screen are all OK, **except for**:
+   1. **Set library type (and hosting variant)**: change it to “NewlibNano
+      (none)”
+   2. **Include semihost HardFault handler**: uncheck
+6. build the sample with “Project→Build all”
+7. flash the sample with “Run→Debug as...→MCUXpresso IDE LinkServer (inc.
+   CMSIS-DAP) probes”, assuming you have the default CMSIS-DAP debug firmware on
+   the EVK
+8. open a serial terminal (example below is using pyserial):
+
+   ```bash
+   ❯ pyserial-miniterm --raw /dev/ttyACM0 115200
+   ```
+
+9. pressing “Run” in MCUXpresso, you should see the following output in the
+   serial terminal:
+
+   ```bash
+   Initializing PHY...
+   ```
+
+10. connect an ethernet cable to a router to see the demo proceed
+
+## Part 2: Integrate the Memfault SDK
+
+:::note
+
+👉 This section describes how to add the Memfault SDK sources. In this example,
+the Memfault Demo CLI is connected to the debug UART in order to test the
+Memfault functionality, and an HTTPS client is enabled over the Ethernet
+connection for uploading Memfault data.
+
+Note that the provided HTTPS client example is specific to the RT1060 EVK sample
+app; other boards will potentially require a different connectivity
+implementation.
+
+:::
+
+### Add the Memfault Sources and Build Flags
+
+1. download the Memfault SDK. either copy the folder into the project, or
+   preferably, add it as a Git submodule:
+
+   ```bash
+   ❯ git submodule add https://github.com/memfault/memfault-firmware-sdk.git memfault-firmware-sdk
+   ```
+
+1. run the eclipse patch script to add the Memfault sources:
+
+   ```bash
+   # select the "demo" component in addition to the default ones
+   ❯ python memfault-firmware-sdk/scripts/eclipse_patch.py --project-dir . --memfault-sdk-dir memfault-firmware-sdk --components core,util,metrics,panics,demo
+   ```
+
+1. copy in the platform template files:
+
+   ```bash
+   ❯ cp memfault-firmware-sdk/ports/templates/* source/
+   ```
+
+1. refresh the project (right-click on the Project, “Refresh”)
+1. to enable the Memfault SDK sources in the build, uncheck “Exclude from build”
+   for the “memfault_components” virtual folder:
+
+   ![Untitled](/img/docs/mcu/mcuxpresso/uncheck_exclude_from_build-min.png)
+
+1. add the `memfault_platform_ram_backed_coredump.c` source file to a new
+   virtual folder
+
+   1. create a new virtual folder. this is to not conflict with the sources the
+      `eclipse_patch.py` script operates on, so that script can be re-run in the
+      future (eg if the Memfault SDK is updated) without affecting these
+      port-specific sources, so name it `memfaultport_components` (note the lack
+      of `_` separator)
+   2. add the source file, which is located at
+      `memfault-firmware-sdk/ports/panics/src/memfault_platform_ram_backed_coredump.c`,
+      by dragging from a file explorer window into the virtual folder:
+
+      ![Untitled](/img/docs/mcu/mcuxpresso/virtual_port_folder-min.png)
+
+      ![Untitled](/img/docs/mcu/mcuxpresso/add_ram_backed_coredump-min.png)
+
+   3. right-click on the new virtual folder, select “Properties”, and uncheck
+      “Exclude from build”
+
+1. add the following stubs to `source/memfault_platform_port.c`:
+
+   ```c
+   #include <stdio.h>
+
+   #include "fsl_debug_console.h"
+
+   void memfault_platform_log(eMemfaultPlatformLogLevel level, const char *fmt,
+                              ...) {
+     const char *lvl_str;
+     switch (level) {
+       case kMemfaultPlatformLogLevel_Debug:
+         lvl_str = "D";
+         break;
+
+       case kMemfaultPlatformLogLevel_Info:
+         lvl_str = "I";
+         break;
+
+       case kMemfaultPlatformLogLevel_Warning:
+         lvl_str = "W";
+         break;
+
+       case kMemfaultPlatformLogLevel_Error:
+         lvl_str = "E";
+         break;
+
+       default:
+         return;
+         break;
+     }
+
+     va_list args;
+     va_start(args, fmt);
+
+     char log_buf[128];
+     vsnprintf(log_buf, sizeof(log_buf), fmt, args);
+
+     PRINTF("[%s] MFLT: %s\n", lvl_str, log_buf);
+
+     va_end(args);
+   }
+
+   bool memfault_platform_metrics_timer_boot(
+       uint32_t period_sec, MemfaultPlatformTimerCallback callback) {
+     (void)period_sec, (void)callback;
+     // Schedule a timer to invoke callback() repeatedly after period_sec
+     return true;
+   }
+
+   uint64_t memfault_platform_get_time_since_boot_ms(void) {
+     // Return time since boot in ms, this is used for relative timings.
+     return 0;
+   }
+
+   MEMFAULT_PUT_IN_SECTION(".noinit.mflt_reboot_tracking")
+   static uint8_t s_reboot_tracking[MEMFAULT_REBOOT_TRACKING_REGION_SIZE];
+
+   MEMFAULT_WEAK void memfault_platform_reboot_tracking_boot(void) {
+     sResetBootupInfo reset_info = {0};
+     memfault_reboot_reason_get(&reset_info);
+     memfault_reboot_tracking_boot(s_reboot_tracking, &reset_info);
+   }
+
+   void memfault_reboot_reason_get(sResetBootupInfo *info) {
+     const uint32_t reset_cause = 0;  // TODO: Populate with MCU reset reason
+     eMemfaultRebootReason reset_reason = kMfltRebootReason_Unknown;
+
+     // TODO: Convert MCU specific reboot reason to memfault enum
+
+     *info = (sResetBootupInfo){
+         .reset_reason_reg = reset_cause,
+         .reset_reason = reset_reason,
+     };
+   }
+   ```
+
+1. add `memfault_platform_boot();` to `main()` (located in
+   `source/lwip_httpscli_mbedTLS_freertos.c`.
+1. confirm the project now builds.
+
+### Add GNU Build ID
+
+1. add GNU build id:
+
+   1. add this flag to `source/memfault_platform_config.h`:
+
+      ```c
+      #define MEMFAULT_USE_GNU_BUILD_ID 1
+      ```
+
+   2. add the following file at `source/gnu_build_id.ld`:
+
+      ```c
+      /*
+        Custom section to be included in the linker
+        command file, to support GNU build id.
+      */
+
+      SECTIONS
+      {
+          .note.gnu.build-id :
+          {
+              __start_gnu_build_id_start = .;
+              KEEP(*(.note.gnu.build-id))
+          }
+      }
+      INSERT AFTER .text;
+      ```
+
+   3. add the necessary linker flags: right-click project→Properties. in the
+      left pane, open “C/C++ Build”→”Settings”, then select MCU
+      Linker→Miscellaneous, and add the `--build-id` build flag:
+
+      ![Untitled](/img/docs/mcu/mcuxpresso/build_id-min.png)
+
+   4. add a second flag to add the linker script fragment file to the build:
+      `-T "${workspace_loc:/${ProjName}/source/gnu_build_id.ld}"`
+
+2. set Debug Level to `-g3` in “MCU C Compiler”→Settings:
+
+   ![Untitled](/img/docs/mcu/mcuxpresso/set_debug_level-min.png)
+
+3. clean and build. flash the project to the board and confirm the startup text
+   appears in the serial console:
+
+   ```plaintext
+   [I] MFLT: GNU Build ID: 63a58c3567c22fd6786adbc4cc186d258e66efe7
+   [I] MFLT: S/N: DEMOSERIAL
+   [I] MFLT: SW type: app-fw
+   [I] MFLT: SW version: 1.0.0
+   [I] MFLT: HW version: dvt1
+   [I] MFLT: Memfault Initialized!
+   ```
+
+### Enable HTTPS Client and Test
+
+1. the last step is to pick up the necessary port + https client changes, which
+   can be found under the `source/`directory in this repo:
+   [https://github.com/memfault/mcuxpresso-rt1060-example](https://github.com/memfault/mcuxpresso-rt1060-example)
+
+   1. copy the necessary files:
+      1. everything under `source/`
+      2. `lwip_httpscli_mbedTLS/httpsclient.c`
+   2. configure a Memfault project key by replacing the placeholder text in
+      `lwip_httpscli_mbedTLS/httpsclient.c`. The project key is located under
+      Settings in the Memfault project, see
+      [https://docs.memfault.com/docs/mcu/export-chunks-over-console/#grab-project-key-from-memfault-ui](https://docs.memfault.com/docs/mcu/export-chunks-over-console/#grab-project-key-from-memfault-ui)
+
+      ```c
+      // Memfault project key
+      const char *memfault_project_key = "<YOUR PROJECT KEY HERE>";
+      ```
+
+   3. flashing this should show a new `post_chunks` console command when running
+      `help`:
+
+      ```plaintext
+      [I] MFLT: GNU Build ID: 63a58c3567c22fd6786adbc4cc186d258e66efe7
+      [I] MFLT: S/N: DEMOSERIAL
+      [I] MFLT: SW type: app-fw
+      [I] MFLT: SW version: 1.0.0
+      [I] MFLT: HW version: dvt1
+      [I] MFLT: Memfault Initialized!
+
+      mflt> help
+      get_core: Get coredump info
+      clear_core: Clear an existing coredump
+      crash: Trigger a crash
+      trigger_logs: Trigger capture of current log buffer contents
+      drain_chunks: Flushes queued Memfault data. To upload data see https://mflt.io/posting-chunks-with-gdb
+      trace: Capture an example trace event
+      get_device_info: Get device info
+      reboot: Reboot system and tracks it with a trace event
+      export: Export base64-encoded chunks. To upload data see https://mflt.io/chunk-data-export
+      post_chunks: Upload chunks to Memfault
+      help: Lists all commands
+      ```
+
+2. test out the demo commands, eg `crash`, `reboot`, `post_chunks`. The
+   `post_chunks` command requires an ethernet cable to be connected, with
+   network access to the internet.
+
+   :::note
+
+   Note: be sure to detach the debugger before running the `crash` or `reboot`
+   commands. Depending on configuration, the debugger may prevent the board from
+   resetting correctly!
+
+   :::
+
+3. to see decoded data on app.memfault.com, the Symbol File will need to be
+   uploaded. typically the symbol file will be a `.axf` file named from the
+   project, for example `Debug/mcuxpresso-rt1060-example.axf`. symbol files can
+   be uploaded through the Memfault web ui or
+   [using the Memfault CLI tool](/docs/mcu/symbol-file-build-ids#upload-symbol-files-cli).
