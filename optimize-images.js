@@ -85,16 +85,16 @@ function printHelp() {
   This tool produces minified copies with -min appended to their names
   before the extension and optionally fixes documents that use the
   unoptimized version of images (see '--fix').
-  
+
   If you run with '--fix', make sure to do it on a clean branch in case
   of erroneous updates. The tool just runs 'sed' under the hood.
-  
+
   USAGE:
-      
+
       yarn optimize-images [OPTIONS]
-  
+
   OPTIONS:
-  
+
       -r, --reprocess Images for which a -min version already exists will
                       be skipped. To force reprocessing these images, pass
                       the --reprocess option.
@@ -165,7 +165,8 @@ glob(
                 const sedExpression = `/${MIN_SUFFIX}.${filetype}/! s/\\.${filetype}/${MIN_SUFFIX}.${filetype}/g`;
                 const command = `find ${dir}/{docs,blog} -path '**/*.mdx' -type f -exec sed -i -e '${sedExpression}' {} \\;`;
                 console.log(`Fixing .${filetype} references: ${command}`);
-                exec(command, (err, stdout, stderr) => {
+                // brace expansion is a bash feature
+                exec(command, { shell: "bash" }, (err, stdout, stderr) => {
                     if (err) {
                         console.error(err);
                     }
