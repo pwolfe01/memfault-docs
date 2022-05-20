@@ -206,24 +206,20 @@ Find the following options, either via `menuconfig` or by modifying `defconfig`:
 - `CONFIG_SURICATTA_HAWKBIT=y`: configures Suricatta to use hawkBit server mode.
 - Unset `CONFIG_SURICATTA_GENERAL`: SWUpdate works either in hawkBit mode or a
   general-purpose HTTP server mode. Disable general-purpose HTTP server support.
+- Unset `CONFIG_SURICATTA_SSL`: We distribute our binaries over https but do not
+  yet have full support for client-side configured SSL (which requires uploading
+  a SHA1 hash of the binary).
 
 #### Configuring the Suricatta on-device daemon to use Memfault
-
-:::warning
-
-This section has not been updated for our hawkBit DDI API implementation.
-
-:::
 
 Three sections are required in the configuration file:
 
 - `globals`: contains general settings for SWUpdate that are required for the
   daemon to start. In the example below, we've configured SWUpdate to output
   plenty of logs. You may want to tone this down for a production build.
-- `gservice`: through which Suricatta's general-purpose HTTP server mode is
-  configured.
 - `identify`: is used to uniquely identify the device in Memfault servers, and
   to decide whether the device is eligible for an update.
+- `suricatta`: through which Suricatta's hawkBit client is configured.
 
 The following configuration can be used as a starter. Save it in `swupdate.cfg`
 and remember to replace all the placeholders with valid values for your project
@@ -232,30 +228,35 @@ and device:
 ```libconfig
 globals:
 {
-        verbose = true;
-        loglevel = 6;
-        syslog = true;
-}
-
-gservice =
-{
-        url = "https://device.memfault.com/api/v0/swupdate/update";
-        logurl = "https://device.memfault.com/api/v0/swupdate/logs?mpk=$YOUR_PROJECT_KEY&id=$DEVICE_SERIAL&v=$SOFTWARE_VERSION&st=$SOFTWARE_TYPE&hw=$HARDWARE_VERSION";
-        logevent: (
-                {event = "check"; format="#1,date,fw"},
-                {event = "started"; format="#2,date,fw"},
-                {event = "success"; format="#3,date,fw"},
-                {event = "fail"; format="#4,date,fw"}
-        );
+  verbose       = true;
+  loglevel      = 6;
+  syslog        = true;
+  postupdatecmd = "reboot";
 }
 
 identify : (
-        { name = "mpk"; value = "$YOUR_PROJECT_KEY" },
-        { name = "id"; value = "$DEVICE_SERIAL" },
-        { name = "v"; value = "$SOFTWARE_VERSION" },
-        { name = "st"; value = "$SOFTWARE_TYPE" },
-        { name = "hw"; value = "$HARDWARE_VERSION" }
+  { name = "memfault__current_version"; value = "$SOFTWARE_VERSION"; },
+  { name = "memfault__hardware_version"; value = "$HARDWARE_VERSION"; },
+  { name = "memfault__software_type"; value = "$SOFTWARE_TYPE"; },
 );
+
+suricatta :
+{
+  tenant		   = "default";
+  url 		     = "https://device.memfault.com/api/v0/hawkbit";
+  id		       = "$DEVICE_SERIAL";
+  gatewaytoken = "$MEMFAULT_PROJECT_KEY";
+  # TODO(topher): determine which of these options are required
+  confirm 	= 0;
+  polldelay	= 60;
+  nocheckcert	= true;
+  retry		= 4;
+  retrywait	= 200;
+  loglevel	= 10;
+  userid		= 0;
+  groupid		= 0;
+  max_artifacts	= 1;
+};
 ```
 
 :::note
@@ -264,16 +265,22 @@ When SWUpdate downloads and applies your update, it will _not_ automatically
 update the `$SOFTWARE_VERSION` in this file. It is the responsibility of your
 setup to do this.
 
+Your device may require a different `postupdatecmd` than `reboot`.
+
 :::
+
+- `$DEVICE_SERIAL` - This is used for determining the `cohort` a Device is in.
+- `$HARDWARE_VERSION` - To identify the board revision of the device for
+  situations when the device has not been seen before.
+- `$SOFTWARE_TYPE` - The software component on the device responsible for
+  performing OTA updates.
+- `$SOFTWARE_VERSION` - The current software version of the `software_type` that
+  performs OTA updates. This is used to determine if there is a newer version
+  available to be installed.
 
 #### Example SWUpdate invocation
 
-`swupdate -f /etc/swupdate.cfg -u "--polldelay $(shuf --input-range=14400-21600 --head-count=1)"`
-
-Assuming you've stored `swupdate.cfg` in `/etc/swupdate.cfg`, this command will
-start SWUpdate in Suricatta daemon mode and configure the daemon to poll
-Memfault servers every periodically at a random interval of between 14400 and
-21600 seconds (4 to 6 hours).
+`swupdate -f /etc/swupdate.cfg`
 
 #### Integration with Yocto
 
