@@ -357,3 +357,43 @@ implementation.
    project, for example `Debug/mcuxpresso-rt1060-example.axf`. symbol files can
    be uploaded through the Memfault web ui or
    [using the Memfault CLI tool](/docs/mcu/symbol-file-build-ids#upload-symbol-files-cli).
+
+## Additional Notes
+
+### Data Cache
+
+The Cortex-M7 chip on the i.MX RT10xx series chips has an instruction and data
+cache. The Memfault SDK relies on a minimum of 1 variable stored in
+non-initialized (`.noinit`) RAM when the system encounters a crash. If the
+RAM-backed coredump storage Memfault component is used, that data also should be
+located in a non-initialized section of RAM.
+
+In order to ensure data integrity of the non-initialized data when the chip
+reboots after a crash, it's important to flush the D-cache. The CMSIS API to
+perform that flush is:
+
+```c
+SCB_CleanDCache();
+```
+
+This call should be inserted before the chip is reset, typically in
+`memfault_platform_reboot()` just before `NVIC_SystemReset()`:
+
+```c
+void memfault_platform_reboot(void) {
+  // flush the data cache before issuing the reboot, to ensure the saved reboot
+  // reason data or RAM-backed coredump data is written out
+  SCB_CleanDCache();
+
+  NVIC_SystemReset();
+  while (1) { } // unreachable
+}
+```
+
+For reference, see this white paper from Microchip:
+
+<http://ww1.microchip.com/downloads/en/DeviceDoc/Managing-Cache-Coherency-on-Cortex-M7-Based-MCUs-DS90003195A.pdf>
+
+And the CMSIS API documentation:
+
+<https://www.keil.com/pack/doc/CMSIS/Core/html/group__Dcache__functions__m7.html>
