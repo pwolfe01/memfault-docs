@@ -272,6 +272,11 @@ Your device may require a different `postupdatecmd` than `reboot`.
 
 `swupdate -f /etc/swupdate.cfg`
 
+#### Integration with Yocto
+
+Please follow external docs (such as [SWUpdate documentation on building with
+Yocto][7]) for instructions on how to set up and build an SWUpdate Yocto layer.
+
   </TabItem>
   <TabItem value="custom">
 
@@ -352,7 +357,4 @@ under "Options" and select the "Abort Rollout" option.
 [3]: https://sbabic.github.io/swupdate
 [4]: https://sbabic.github.io/swupdate/suricatta.html
 [5]: https://www.eclipse.org/hawkbit/apis/ddi_api/
-[6]:
-  https://github.com/memfault/memfault-yocto/tree/main/meta-memfault-swupdate-example
 [7]: https://sbabic.github.io/swupdate/building-with-yocto.html
-[8]: https://github.com/memfault/memfault-yocto/blob/main/Dockerfile.swupdate
