@@ -222,5 +222,13 @@ module.exports = {
                 path: "./embed/mcu",
             },
         ],
+        [
+            "@docusaurus/plugin-content-blog",
+            {
+                id: "embed-linux",
+                routeBasePath: "embed/linux",
+                path: "./embed/linux",
+            },
+        ],
     ],
 };
