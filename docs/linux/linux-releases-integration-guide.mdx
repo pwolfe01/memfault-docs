@@ -207,9 +207,6 @@ Find the following options, either via `menuconfig` or by modifying `defconfig`:
 - `CONFIG_SURICATTA_HAWKBIT=y`: configures Suricatta to use hawkBit server mode.
 - Unset `CONFIG_SURICATTA_GENERAL`: SWUpdate works either in hawkBit mode or a
   general-purpose HTTP server mode. Disable general-purpose HTTP server support.
-- Unset `CONFIG_SURICATTA_SSL`: We distribute our binaries over https but do not
-  yet have full support for client-side configured SSL (which requires uploading
-  a SHA1 hash of the binary).
 
 #### Configuring the Suricatta on-device daemon to use Memfault
 
