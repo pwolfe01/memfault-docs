@@ -26,6 +26,18 @@ Here are some example projects that use MQTT to post Memfault data:
 - [Cypress PSoC64 + AWS IoT](https://github.com/memfault/memfault-firmware-sdk/tree/master/examples/cypress/CY8CKIT-064S0S2-4343W)
 - [Laird Pinnacle 100 + AWS IoT](/docs/mcu/pinnacle-100-guide)
 
+## Recommended QoS Level
+
+We recommend using Quality of Service level 1 or 2:
+
+| QoS Level | Description            | Comment                                               |
+| --------- | ---------------------- | ----------------------------------------------------- |
+| 0         | At most once delivery  | ⚠️ may result in dropped data                         |
+| 1         | At least once delivery | ✅ Memfault tolerates duplicate packets               |
+| 2         | Exactly once delivery  | ✅ Ideal QoS level, but adds an additional round trip |
+
+<http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html#_Toc398718099>
+
 ## Recommended Topic Format
 
 We recommend the following topic format for publishing Memfault chunk data (the
