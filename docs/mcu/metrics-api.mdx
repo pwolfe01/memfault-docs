@@ -65,7 +65,7 @@ MEMFAULT_METRICS_KEY_DEFINE(BtBytesSent, kMemfaultMetricType_Unsigned)
 MEMFAULT_METRICS_STRING_KEY_DEFINE(ManufDate, sizeof("2022-05-09"))
 ```
 
-### Dependency Function Overview
+## Dependency Function Overview
 
 The metrics subsystem uses the "timer" implemented as part of your initial port
 to control when data is aggregated into a "heartbeat". When the heartbeat
@@ -82,7 +82,7 @@ as overall system uptime. To support this, the
 initial port is used. Typically this information is derived from either a
 system's Real Time Clock (RTC) or the SysTick counter used by an RTOS.
 
-### Setting Metric Values
+## Setting Metric Values
 
 There's a set of APIs in `components/include/memfault/metrics/metrics.h` which
 can be used to easily update heartbeats as events take place. The updates occur
@@ -124,7 +124,7 @@ change.
 
 :::
 
-### Including Sampled Values in a Heartbeat
+## Including Sampled Values in a Heartbeat
 
 `memfault_metrics_heartbeat_collect_data()` is called at the very end of each
 heartbeat interval.
@@ -148,7 +148,7 @@ void memfault_metrics_heartbeat_collect_data(void) {
 }
 ```
 
-### Initial Setup & Debug APIs
+## Initial Setup & Debug APIs
 
 While integrating the heartbeat metrics subsystem or adding new metrics, there
 are a few easy ways you can debug and test the new code. Notably:
@@ -161,3 +161,44 @@ are a few easy ways you can debug and test the new code. Notably:
 - The heartbeat interval can be reduced from the default 3600 seconds for debug
   purposes by setting `MEMFAULT_METRICS_HEARTBEAT_INTERVAL_SECS` in your
   `memfault_platform_config.h` interval to a shorter period such as 30 seconds.
+
+## Metrics Storage
+
+Metric events are stored in the in-memory ring buffer supplied to the
+`memfault_metrics_boot()` initialization function (snippet below is from the
+[`ports/templates`](https://github.com/memfault/memfault-firmware-sdk/blob/14362a758c966195f4b888800709acf3ae3b8a6d/ports/templates/memfault_platform_port.c#L108-L123)
+example):
+
+```c
+  // initialize the event storage buffer
+  static uint8_t s_event_storage[1024];
+  const sMemfaultEventStorageImpl *evt_storage =
+    memfault_events_storage_boot(s_event_storage, sizeof(s_event_storage));
+
+  // configure trace events to store into the buffer
+  memfault_trace_event_boot(evt_storage);
+
+  // record the current reboot reason
+  memfault_reboot_tracking_collect_reset_info(evt_storage);
+
+  // configure the metrics component to store into the buffer
+  sMemfaultMetricBootInfo boot_info = {
+    .unexpected_reboot_count = memfault_reboot_tracking_get_crash_count(),
+  };
+  memfault_metrics_boot(evt_storage, &boot_info);
+```
+
+It may be necessary to adjust the size of the buffer to fit the application's
+needs; for example, if the device uploads data to Memfault infrequently, the
+buffer may need to be increased.
+
+### Non-volatile Event Storage
+
+The Memfault SDK provides a way to configure a non-volatile supplementary store
+for the event buffer.
+
+To learn more about that component, see the following header files, which
+explain how it works:
+
+- [`components/include/memfault/core/platform/nonvolatile_event_storage.h`](https://github.com/memfault/memfault-firmware-sdk/blob/1afdc3de88c7a28b0ba2bd16b2ba0a77d586a4c0/components/include/memfault/core/platform/nonvolatile_event_storage.h)
+- [`components/include/memfault/core/event_storage.h#L64-L98`](https://github.com/memfault/memfault-firmware-sdk/blob/4ec7a0c61f9c8c94c74c0d31ca0e76c190010bfc/components/include/memfault/core/event_storage.h#L64-L98)
