@@ -87,7 +87,7 @@ skip to that section if necessary.
 8. open a serial terminal (example below is using pyserial):
 
    ```bash
-   ❯ pyserial-miniterm --raw /dev/ttyACM0 115200
+   pyserial-miniterm --raw /dev/ttyACM0 115200
    ```
 
 9. pressing “Run” in MCUXpresso, you should see the following output in the
@@ -120,20 +120,20 @@ implementation.
    preferably, add it as a Git submodule:
 
    ```bash
-   ❯ git submodule add https://github.com/memfault/memfault-firmware-sdk.git memfault-firmware-sdk
+   git submodule add https://github.com/memfault/memfault-firmware-sdk.git memfault-firmware-sdk
    ```
 
-1. run the eclipse patch script to add the Memfault sources:
+1. run the eclipse patch script to add the Memfault sources (including the
+   "demo" component, which is the test CLI):
 
    ```bash
-   # select the "demo" component in addition to the default ones
-   ❯ python memfault-firmware-sdk/scripts/eclipse_patch.py --project-dir . --memfault-sdk-dir memfault-firmware-sdk --components core,util,metrics,panics,demo
+   python memfault-firmware-sdk/scripts/eclipse_patch.py --project-dir . --memfault-sdk-dir memfault-firmware-sdk --components core,util,metrics,panics,demo --target-port freertos
    ```
 
 1. copy in the platform template files:
 
    ```bash
-   ❯ cp memfault-firmware-sdk/ports/templates/* source/
+   cp memfault-firmware-sdk/ports/templates/* source/
    ```
 
 1. refresh the project (right-click on the Project, “Refresh”)
@@ -148,8 +148,7 @@ implementation.
    1. create a new virtual folder. this is to not conflict with the sources the
       `eclipse_patch.py` script operates on, so that script can be re-run in the
       future (eg if the Memfault SDK is updated) without affecting these
-      port-specific sources, so name it `memfaultport_components` (note the lack
-      of `_` separator)
+      port-specific sources, so name it `mfltport_components`
    2. add the source file, which is located at
       `memfault-firmware-sdk/ports/panics/src/memfault_platform_ram_backed_coredump.c`,
       by dragging from a file explorer window into the virtual folder:
