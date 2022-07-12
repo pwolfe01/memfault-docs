@@ -54,6 +54,10 @@ HTTP API is the only integration work which needs to be done to get the data
   concurrently, ensure that requests for _the same device_ cannot happen
   concurrently, to avoid violating the ordering requirement. Out of order chunks
   will be best-effort reordered on the Memfault server.
+  - HTTP requests should not be
+    [pipelined](https://en.wikipedia.org/wiki/HTTP_pipelining). That is, the
+    HTTP response for a POST must be received before the next HTTP request can
+    be sent.
 - To minimize overhead and optimize throughput, batch-upload chunks to the
   [chunks HTTP API](https://api-docs.memfault.com/) using `multipart/mixed`
   requests and re-use HTTP connections to Memfault's servers.
