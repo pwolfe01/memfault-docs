@@ -136,16 +136,7 @@ $ memfault --email <EMAIL> --password <PASSWORD or User-API-Key> --org <ORG_SLUG
 $ memfault --project-key <Memfault-Project-Key> upload-bugreport /path/to/bugreport.zip
 ```
 
-## Uploading without the Memfault CLI tool
+## Uploading using the Memfault API
 
-Uploading is a 3 step process:
-
-1. "Prepare" the file upload by making a `POST` request to `/api/v0/upload` to
-   obtain a `upload_url` and `token`.
-2. Make a `PUT` request to the `upload_url` to upload the file.
-3. Finally, make a `POST` request with the `token` to the appropriate upload
-   processing API. For example, after uploading an Android Bug Report file,
-   `POST` the `token` to `/api/v0/upload/bugreport`.
-
-Please consult the [HTTP API documentation](https://api-docs.memfault.com) for
-details on each of the requests.
+Please consult the [HTTP API Upload documentation](https://api-docs.memfault.com/#2d08c7d6-fc5e-4fc7-ac77-9d72e58ba7aa) for
+details on how to upload files to Memfault.
