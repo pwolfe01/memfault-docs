@@ -323,3 +323,25 @@ int memfault_post_data(void) {
   return rv;
 }
 ```
+
+## Frequently Asked Questions
+
+### Memfault library initialization
+
+By default, the Memfault library is initialized as part of the ESP-IDF global
+ctors initialization process.
+
+However, if you would like to defer initialization, the Kconfig flag
+`CONFIG_MEMFAULT_AUTOMATIC_INIT` can be set explicitly to `=n`, and then the
+Memfault library can be manually initialized by calling the `memfault_boot()`
+function.
+
+```c
+#include "memfault/esp_port/core.h"
+
+void app_main() {
+#if !CONFIG_MEMFAULT_AUTOMATIC_INIT
+  // Memfault library initialization
+  memfault_boot();
+#endif
+```
