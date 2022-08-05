@@ -15,3 +15,4 @@
 # Specific doc renames
 /docs/platform/fleet-wide-metrics /docs/platform/charts
 /docs/platform/device-attributes /docs/platform/metrics#device-attributes
+/docs/mcu/self-serve/* /docs/mcu/embedded-self-serve/:splat
