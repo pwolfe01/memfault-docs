@@ -1,0 +1,226 @@
+---
+id: zephyr-guide
+title: Zephyr Integration Guide
+sidebar_label: Zephyr RTOS
+description: Integrate Memfault on Zephyr RTOS.
+---
+
+import ProjectAwareCreateAProject from "@site/src/components/ProjectAwareCreateAProject";
+
+This tutorial will go over integrating the
+[Memfault Firmware SDK](https://github.com/memfault/memfault-firmware-sdk) into
+a system that is using [Zephyr RTOS](https://www.zephyrproject.org/).
+
+:::tip
+
+If you are using a Nordic Semiconductor chip and the nRF Connect SDK, take a
+look at the [nRF Connect SDK Integration Guide](/docs/mcu/nrf-connect-sdk-guide)
+for details specific to that setup!
+
+:::
+
+## Prerequisites
+
+This guide assumes the following:
+
+- Zephyr toolchain is setup on the host machine
+  - see the
+    [Zephyr getting started guide](https://docs.zephyrproject.org/3.1.0/develop/getting_started/index.html)
+- knowledge of building and configuring Zephyr applications
+- a target board with a supported architecture; any **Cortex-M** series device
+  should be supported, for other architectures please contact
+  support@memfault.com.
+
+## Adding the Memfault Module
+
+Adding the Memfault SDK to your project is normally as simple as adding this
+snippet to your `west.yml`:
+
+```yaml
+manifest:
+  remotes:
+    # Add the Memfault GitHub repo
+    - name: memfault
+      url-base: https://github.com/memfault
+
+  projects:
+    # The Memfault SDK
+    - name: memfault-firmware-sdk
+      path: modules/lib/memfault-firmware-sdk
+      revision: 0.31.5
+      remote: memfault
+```
+
+Depending on your project setup, the `west.yml` file may be in the application
+repository (most common), or in a separate manifest repository. Read more about
+supported development repositories here:
+
+- <https://docs.zephyrproject.org/latest/develop/west/workspaces.html#topologies-supported>
+
+## Enabling Memfault
+
+To enable Memfault, there are a few required Kconfig options that should be set:
+
+```bash
+# Memfault configuration
+CONFIG_MEMFAULT=y
+CONFIG_MEMFAULT_HTTP_ENABLE=n
+CONFIG_MEMFAULT_ROOT_CERT_STORAGE_CUSTOM=y
+```
+
+And the minimal dependency function, which should be added to your project
+source (for example, in your `main.c` file):
+
+```c
+#include <memfault/components.h>
+
+// A hard-coded set of device information. In production, at minimum the
+// device_serial would usually be device-specific and set at runtime.
+void memfault_platform_get_device_info(sMemfaultDeviceInfo *info) {
+  *info = (sMemfaultDeviceInfo){
+      .device_serial = "DEMOSERIAL",
+      .software_type = "zephyr-app",
+      .software_version = "1.0.0-dev",
+      .hardware_version = CONFIG_BOARD,
+  };
+}
+```
+
+## Testing the Integration
+
+If the project successfully builds, now we're ready to test the integration. If
+your board has console support, it's highly recommended to enable it for testing
+with the Memfault test commands:
+
+```bash
+CONFIG_CONSOLE=y
+
+# this board has a uart console
+CONFIG_UART_CONSOLE=y
+CONFIG_SHELL=y
+
+# enable logs as well
+CONFIG_LOG=y
+CONFIG_LOG_BACKEND_UART=y
+CONFIG_MEMFAULT_LOGGING_ENABLE=y
+```
+
+Flash an application with the console enabled and open a serial terminal to run
+the test commands:
+
+```bash
+uart:~$ mflt
+mflt - Memfault Test Commands
+Subcommands:
+  clear_core          :clear coredump collected
+  export              :dump chunks collected by Memfault SDK using
+                       https://mflt.io/chunk-data-export
+  get_core            :check if coredump is stored and present
+  get_device_info     :display device information
+  get_latest_release  :checks to see if new ota payload is available
+  post_chunks         :Post Memfault data to cloud
+  test                :commands to verify memfault data collection
+                       (https://mflt.io/mcu-test-commands)
+uart:~$ mflt test
+test - commands to verify memfault data collection
+       (https://mflt.io/mcu-test-commands)
+Subcommands:
+  assert       :trigger memfault assert
+  busfault     :trigger a busfault
+  hang         :trigger a hang
+  hardfault    :trigger a hang
+  memmanage    :trigger a memory management fault
+  usagefault   :trigger a usage fault
+  zassert      :trigger a zephyr assert
+  reboot       :trigger a reboot and record it using memfault
+  heartbeat    :trigger an immediate capture of all heartbeat metrics
+  log_capture  :trigger capture of current log buffer contents
+  logs         :writes test logs to log buffer
+  trace        :capture an example trace event
+```
+
+For example, run a crash example and dump Memfault chunks to the console output:
+
+```bash
+uart:~$ mflt test assert
+*** Booting Zephyr OS build zephyr-v2.7.0  ***
+[00:00:00.256,774] <inf> mflt: Reset Reason, RESETREAS=0x4
+[00:00:00.256,805] <inf> mflt: Reset Causes:
+[00:00:00.256,866] <inf> mflt:  Software
+[00:00:00.258,026] <inf> mflt: GNU Build ID: 6b8ccbd9d4e8653cda0b0f7e75fc8c467431f68e
+[00:00:00.258,056] <inf> main: Memfault Demo App! Board nrf52840dk_nrf52840
+
+[00:00:00.258,117] <inf> mflt: S/N: DEMOSERIAL
+[00:00:00.258,148] <inf> mflt: SW type: zephyr-app
+[00:00:00.258,209] <inf> mflt: SW version: 1.0.0-dev
+[00:00:00.258,270] <inf> mflt: HW version: nrf52840dk_nrf52840
+
+
+uart:~$ mflt export
+MC:SNgRgQlDT1JFAgYAA9wMFAABTAYAKQGAAABwLQAgIwoBAEhjACCcDwEAAQYAEU9IAQCALQAg/Ab/AQIOAAVMGwEKABNwLQAgq40AAKqNCgA=:
+...
+MC:SE4CpwICAwEKanplcGh5ci1hcHAJaTEuMC4wLWRldgZzbnJmNTI4NDBka19ucmY1Mjg0MAtGa4zL2dToBKUBGYABAhn7pAMaAAEKIwQEBQE=:
+MC:gE4vFA==:
+```
+
+The chunks can be pasted into the Chunks Debug panel in the Memfault web
+application:
+
+https://docs.memfault.com/docs/mcu/self-serve/#post-chunks-to-memfault
+
+## Memfault Configuration
+
+The Memfault SDK is configured in two places:
+
+1. The normal Kconfig interface- see options defined for the
+   `memfault-firmware-sdk` module in one of the Kconfig interfaces, or check out
+   the Kconfig file. These options apply to the Memfault Zephyr RTOS port
+   contained within the Memfault SDK.
+
+   - < https://docs.zephyrproject.org/2.6.0/guides/kconfig/menuconfig.html>
+   - <https://github.com/memfault/memfault-firmware-sdk/blob/130caec024a724c1a7a82866e03a8756e3908256/ports/zephyr/Kconfig>
+
+2. The Memfault SDK configuration files, which contain configuration options for
+   the SDK that are not Zephyr-specific. See the
+
+   - `memfault_platform_config.h` - See the
+     [`default_config.h`](https://github.com/memfault/memfault-firmware-sdk/blob/7d3396b26f1c161f1c288b6bd39676ec16ebda67/components/include/memfault/default_config.h)
+     file in the Memfault SDK for documentation
+
+   - `memfault_metrics_heartbeat_config.def` - See the
+     [docs page](/docs/mcu/metrics-api/) for using this file.
+
+   - `memfault_trace_reason_user_config.def` - See the
+     [docs page](/docs/mcu/trace-events/) for using this file
+
+   If these files are not provided by the user, they will be silently ignored.
+   See the Kconfig options for some control over how these files are included.
+
+## Zephyr `__ASSERT()`
+
+Zephyr RTOS has a built-in runtime assert system, see more information here:
+
+- <https://docs.zephyrproject.org/3.1.0/kernel/services/other/fatal.html>
+
+Memfault's coredump capture routine will be triggered when the system encounters
+a failing `__ASSERT()`, however, by default, Zephyr asserts are disabled at
+build time. To enable them, set the `CONFIG_ASSERT=y` Kconfig variable:
+
+```bash
+# Memfault will record crashes due to Zephyr asserts. Enabling them means it's
+# possible to root cause the problems on fielded devices 🎉 !
+CONFIG_ASSERT=y
+```
+
+## Reference Example
+
+Memfault provides two different Zephyr examples. See the links below for
+documentation and usage information.
+
+1. Zephyr example with networking enabled:
+
+   - [https://github.com/memfault/memfault-firmware-sdk/tree/master/examples/zephyr/README.md](https://github.com/memfault/memfault-firmware-sdk/blob/73fab8656b17bde6efa11bf78fbe155a8dbabf78/examples/zephyr/README.md)
+
+2. Non-networked example:
+
+   - [https://github.com/memfault/zephyr-memfault-example/tree/memfault/README.md](https://github.com/memfault/zephyr-memfault-example/blob/aeb3853851c7f92bc4015d548a246d1a856d1588/README.md)

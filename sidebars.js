@@ -49,6 +49,7 @@ module.exports = {
                         "mcu/esp8266-rtos-sdk-guide",
                         "mcu/da1469x-sdk-guide",
                         "mcu/arm-nxp-mcuxpresso-guide",
+                        "mcu/zephyr-guide",
                     ],
                 },
                 {
