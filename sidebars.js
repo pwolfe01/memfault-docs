@@ -155,6 +155,11 @@ module.exports = {
             ],
         },
         {
+            label: "Best Practices",
+            type: "category",
+            items: ["best_practices/metrics-for-battery-life"],
+        },
+        {
             label: "Troubleshooting",
             type: "category",
             link: {
