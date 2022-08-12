@@ -1,0 +1,62 @@
+---
+id: metrics-for-battery-life
+title: Metrics for Battery Life
+sidebar_label: Metrics for Battery Life
+---
+
+Batteries power most embedded devices today, yet debugging battery life issues are one of the most difficult things to do as a developer.
+Once power regressions slip into production, they usually go unnoticed for a while, sometimes weeks or months, especially if they are small changes. At the start of the year, devices might get 7 days of battery life, but over the course of the year, it slips down to 6 days, then 5 days. 
+
+## Tracking Battery Life at Scale
+
+### Wrong Way #1 - Send Battery Life Percentage Whenever
+
+### Wrong Way #1 - Send Battery Life Percentage Whenever
+
+### The Proper Way
+
+1. Track the current battery percentage or current mV reading from the battery.
+
+    ```c
+    static void prv_device_metrics_end_heartbeat(bool is_flushing) {
+        // Set to our BatteryLifeDrain metric
+        device_metrics_set(kDeviceMetricId_BatteryLifePct, battery_get_current_pct());
+    }
+    ```
+
+2. Calculate the battery drain over a fixed interval of time, such as an hour or day.
+
+    ```c
+    // Stores the battery percentage from the start of the hearbeat interval
+    static int32_t s_previously_recorded_battery_pct;
+
+    static void prv_device_metrics_start_heartbeat(bool is_flushing) {
+        // Sets the battery percentage at the start of the interval
+        s_previously_recorded_battery_pct = battery_get_current_pct();
+    }
+
+    static void prv_device_metrics_end_heartbeat(bool is_flushing) {
+        // Calculates the drop in percentage over the heartbeat interval
+        const int32_t current_battery_pct = battery_get_current_pct();
+        const int32_t battery_delta = current_battery_pct - s_previously_recorded_battery_pct;
+
+        // Set to our BatteryLifeDrain metric
+        device_metrics_set(kDeviceMetricId_BatteryLifeDrain, battery_delta);
+    }
+    ```
+
+
+## Predicting Expected Battery Life
+
+$$
+Projected\ \#\ Days\ of\ Battery\ Life = 100 \div \frac{total\ battery\ percent\ drained\ over\ all \ heartbeats}{total\ \#\ of\ heartbeats}
+$$
+
+## Preventing Battery Life Regressions
+
+The only real way to do this is to have a set of devices running production-like 
+firmware in a production-like environment. This means that if a company makes a wearable 
+device and it's shipped all over the world, it 
+should be tested internally with a variety of Android and iOS 
+phones, versions, connectivity interference, and usage patterns. 
+
