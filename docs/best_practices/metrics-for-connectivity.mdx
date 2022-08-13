@@ -1,0 +1,31 @@
+---
+id: metrics-for-connectivity
+title: Metrics for Connectivity
+sidebar_label: Metrics for Connectivity
+---
+
+## Understanding Connectivity at Scale Using Metrics
+
+Debugging connectivity issues are notoriously difficult. 
+
+For example, below is a diagram of many of the Bluetooth connection states that a device can be in. It would be wise to try and track
+the amount of time that the device is in all of these states to see where devices are spending most of their time and likely power. 
+
+<p align="center">
+  <img
+    width="500"
+    src="/img/docs/best-practices/bluetooth-states.svg"
+    alt="Various Bluetooth connection states"
+  />
+</p>
+
+We recommend tracking the following metrics to help diagnose connectivity issues:
+
+- Min, Max, Average, and Current Signal Strength (RSSI)
+- Radio Channel
+- Total number of connects, disconnects, and reconnects
+- Total number of connect failures
+- Total number of bytes Received & Transmitted (RX/TX)
+- Time in "connecting" state
+- Time in "connected" state
+- Time radio is powered on
