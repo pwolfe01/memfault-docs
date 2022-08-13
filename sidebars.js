@@ -158,8 +158,8 @@ module.exports = {
             label: "Best Practices",
             type: "category",
             items: [
-                "best_practices/metrics-for-battery-life", 
-                "best_practices/metrics-for-connectivity"
+                "best_practices/metrics-for-battery-life",
+                "best_practices/metrics-for-connectivity",
             ],
         },
         {

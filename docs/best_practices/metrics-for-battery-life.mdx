@@ -16,11 +16,13 @@ non-standard interval. It may be whenever it connects to Wi-Fi, or when it's
 within Bluetooth range of a cell phone, or when it's asked by a remote server
 for the information.
 
-In this information report, a device would usually send the current battery life percentage
-according to a pre-determined curve or a millivolt reading.
+In this information report, a device would usually send the current battery life
+percentage according to a pre-determined curve or a millivolt reading.
 
-This type of information is perfect when looking at a single device's history of battery life, but that is
-about it. From these indiviual reports, and sporadic reports at that, a battery life dropped might be missed entirely, such as in the chart below.
+This type of information is perfect when looking at a single device's history of
+battery life, but that is about it. From these indiviual reports, and sporadic
+reports at that, a battery life dropped might be missed entirely, such as in the
+chart below.
 
 <p align="center">
   <img
@@ -30,16 +32,18 @@ about it. From these indiviual reports, and sporadic reports at that, a battery 
   />
 </p>
 
-When only taking into account the 4 captured data points, the battery life looks like it drops at a normal rate. However, there was a large drop in the middle.
+When only taking into account the 4 captured data points, the battery life looks
+like it drops at a normal rate. However, there was a large drop in the middle.
 
 ### Error #2 - Ignoring Charging Status
 
-Another common issue with reporting battery life information from devices 
-is that the power state is ignored. Battery life statistics that are used in 
-aggregations should not be taken into account if a device is currently 
-plugged in or charging. 
+Another common issue with reporting battery life information from devices is
+that the power state is ignored. Battery life statistics that are used in
+aggregations should not be taken into account if a device is currently plugged
+in or charging.
 
-For example, the chart below shows the battery life of a device over a span of time.
+For example, the chart below shows the battery life of a device over a span of
+time.
 
 <p align="center">
   <img
@@ -49,60 +53,78 @@ For example, the chart below shows the battery life of a device over a span of t
   />
 </p>
 
-The battery is discharging around 10% per data point. However,
-there is one chunk of time where there is a large battery life drop, but the device is plugged into a charger quickly and by the time the next battery
-life report takes place, it's been charged and is reporting a normal looking number again. It might look as if the battery regression never took place!
+The battery is discharging around 10% per data point. However, there is one
+chunk of time where there is a large battery life drop, but the device is
+plugged into a charger quickly and by the time the next battery life report
+takes place, it's been charged and is reporting a normal looking number again.
+It might look as if the battery regression never took place!
 
-The same goes for a device that is reporting data for longs periods of time while connected to a charger. It might report 100% for 3 days, and these calculations should not be taken into account when determining battery life calculations for a fleet of devices. 
+The same goes for a device that is reporting data for longs periods of time
+while connected to a charger. It might report 100% for 3 days, and these
+calculations should not be taken into account when determining battery life
+calculations for a fleet of devices.
 
 ### A Better Way
 
-Memfault recommends capturing two data points per heartbeat interval: the current battery percentage and, more importantly, the battery drain over a fixed interval. 
+Memfault recommends capturing two data points per heartbeat interval: the
+current battery percentage and, more importantly, the battery drain over a fixed
+interval.
 
-For example, if the battery dropped from 97% to 94% over an hour, then the device would report 3% as the battery life drain for that hour.
+For example, if the battery dropped from 97% to 94% over an hour, then the
+device would report 3% as the battery life drain for that hour.
 
 There are a few benefits of this approach that might not be immediately obvious:
 
-1. If an interval has a charging event, it can be thrown out or marked to be excluded from aggregations.
-2. The calculation of average battery life drain per hour can be easily computed. This enables quick battery life estimations and projects, even with fleet sizes well into the millions.
-4. Devices that are only online sporadically can still send battery life information to help compute statistics, since the battery life drain is recorded every heartbeat interval and these heartbeats can be persisted and sent upon request.
+1. If an interval has a charging event, it can be thrown out or marked to be
+   excluded from aggregations.
+2. The calculation of average battery life drain per hour can be easily
+   computed. This enables quick battery life estimations and projects, even with
+   fleet sizes well into the millions.
+3. Devices that are only online sporadically can still send battery life
+   information to help compute statistics, since the battery life drain is
+   recorded every heartbeat interval and these heartbeats can be persisted and
+   sent upon request.
 
-Below are some example implementations on how to capture these two metrics Memfault recommends.
+Below are some example implementations on how to capture these two metrics
+Memfault recommends.
 
 #### Current Battery Life Implementation
 
 Track the current battery percentage or current mV reading from the battery.
 
-   ```c
-   static void prv_device_metrics_end_heartbeat(bool is_flushing) {
-       // Set to our BatteryLifeDrain metric
-       device_metrics_set(kDeviceMetricId_BatteryLifePct, battery_get_current_pct());
-   }
-   ```
-   where `battery_get_current_pct()` is assumed to be the function in the customer's firmware that would fetch the current battery percentage.
+```c
+static void prv_device_metrics_end_heartbeat(bool is_flushing) {
+    // Set to our BatteryLifeDrain metric
+    device_metrics_set(kDeviceMetricId_BatteryLifePct, battery_get_current_pct());
+}
+```
+
+where `battery_get_current_pct()` is assumed to be the function in the
+customer's firmware that would fetch the current battery percentage.
 
 #### Battery Life Drain Implementation
 
-Calculate the battery drain over a consistent, fixed interval of time, such as an hour or a day.
+Calculate the battery drain over a consistent, fixed interval of time, such as
+an hour or a day.
 
-   ```c
-   // Stores the battery percentage from the start of the hearbeat interval
-   static int32_t s_previously_recorded_battery_pct;
+```c
+// Stores the battery percentage from the start of the hearbeat interval
+static int32_t s_previously_recorded_battery_pct;
 
-   static void prv_device_metrics_start_heartbeat(bool is_flushing) {
-       // Sets the battery percentage at the start of the interval
-       s_previously_recorded_battery_pct = battery_get_current_pct();
-   }
+static void prv_device_metrics_start_heartbeat(bool is_flushing) {
+    // Sets the battery percentage at the start of the interval
+    s_previously_recorded_battery_pct = battery_get_current_pct();
+}
 
-   static void prv_device_metrics_end_heartbeat(bool is_flushing) {
-       // Calculates the drop in percentage over the heartbeat interval
-       const int32_t current_battery_pct = battery_get_current_pct();
-       const int32_t battery_delta = current_battery_pct - s_previously_recorded_battery_pct;
+static void prv_device_metrics_end_heartbeat(bool is_flushing) {
+    // Calculates the drop in percentage over the heartbeat interval
+    const int32_t current_battery_pct = battery_get_current_pct();
+    const int32_t battery_delta = current_battery_pct - s_previously_recorded_battery_pct;
 
-       // Set to our BatteryLifeDrain metric
-       device_metrics_set(kDeviceMetricId_BatteryLifeDrain, battery_delta);
-   }
-   ```
+    // Set to our BatteryLifeDrain metric
+    device_metrics_set(kDeviceMetricId_BatteryLifeDrain, battery_delta);
+}
+```
 
 ## Predicting Expected Battery Life
 
