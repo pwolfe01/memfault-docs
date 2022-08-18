@@ -1,0 +1,16 @@
+```c
+#include "memfault/components.h"
+
+// Runs a sanity test to confirm coredump port is working as expected
+int test_coredump_storage(int argc, char *argv[]) {
+
+  // Note: Coredump saving runs from an ISR prior to reboot so should
+  // be safe to call with interrupts disabled.
+  your_platform_disable_interrupts();
+  memfault_coredump_storage_debug_test_begin();
+  your_platform_enable_interrupts();
+
+  memfault_coredump_storage_debug_test_finish();
+  return 0;
+}
+```

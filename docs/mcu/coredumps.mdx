@@ -5,6 +5,7 @@ sidebar_label: Coredumps
 ---
 
 import IntegrationCompletePrerequisite from "@site/src/pages/_partials/_integration-complete-prerequisite.mdx";
+import CoredumpStorageTest from "@site/src/pages/_partials/_steps/_coredump-storage-test.mdx";
 
 This tutorial will cover integrating the coredump collection functionality of
 the [Memfault Firmware SDK](https://github.com/memfault/memfault-firmware-sdk)
@@ -35,7 +36,7 @@ different MCUs in the
 [`ports`](https://github.com/memfault/memfault-firmware-sdk/blob/master/ports)
 directory of the memfault-firmware-sdk or you can add your own port by
 implementing the required
-[dependencies](https://github.com/memfault/memfault-firmware-sdk/blob/master/components/include/memfault/panics/platform/coredump.h)
+[dependencies](https://github.com/memfault/memfault-firmware-sdk/blob/master/components/include/memfault/panics/platform/coredump.h).
 
 ### Rebooting after a coredump
 
@@ -383,3 +384,27 @@ This last example assumes that you will initialize the values appropriately. The
 values will persist across MCU resets.
 
 :::
+
+## Testing Coredump Platform Storage
+
+The Memfault SDK provides functions for verifying the coredump platform storage
+layer is correctly implemented, by performing various reads, writes, and erases
+using the platform storage API.
+
+<p align="center">
+  <img
+    src="/img/docs/mcu/coredump-storage.drawio.svg"
+    alt="/img/docs/mcu/coredump-storage.drawio.svg"
+  />
+</p>
+
+After including and configuring one of the provided coredump platform storage
+implementations from the
+[Memfault SDK ports](https://github.com/memfault/memfault-firmware-sdk/blob/master/ports),
+or when building a custom implementation, the coredump storage test functions
+are a great way to validate the storage is working correctly.
+
+To run the test, call these functions either from your device's CLI, via a
+button press, or simply somewhere in your application (eg `main` function):
+
+<CoredumpStorageTest />
