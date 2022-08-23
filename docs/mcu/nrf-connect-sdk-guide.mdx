@@ -15,8 +15,21 @@ import TabItem from "@theme/TabItem";
 In this guide we will walk through the steps for integrating the
 [Memfault Firmware SDK](https://github.com/memfault/memfault-firmware-sdk) into
 a project using the nRF Connect SDK. The integration has been tested against the
-releases ranging from v1.4.0 up to v1.6.0. All versions of the nRF Connect SDK
+releases ranging from v1.4.0 up to v2.0.2. All versions of the nRF Connect SDK
 since v1.6.0 include Memfault when downloaded from Nordic's website.
+
+This integration is written for the
+[nrf9160-DK](https://www.nordicsemi.com/Products/Development-hardware/nrf9160-dk),
+but is similar when targeting other boards with the nRF Connect SDK.
+
+Example projects are provided both by Memfault and Nordic:
+
+- [nRF52/nRF53 example Memfault integration](https://github.com/memfault/memfault-firmware-sdk/tree/969baaf01e16dcec9f1ec1549f05313da366d3dd/examples/nrf-connect-sdk/nrf5)
+- [nRF9160 example Memfault integration](https://github.com/memfault/memfault-firmware-sdk/tree/969baaf01e16dcec9f1ec1549f05313da366d3dd/examples/nrf-connect-sdk/nrf9160)
+- [nRF9160 example Memfault integration maintained by Nordic](https://github.com/nrfconnect/sdk-nrf/tree/v2.0.2/samples/nrf9160/memfault)
+- [Asset Tracker v2 Application for nRF9160](https://github.com/nrfconnect/sdk-nrf/tree/v2.0.2/applications/asset_tracker_v2)
+  - see the documentation for
+    [how to build with Memfault enabled](https://developer.nordicsemi.com/nRF_Connect_SDK/doc/2.0.2/nrf/applications/asset_tracker_v2/doc/asset_tracker_v2_description.html#building-with-overlays)
 
 :::tip
 

@@ -10,7 +10,7 @@ Memfault is a full device monitoring solution which can be integrated into any
 embedded device utilizing ARM Cortex-M or ESP32 MCUs irrespective of the RTOS in
 use or connectivity path in place.
 
-### How does it work?
+## How does it work?
 
 1. Using the lightweight
    [memfault-firmware-sdk](https://github.com/memfault/memfault-firmware-sdk),
@@ -27,16 +27,18 @@ use or connectivity path in place.
    application, individual issues can be drilled into and overall fleet health
    can be examined via dashboard views.
 
-### Getting Started
+## Getting Started
 
 The [memfault-firmware-sdk](https://github.com/memfault/memfault-firmware-sdk)
 is designed as a collection of components, so you can include only what is
 needed for your project.
 
+### Integration Guides
+
 We have step-by-step guides which cover how to add the SDK to a project, capture
 an error, and publish data to the Memfault cloud:
 
-:::caution
+:::info Create a Memfault Account
 
 The following guides assume you already have a Memfault Account. If you don't
 yet have one, you can
@@ -46,7 +48,7 @@ yet have one, you can
 
 <IntegrationGuideTable />
 
-### Modules
+## Modules
 
 Once the
 [memfault-firmware-sdk](https://github.com/memfault/memfault-firmware-sdk) is in
@@ -69,7 +71,7 @@ place, a number of modules can easily be integrated into the system:
   discover how often unexpected errors are occurring (flash write failures, I2C
   bus timeouts, etc).
 
-### Design Documents
+## Design Documents
 
 The Memfault data collection system was designed from the ground up with
 embedded devices in mind. Deeper explorations into the designs of the subsystems
@@ -80,3 +82,20 @@ can be found below:
   it compares against other serialization strategies.
 - [Data Transport](/docs/mcu/data-from-firmware-to-the-cloud) - Examines how
   data is shuttled from the device to the cloud
+
+## Example Projects
+
+We provide fully functional example projects for specific development boards.
+These examples can be used as a quick way to try out Memfault without needing to
+modify an existing project.
+
+| Board                                                                                                                                                                                                                                                                                                                    | Thumbnail                                                                                                                                                                                             | Example Project                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [ESP32-WROVER-KIT V4.1](https://docs.espressif.com/projects/esp-idf/en/v4.4.1/esp32/hw-reference/esp32/get-started-wrover-kit.html)<br/>_Note: other ESP32 boards should work similarly_                                                                                                                                 | [<img src="/img/docs/mcu/esp-wrover-kit-v4.1-front.jpg" width="200px" />](https://docs.espressif.com/projects/esp-idf/en/v4.4.1/esp32/hw-reference/esp32/get-started-wrover-kit.html)                 | From the Memfault SDK:<br/>- [examples/esp32](https://github.com/memfault/memfault-firmware-sdk/tree/73fab8656b17bde6efa11bf78fbe155a8dbabf78/examples/esp32)                                                                                                                                                                                                                                                                                                              |
+| [nRF9160 DK](https://www.nordicsemi.com/Products/Development-hardware/nrf9160-dk)                                                                                                                                                                                                                                        | [<img src="/img/docs/mcu/nRF59160-DK-prod_page.webp" width="200px" />](https://www.nordicsemi.com/Products/Development-hardware/nrf9160-dk)                                                           | Nordic maintains an example app included with the nRF Connect SDK:<br/> - [nRF-Connect SDK samples/nrf9160/memfault](https://developer.nordicsemi.com/nRF_Connect_SDK/doc/2.0.0/nrf/samples/nrf9160/memfault/README.html)<br/><br/>The Memfault SDK includes a basic example:<br/>- [examples/nrf-connect-sdk/nrf9160](https://github.com/memfault/memfault-firmware-sdk/tree/73fab8656b17bde6efa11bf78fbe155a8dbabf78/examples/nrf-connect-sdk/nrf9160/memfault_demo_app) |
+| [MIMXRT1060-EVKB](https://www.nxp.com/design/development-boards/i-mx-evaluation-and-development-boards/i-mx-rt1060-evaluation-kit:MIMXRT1060-EVKB)<br/>_Note: other NXP RT10xx boards should be nearly compatible with the example application source, but will require a different MCUXpresso SDK for hardware support_ | [<img src="/img/docs/mcu/MIMXRT1060-EVKB.webp" width="200px" />](https://www.nxp.com/design/development-boards/i-mx-evaluation-and-development-boards/i-mx-rt1060-evaluation-kit:MIMXRT1060-EVKB)     | _Note: a detailed integration guide can be found [here](/docs/mcu/arm-nxp-mcuxpresso-guide)_<br/>- [mcuxpresso-rt1060-example](https://github.com/memfault/mcuxpresso-rt1060-example/tree/bab3b2075637d1f755ef58e7d3ab31a7b6e2af7c)                                                                                                                                                                                                                                        |
+| [STM32L4 Discovery Kit for IoT Node (B-L475E-IOT01A)](https://www.st.com/en/evaluation-tools/b-l475e-iot01a.html)                                                                                                                                                                                                        | [<img src="/img/docs/mcu/160178092_STMicro_B-L475E-IOT01ADiscoveryKit.webp" width="200px" />](https://www.st.com/en/evaluation-tools/b-l475e-iot01a.html)                                             | From the Memfault SDK:<br/>- [examples/zephyr](https://github.com/memfault/memfault-firmware-sdk/tree/73fab8656b17bde6efa11bf78fbe155a8dbabf78/examples/zephyr)                                                                                                                                                                                                                                                                                                            |
+| [PSoC™ 64 Standard Secure - AWS Wi-Fi BT Pioneer Kit (CY8CKIT-064S0S2-4343W)](https://www.cypress.com/documentation/development-kitsboards/psoc-64-standard-secure-aws-wi-fi-bt-pioneer-kit-cy8ckit)                                                                                                                     | [<img src="/img/docs/mcu/CY8CKIT-064S0S2-4343W_new_t.webp" width="200px" />](https://www.cypress.com/documentation/development-kitsboards/psoc-64-standard-secure-aws-wi-fi-bt-pioneer-kit-cy8ckit)   | From the Memfault SDK:<br/>- [examples/cypress/CY8CKIT-064S0S2-4343W](https://github.com/memfault/memfault-firmware-sdk/tree/0.33.0/examples/cypress/CY8CKIT-064S0S2-4343W)                                                                                                                                                                                                                                                                                                |
+| [PSoC™ 62S2 Wi-Fi BT Pioneer Kit (CY8CKIT-062S2-43012)](https://www.infineon.com/cms/en/product/evaluation-boards/cy8ckit-062s2-43012/)                                                                                                                                                                                  | [<img src="/img/docs/mcu/CY8CKIT-062S2-43012.jpeg" width="200px" />](https://www.infineon.com/cms/en/product/evaluation-boards/cy8ckit-062s2-43012/)                                                  | Detailed integration guide:<br/>- [here](/docs/mcu/arm-infineon-modustoolbox-guide)<br/>Example project:<br/>- [https://github.com/memfault/mtb-example-memfault](https://github.com/memfault/mtb-example-memfault)                                                                                                                                                                                                                                                        |
+| [SmartBond™ DA14585 Bluetooth Low Energy Pro Development Kit](https://www.dialog-semiconductor.com/products/bluetooth-low-energy/da14585-development-kit-pro)                                                                                                                                                            | [<img src="/img/docs/mcu/da14585-00atdevkt-p-da14585-development-kit-pro-board.jpg" width="200px" />](https://www.dialog-semiconductor.com/products/bluetooth-low-energy/da14585-development-kit-pro) | From the Memfault SDK:<br/>- [examples/dialog/da145xx](https://github.com/memfault/memfault-firmware-sdk/tree/0.33.0/examples/dialog/da145xx)                                                                                                                                                                                                                                                                                                                              |
+| [Dialog SmartBond™ DA14695 Bluetooth® Low Energy 5.2 USB Development Kit](https://www.dialog-semiconductor.com/products/bluetooth-low-energy/da14695-development-kit-usb)                                                                                                                                                | [<img src="/img/docs/mcu/da14695-00hqdevkt-u-usb-board.jpg" width="200px" />](https://www.dialog-semiconductor.com/products/bluetooth-low-energy/da14695-development-kit-usb)                         | Detailed integration guide:<br/>- [here](/docs/mcu/da1469x-sdk-guide)<br/>From the Memfault SDK:<br/>- [examples/dialog/da1469x](https://github.com/memfault/memfault-firmware-sdk/tree/0.33.0/examples/dialog/da1469x)                                                                                                                                                                                                                                                    |
