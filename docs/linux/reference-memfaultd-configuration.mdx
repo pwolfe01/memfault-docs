@@ -32,6 +32,9 @@ A [full configuration example can be found in the source directory of
   },
   "reboot_plugin": {
     "uboot_fw_env_file": "/etc/fw_env.config"
+  },
+  "collectd_plugin": {
+    "output_file": "/etc/collectd.conf"
   }
 }
 ```
@@ -53,6 +56,7 @@ file.
 | `data_dir`                 | A directory where `memfaultd` can store application data persistently (needs to survive firmware upgrades). Read more [here][docs-data-dir].                                                       | _Project-specific_                        |
 | `swupdate_plugin`          | Configuration values for `plugin_swupdate` if enabled in `memfaultd` (default). [Read more][docs-control-memfaultd-plugins].                                                                       | See [`swupdate_plugin`](#swupdate_plugin) |
 | `reboot_plugin`            | Configuration values for `plugin_reboots` if enabled in `memfaultd` (default). [Read more][docs-control-memfaultd-plugins].                                                                        | See [`reboot_plugin`](#reboot_plugin)     |
+| `collectd_plugin`          | Configuration values for `plugin_collectd` if enabled in `memfaultd` (default). [Read more][docs-control-memfaultd-plugins].                                                                       | See [`reboot_plugin`](#reboot_plugin)     |
 
 ### `swupdate_plugin`
 
@@ -76,6 +80,20 @@ file.
 {
   "reboot_plugin": {
     "uboot_fw_env_file": "/etc/fw_env.config"
+  }
+}
+```
+
+| Field               | Description                                                                                                                                                                             | Recommended value    |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
+| `uboot_fw_env_file` | Path to a valid `fw_env.config` file. Needed for `memfaultd`'s reboot reason tracking plugin. Read [about `libubootenv`][source-libubootenv] and see [an example][source-fwenv-config]. | `/etc/fw_env.config` |
+
+### `collectd_plugin`
+
+```json
+{
+  "collectd_plugin": {
+    "output_file": "/etc/collectd.conf"
   }
 }
 ```

@@ -21,6 +21,7 @@ After you're done, you should have a basic integration setup that can talk to
 the Memfault cloud, enabling one or more of the following features:
 
 - Reporting reboot events to Memfault.
+- Reporting [Custom Metrics][docs-linux-metrics].
 - [Over-the-air (OTA) updates][docs-linux-ota].
 
 ## Useful links
@@ -36,10 +37,13 @@ the Memfault cloud, enabling one or more of the following features:
   to work on [`4.0 kirkstone`][yocto-kirkstone].
 - Your project uses [`systemd`][systemd-homepage] as the init system.
 
-Optionally, as requirements of our [OTA system][docs-linux-ota]:
+Optionally, as requirements of plugins:
 
-- [SWUpdate][swupdate-homepage] as an OTA updates client.
-- [U-Boot][u-boot-homepage], since SWUpdate depends on it.
+- For [OTA][docs-linux-ota]:
+  - [SWUpdate][swupdate-homepage] as an OTA updates client.
+  - [U-Boot][u-boot-homepage], since SWUpdate depends on it.
+- For [Custom Metrics][docs-linux-metrics]:
+  - [CollectD][collectd-homepage] to collect and upload metrics.
 
 ## Integration steps
 
@@ -100,12 +104,14 @@ it, for example in your `local.conf`:
 LICENSE_FLAGS_ACCEPTED:append = " commercial_memfaultd"
 ```
 
-Add the necessary dependencies to your image file:
+Add the necessary dependencies to your image file (note that `collectd` is
+[provided by `meta-oe`][source-collectd-recipe]):
 
 ```
 IMAGE_INSTALL:append = " \
     u-boot-env \
     u-boot-fw-utils \
+    collectd \
 "
 ```
 
@@ -153,6 +159,7 @@ The available plugins are:
 
 - `plugin-swupdate`: used for [OTA management][docs-linux-ota].
 - `plugin-reboots`: used for reboot reason tracking.
+- `plugin-collectd`: used for collection of [metrics][docs-linux-metrics].
 
 <LinuxBuildSystemOptionsTabs>
   <TabItem value={SYSTEM_YOCTO}>
@@ -162,20 +169,20 @@ included in the `memfaultd` build. For example, you can add a
 `memfaultd.bbappends` recipe with the following contents:
 
 ```
-PACKAGECONFIG := "plugin-swupdate plugin-reboots"
+PACKAGECONFIG := "plugin-swupdate plugin-reboots plugin-collectd"
 ```
 
 Alternatively, in your `local.conf` file:
 
 ```
-PACKAGECONFIG:pn-memfaultd := "plugin-swupdate plugin-reboots"
+PACKAGECONFIG:pn-memfaultd := "plugin-swupdate plugin-reboots plugin-collectd"
 ```
 
   </TabItem>
   <TabItem value={SYSTEM_OTHER}>
 
 The included plugins can be configured using the flags `-DENABLE_PLUGINS=1`
-alongside `-DPLUGIN_REBOOT=1` and `-DPLUGIN_SWUPDATE=1`.
+alongside `-DPLUGIN_REBOOT=1`, `-DPLUGIN_SWUPDATE=1` and `-DPLUGIN_COLLECTD=1`.
 
   </TabItem>
 </LinuxBuildSystemOptionsTabs>
@@ -354,6 +361,7 @@ Follow our [Embedded Linux OTA Integration Guide][docs-linux-ota].
 [docs-hardware-version-software-version]:
   /docs/platform/software-version-hardware-version
 [docs-device-id]: /docs/platform/memfault-terminology#device-id
+[docs-linux-metrics]: /docs/linux/linux-custom-metrics
 [systemd-homepage]: https://systemd.io/
 [swupdate-homepage]: https://swupdate.org/
 [u-boot-homepage]: https://www.denx.de/wiki/U-Boot
@@ -362,3 +370,5 @@ Follow our [Embedded Linux OTA Integration Guide][docs-linux-ota].
 [docs-control-memfaultd-plugins]:
   /docs/linux/linux-getting-started-guide#optional-opt-out-of-memfaultd-built-in-plugins
 [source-meta-swupdate]: https://github.com/sbabic/meta-swupdate
+[source-collectd-recipe]:
+  https://github.com/openembedded/meta-openembedded/tree/master/meta-oe/recipes-extended/collectd

@@ -1,0 +1,74 @@
+---
+id: linux-custom-metrics
+title: Linux Custom Metrics
+sidebar_label: Custom Metrics
+---
+
+## Introduction
+
+The `collectd` plugin (see [the source code][source-memfaultd-collectd-plugin])
+configures CollectD to regularly upload collected metrics to Memfault. These
+metrics:
+
+- Are shown on the [device timeline][docs-timeline].
+- Are available for use as [Timeseries][docs-timeseries] or
+  [Attributes][docs-attributes] metrics, aggregated across the entire fleet.
+- Can be used to create [Metric Charts][docs-metric-charts] and
+  [Alerts][docs-alerts].
+
+See [Metrics](/docs/platform/metrics) for more details on how metrics can be
+configured and used in the Memfault dashboard.
+
+## Prerequisites
+
+### The `memfaultd` daemon
+
+We strongly recommend integrating `memfaultd` first. Follow the [getting-started
+guide][docs-linux-getting-started] to learn how to set this up for your device.
+A key function of `memfaultd` is to correctly configure and control CollectD to
+talk to Memfault.
+
+:::tip
+
+Keep [`meta-memfault-example`][source-yocto-example] open as a reference
+implementation. Your integration should look similar to it once you're done
+following the steps in this tutorial.
+
+:::
+
+### Project Key
+
+This is a token that is used when pushing data between a device and the Memfault
+cloud. We will be using this to query for OTA Payloads in this tutorial. To
+locate this token you will also want to navigate to the "Settings" -> "General"
+page in the Memfault UI and copy/paste the token from the "Project Key" section.
+
+## Configuring CollectD
+
+## Application metrics
+
+### Using C
+
+### Using Python
+
+[collectd-homepage]: https://collectd.org/
+[source-yocto-example]:
+  https://github.com/memfault/memfault-linux-sdk/tree/main/meta-memfault-example
+[source-meta-memfault]:
+  https://github.com/memfault/memfault-linux-sdk/tree/main/meta-memfault
+[source-memfaultd]:
+  https://github.com/memfault/memfault-linux-sdk/tree/main/meta-memfault/recipes-memfault/memfaultd/files/memfaultd
+[source-memfaultd-collectd-plugin]:
+  https://github.com/memfault/memfault-linux-sdk/blob/main/meta-memfault/recipes-memfault/memfaultd/files/memfaultd/plugins/collectd.c
+[docs-linux-getting-started]: /docs/linux/linux-getting-started-guide
+[docs-linux-control-plugins]:
+  /docs/linux/linux-getting-started-guide#optional-opt-out-of-memfaultd-built-in-plugins
+[docs-memfault-device-info]:
+  /docs/linux/linux-getting-started-guide#add-a-memfault-device-info-executable-to-your-build
+[docs-configuration]: /docs/linux/reference-memfaultd-configuration
+[docs-metrics]: /docs/platform/metrics
+[docs-timeseries]: /docs/platform/metrics#timeseries
+[docs-attributes]: /docs/platform/metrics#attributes
+[docs-timeline]: /docs/platform/introduction/#metrics
+[docs-metric-charts]: /docs/platform/charts#metric-charts
+[docs-alerts]: /docs/platform/alerts

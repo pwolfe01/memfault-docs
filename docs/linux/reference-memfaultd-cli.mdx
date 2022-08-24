@@ -35,7 +35,7 @@ in `/etc/memfaultd.conf` extend the built-in configuration file.
 
 ```
 Base configuration (/etc/memfaultd.conf):
-  { "queue_size_kib": 1024, "data_dir": "\/media\/memfaultd", "refresh_interval_seconds": 3600, "enable_data_collection": false, "swupdate_plugin": { "input_file": "\/etc\/swupdate.cfg", "output_file": "\/tmp\/swupdate.cfg" }, "reboot_plugin": { "uboot_fw_env_file": "\/etc\/fw_env.config" } }
+  { "queue_size_kib": 1024, "data_dir": "\/media\/memfaultd", "refresh_interval_seconds": 3600, "enable_data_collection": false, "swupdate_plugin": { "input_file": "\/etc\/swupdate.cfg", "output_file": "\/tmp\/swupdate.cfg" }, "reboot_plugin": { "uboot_fw_env_file": "\/etc\/fw_env.config" }, "collectd_plugin": { "output_file": "\/etc\/collectd.conf" } }
 
 Runtime configuration:
   { "enable_data_collection": true }
@@ -51,6 +51,7 @@ Device configuration from memfault-device-info:
 Plugin enabled:
   reboot
   swupdate
+  collectd
 ```
 
 Note that plugins can be [opted out of][docs-control-memfaultd-plugins] at build
@@ -72,7 +73,7 @@ You can use the `--daemonize` flag for this. See this example, taken from the
 [Unit]
 Description=memfaultd daemon
 After=local-fs.target network.target
-Before=swupdate.service
+Before=swupdate.service collectd.service
 
 [Service]
 Type=forking
