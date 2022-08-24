@@ -23,10 +23,9 @@ configured and used in the Memfault dashboard.
 
 ### The `memfaultd` daemon
 
-We strongly recommend integrating `memfaultd` first. Follow the [getting-started
-guide][docs-linux-getting-started] to learn how to set this up for your device.
-A key function of `memfaultd` is to correctly configure and control CollectD to
-talk to Memfault.
+Follow the [getting-started guide][docs-linux-getting-started] to learn how to
+set this up for your device. A key function of `memfaultd` is to correctly
+configure and control CollectD to talk to Memfault.
 
 :::tip
 
@@ -36,14 +35,43 @@ following the steps in this tutorial.
 
 :::
 
-### Project Key
-
-This is a token that is used when pushing data between a device and the Memfault
-cloud. We will be using this to query for OTA Payloads in this tutorial. To
-locate this token you will also want to navigate to the "Settings" -> "General"
-page in the Memfault UI and copy/paste the token from the "Project Key" section.
-
 ## Configuring CollectD
+
+We strongly recommend familiarizing yourself with [CollectD][collectd-homepage]
+and how it's configured in order to make the best use of the Memfault platform.
+
+The `memfaultd` daemon generates a configuration file, by default in
+`/tmp/collectd.conf`, with information about the device provided by
+[`memfault-device-info`][docs-memfault-device-info] (see the [getting-started
+guide][docs-linux-getting-started] for more information). Note that the path
+where this configuration file is generated [can be configured in
+`/etc/memfaultd.conf`][docs-configuration] using the
+`plugin_collectd.output_file` configuration key.
+
+A minimal configuration file to configure CollectD to post to Memfault looks
+like this:
+
+```conf
+Interval 3600
+
+# Your configuration here.
+
+Include "/tmp/collectd.conf" # Or the value of your plugin_collectd.output_file
+```
+
+If you inspect the generated `/tmp/collectd.conf` file, you'll find that it
+simply configures the `write_http` plugin to talk to Memfault. Additionally, it
+creates a [CollectD post-cache chain][collectd-chains] that points to the
+configured `write_http` plugin, allowing other chains (provided by you) to exist
+if needed.
+
+### Recommended configuration
+
+See [our recommended CollectD configuration in
+`meta-memfault-example`][source-recommended-collectd-conf].
+
+This configuration makes use of standard plugins that enjoy special support on
+the Memfault platform ()
 
 ## Application metrics
 
@@ -52,12 +80,16 @@ page in the Memfault UI and copy/paste the token from the "Project Key" section.
 ### Using Python
 
 [collectd-homepage]: https://collectd.org/
+[collectd-write-http]: https://collectd.org/wiki/index.php/Plugin:Write_HTTP
+[collectd-chains]: https://collectd.org/wiki/index.php/Chains
 [source-yocto-example]:
   https://github.com/memfault/memfault-linux-sdk/tree/main/meta-memfault-example
 [source-meta-memfault]:
   https://github.com/memfault/memfault-linux-sdk/tree/main/meta-memfault
 [source-memfaultd]:
   https://github.com/memfault/memfault-linux-sdk/tree/main/meta-memfault/recipes-memfault/memfaultd/files/memfaultd
+[source-recommended-collectd-conf]:
+  https://github.com/memfault/memfault-linux-sdk/tree/master/meta-memfault-example/recipes-extended/collectd/files/collectd.conf
 [source-memfaultd-collectd-plugin]:
   https://github.com/memfault/memfault-linux-sdk/blob/main/meta-memfault/recipes-memfault/memfaultd/files/memfaultd/plugins/collectd.c
 [docs-linux-getting-started]: /docs/linux/linux-getting-started-guide
