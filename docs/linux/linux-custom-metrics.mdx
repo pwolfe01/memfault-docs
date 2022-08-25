@@ -4,6 +4,8 @@ title: Linux Custom Metrics
 sidebar_label: Custom Metrics
 ---
 
+import { ProjectMagicLink } from "@site/src/components/ProjectMagicLink";
+
 ## Introduction
 
 The `collectd` plugin (see [the source code][source-memfaultd-collectd-plugin])
@@ -16,8 +18,9 @@ metrics:
 - Can be used to create [Metric Charts][docs-metric-charts] and
   [Alerts][docs-alerts].
 
-See [Metrics](/docs/platform/metrics) for more details on how metrics can be
-configured and used in the Memfault dashboard.
+See [Metrics and Attributes](/docs/platform/metrics) for an introduction to
+Memfault terminology related to metrics and to learn how the features you'll set
+up here can be accessed in the Memfault Web App.
 
 ## Prerequisites
 
@@ -87,6 +90,13 @@ Include "/tmp/collectd.conf" # Or the value of your collectd_plugin.output_file
 If you inspect the generated `/tmp/collectd.conf` file, you'll find that it
 simply configures the `write_http` plugin to talk to Memfault.
 
+:::warning TODO
+
+Specify how to configure `Interval` in conjunction with Memfault's flush
+interval (TBD)
+
+:::
+
 ### Recommended configuration
 
 See [our recommended CollectD configuration in
@@ -95,16 +105,11 @@ See [our recommended CollectD configuration in
 This configuration makes use of standard plugins that enjoy special support on
 the Memfault platform...
 
-TODO: specify plugins
+:::warning TODO
 
-### Extending the configuration
+Specify the plugins in use (TBD)
 
-TODO:
-
-- Metrics filtered out from the Memfault write target
-- Adding your own write targets before they're filtered out
-
-#### Example: custom write targets, plus Memfault
+:::
 
 ## Application metrics
 
@@ -172,6 +177,34 @@ statsd = StatsClient(
 
 statsd.gauge("mygauge", 42)
 ```
+
+## Custom Metrics on the Web App
+
+<p>
+  To see detailed reports from a specific device, find the device in{" "}
+  <ProjectMagicLink path="/devices">
+    <b>Fleet -> Devices</b>
+  </ProjectMagicLink>
+  , and then open its <b>Timeline</b> tab.
+</p>
+
+<p>
+  Open{" "}
+  <ProjectMagicLink path="/metrics">
+    <b>Dashboards -> Metrics</b>
+  </ProjectMagicLink>{" "}
+  to create Metric Charts that monitor metrics at the fleet level by aggregating
+  the data from each device.
+</p>
+
+<p>
+  To receive notifications when your metrics exceed a certain threshold or meet
+  any complex set of criteria, you can set up Alerts. Navigate to{" "}
+  <ProjectMagicLink path="/alerts">
+    <b>Alerts</b>
+  </ProjectMagicLink>{" "}
+  using the main menu on the Memfault Web App.
+</p>
 
 [statsd-python-example]:
   https://github.com/memfault/memfault-linux-sdk/tree/main/meta-memfault-example/recipes-memfault/statsd-sampleapp-python

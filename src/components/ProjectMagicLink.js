@@ -1,10 +1,10 @@
 import React from "react";
 
-/** Bring your own trailing slash. */
+/** Bring your own leading slash. */
 export const PROJECT_MAGIC_URL =
     "https://app.memfault.com/organizations/-/projects/-";
 
-/** Bring your own trailing slash. */
+/** Bring your own leading slash. */
 export function ProjectMagicLink({ path, children, ...anchorProps }) {
     return (
         <a
