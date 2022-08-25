@@ -35,7 +35,9 @@ following the steps in this tutorial.
 
 :::
 
-### CollectD
+### Dependencies
+
+#### CollectD
 
 If you're using Yocto, the `meta-oe` layer includes [a recipe for `collectd`],
 so you may be able to just add `collectd` to your dependencies, e.g. by
@@ -44,7 +46,7 @@ appending it to `IMAGE_INSTALL`.
 [source-collectd-recipe]:
   https://github.com/openembedded/meta-openembedded/tree/master/meta-oe/recipes-extended/collectd
 
-### Optional: a StatsD client for application metrics
+#### Optional: StatsD
 
 [StatsD][statsd-homepage] clients can be configured to talk to CollectD using
 [the StatsD plugin][collectd-plugin-statsd]. This will allow you to send
@@ -69,7 +71,7 @@ The `memfaultd` daemon generates a configuration file, by default in
 guide][docs-linux-getting-started] for more information). Note that the path
 where this configuration file is generated [can be configured in
 `/etc/memfaultd.conf`][docs-configuration] using the
-`plugin_collectd.output_file` configuration key.
+`collectd_plugin.output_file` configuration key.
 
 A minimal configuration file to configure CollectD to post to Memfault looks
 like this:
@@ -79,7 +81,7 @@ Interval 3600
 
 # Your configuration here.
 
-Include "/tmp/collectd.conf" # Or the value of your plugin_collectd.output_file
+Include "/tmp/collectd.conf" # Or the value of your collectd_plugin.output_file
 ```
 
 If you inspect the generated `/tmp/collectd.conf` file, you'll find that it
@@ -106,13 +108,73 @@ TODO:
 
 ## Application metrics
 
-First, make sure you've followed [the prerequisites section][#prerequisites] and
+First, make sure you've followed [the prerequisites section](#prerequisites) and
 installed a StatsD client for your application.
 
-### Using C
+Enable the `statsd` plugin in your `/etc/collectd.conf` (note that this is
+already included in the
+[recommended configuration](#recommended-configuration)]):
 
-### Using Python
+```
+LoadPlugin statsd
+```
 
+The [StatsD plugin][collectd-plugin-statsd] exposes a UDP port (by default
+`8125`). You'll need to configure your StatsD client to talk to it. Read on to
+see some examples.
+
+### Example: using C
+
+See [the full module in our example layer][statsd-c-example].
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <statsd-client.h>
+#include <unistd.h>
+
+#define MAX_LINE_LEN 200
+#define PKT_LEN 1400
+
+int main(int argc, char *argv[])
+{
+  statsd_link *link;
+
+  link = statsd_init_with_namespace("localhost", 8125, "mycapp");
+
+  char pkt[PKT_LEN] = {'\0'};
+  char tmp[MAX_LINE_LEN] = {'\0'};
+
+  statsd_prepare(link, "mygauge", 42, "g", 1.0, tmp, MAX_LINE_LEN, 1);
+  strncat(pkt, tmp, PKT_LEN - 1);
+  statsd_send(link, pkt);
+
+  statsd_finalize(link);
+}
+```
+
+[statsd-c-example]:
+  https://github.com/memfault/memfault-linux-sdk/tree/main/meta-memfault-example/recipes-memfault/statsd-sampleapp-c
+
+### Example: using Python
+
+See [the full module in our example layer][statsd-python-example].
+
+```python
+from statsd import StatsClient
+
+statsd = StatsClient(
+    host="localhost",
+    port=8125,
+    prefix="mypythonapp",
+)
+
+statsd.gauge("mygauge", 42)
+```
+
+[statsd-python-example]:
+  https://github.com/memfault/memfault-linux-sdk/tree/main/meta-memfault-example/recipes-memfault/statsd-sampleapp-python
 [collectd-homepage]: https://collectd.org/
 [collectd-write-http]: https://collectd.org/wiki/index.php/Plugin:Write_HTTP
 [collectd-chains]: https://collectd.org/wiki/index.php/Chains
