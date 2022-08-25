@@ -35,6 +35,29 @@ following the steps in this tutorial.
 
 :::
 
+### CollectD
+
+If you're using Yocto, the `meta-oe` layer includes [a recipe for `collectd`],
+so you may be able to just add `collectd` to your dependencies, e.g. by
+appending it to `IMAGE_INSTALL`.
+
+[source-collectd-recipe]:
+  https://github.com/openembedded/meta-openembedded/tree/master/meta-oe/recipes-extended/collectd
+
+### Optional: a StatsD client for application metrics
+
+[StatsD][statsd-homepage] clients can be configured to talk to CollectD using
+[the StatsD plugin][collectd-plugin-statsd]. This will allow you to send
+application metrics through to Memfault.
+
+You can find a list of StatsD clients for a diversity of languages [in the
+StatsD repository][statsd-clients].
+
+[collectd-plugin-statsd]: https://collectd.org/wiki/index.php/Plugin:StatsD
+[statsd-homepage]: https://github.com/statsd/statsd
+[statsd-clients]:
+  https://github.com/statsd/statsd/blob/master/docs/client_implementations.md
+
 ## Configuring CollectD
 
 We strongly recommend familiarizing yourself with [CollectD][collectd-homepage]
@@ -82,6 +105,9 @@ TODO:
 #### Example: custom write targets, plus Memfault
 
 ## Application metrics
+
+First, make sure you've followed [the prerequisites section][#prerequisites] and
+installed a StatsD client for your application.
 
 ### Using C
 
