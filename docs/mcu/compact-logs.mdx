@@ -76,6 +76,19 @@ following to your linker script
     }
 ```
 
+## Host Decoding
+
+Compact log data will be decoded by the Memfault app when a log file or coredump
+containing log data is uploaded.
+
+Memfault also provides a Python library and command-line utility for decoding
+the log data locally (eg, if it's streamed out a UART from the device), which
+can be found here:
+
+<https://pypi.org/project/mflt-compact-log/>
+
+See that link for some details on how to use the library.
+
 ## FAQ
 
 ### How do I fix "## operator not supported" compiler error?
