@@ -60,10 +60,7 @@ Include "/tmp/collectd.conf" # Or the value of your plugin_collectd.output_file
 ```
 
 If you inspect the generated `/tmp/collectd.conf` file, you'll find that it
-simply configures the `write_http` plugin to talk to Memfault. Additionally, it
-creates a [CollectD post-cache chain][collectd-chains] that points to the
-configured `write_http` plugin, allowing other chains (provided by you) to exist
-if needed.
+simply configures the `write_http` plugin to talk to Memfault.
 
 ### Recommended configuration
 
@@ -71,7 +68,18 @@ See [our recommended CollectD configuration in
 `meta-memfault-example`][source-recommended-collectd-conf].
 
 This configuration makes use of standard plugins that enjoy special support on
-the Memfault platform ()
+the Memfault platform...
+
+TODO: specify plugins
+
+### Extending the configuration
+
+TODO:
+
+- Metrics filtered out from the Memfault write target
+- Adding your own write targets before they're filtered out
+
+#### Example: custom write targets, plus Memfault
 
 ## Application metrics
 
