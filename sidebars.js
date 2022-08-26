@@ -129,7 +129,7 @@ module.exports = {
                 "linux/introduction",
                 "linux/linux-getting-started-guide",
                 "linux/linux-releases-integration-guide",
-                "linux/linux-custom-metrics",
+                "linux/linux-metrics",
                 {
                     label: "Reference",
                     type: "category",

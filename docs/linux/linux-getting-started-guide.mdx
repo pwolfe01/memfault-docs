@@ -21,7 +21,7 @@ After you're done, you should have a basic integration setup that can talk to
 the Memfault cloud, enabling one or more of the following features:
 
 - Reporting reboot events to Memfault.
-- Reporting [Custom Metrics][docs-linux-metrics].
+- Reporting [Metrics][docs-linux-metrics].
 - [Over-the-air (OTA) updates][docs-linux-ota].
 
 ## Useful links
@@ -325,6 +325,9 @@ $ memfaultd --disable-data-collection
 The `memfaultd` service will restart automatically whenever you run either of
 those commands.
 
+Take a look at the [`/etc/memfaultd.conf` reference][docs-configuration] for
+more information.
+
 ### Test the integration
 
 <p>
@@ -361,7 +364,7 @@ Follow our [Embedded Linux OTA Integration Guide][docs-linux-ota].
 [docs-hardware-version-software-version]:
   /docs/platform/software-version-hardware-version
 [docs-device-id]: /docs/platform/memfault-terminology#device-id
-[docs-linux-metrics]: /docs/linux/linux-custom-metrics
+[docs-linux-metrics]: /docs/linux/linux-metrics
 [systemd-homepage]: https://systemd.io/
 [swupdate-homepage]: https://swupdate.org/
 [u-boot-homepage]: https://www.denx.de/wiki/U-Boot

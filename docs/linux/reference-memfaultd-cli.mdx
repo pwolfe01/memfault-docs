@@ -35,7 +35,7 @@ in `/etc/memfaultd.conf` extend the built-in configuration file.
 
 ```
 Base configuration (/etc/memfaultd.conf):
-  { "queue_size_kib": 1024, "data_dir": "\/media\/memfaultd", "refresh_interval_seconds": 3600, "enable_data_collection": false, "swupdate_plugin": { "input_file": "\/etc\/swupdate.cfg", "output_file": "\/tmp\/swupdate.cfg" }, "reboot_plugin": { "uboot_fw_env_file": "\/etc\/fw_env.config" }, "collectd_plugin": { "output_file": "\/etc\/collectd.conf" } }
+  { "queue_size_kib": 1024, "data_dir": "\/media\/memfaultd", "refresh_interval_seconds": 3600, "enable_data_collection": false, "swupdate_plugin": { "input_file": "\/etc\/swupdate.cfg", "output_file": "\/tmp\/swupdate.cfg" }, "reboot_plugin": { "uboot_fw_env_file": "\/etc\/fw_env.config" }, "collectd_plugin": { "output_file": "\/tmp\/collectd.conf" } }
 
 Runtime configuration:
   { "enable_data_collection": true }

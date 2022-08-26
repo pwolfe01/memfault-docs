@@ -1,7 +1,7 @@
 ---
-id: linux-custom-metrics
-title: Linux Custom Metrics
-sidebar_label: Custom Metrics
+id: linux-metrics
+title: Linux Metrics
+sidebar_label: Metrics
 ---
 
 import { ProjectMagicLink } from "@site/src/components/ProjectMagicLink";
@@ -28,7 +28,7 @@ up here can be accessed in the Memfault Web App.
 
 Follow the [getting-started guide][docs-linux-getting-started] to learn how to
 set this up for your device. A key function of `memfaultd` is to correctly
-configure and control CollectD to talk to Memfault.
+configure and control CollectD to upload metrics to Memfault.
 
 :::tip
 
@@ -42,9 +42,11 @@ following the steps in this tutorial.
 
 #### CollectD
 
-If you're using Yocto, the `meta-oe` layer includes [a recipe for `collectd`],
-so you may be able to just add `collectd` to your dependencies, e.g. by
-appending it to `IMAGE_INSTALL`.
+If you're using Yocto, the `meta-oe` layer includes [a recipe for
+`collectd`][source-collectd-recipe], so you may be able to just add `collectd`
+to your dependencies, e.g. by appending it to `IMAGE_INSTALL`. In our example
+project, we've opted for adding it to `MACHINE_ESSENTIAL_EXTRA_RRECOMMENDS` in
+[`layer.conf`][source-layer-conf].
 
 [source-collectd-recipe]:
   https://github.com/openembedded/meta-openembedded/tree/master/meta-oe/recipes-extended/collectd
@@ -58,6 +60,20 @@ application metrics through to Memfault.
 You can find a list of StatsD clients for a diversity of languages [in the
 StatsD repository][statsd-clients].
 
+In our example project, we've added StatsD clients as dependencies:
+
+- `statsd-c-client` in our C sample app:
+  - See [the corresponding `DEPENDS` addition][source-statsd-c-bb]
+  - See a [sample recipe for `statsd-c-client`][source-statsd-c-client-bb]
+- `python3-statsd` in our Python sample app:
+  - See [the corresponding `DEPENDS` addition][source-statsd-python-bb]
+
+[source-statsd-python-bb]:
+  https://github.com/memfault/memfault-linux-sdk/tree/main/meta-memfault-example/recipes-memfault/statsd-sampleapp-c/statsd-sampleapp-c.bb
+[source-statsd-c-bb]:
+  https://github.com/memfault/memfault-linux-sdk/tree/main/meta-memfault-example/recipes-memfault/statsd-sampleapp-c/statsd-sampleapp-c.bb
+[source-statsd-c-client-bb]:
+  https://github.com/memfault/memfault-linux-sdk/tree/main/meta-memfault-example/recipes-memfault/statsd-c-client/statsd-c-client.bb
 [collectd-plugin-statsd]: https://collectd.org/wiki/index.php/Plugin:StatsD
 [statsd-homepage]: https://github.com/statsd/statsd
 [statsd-clients]:
@@ -110,6 +126,31 @@ the Memfault platform...
 Specify the plugins in use (TBD)
 
 :::
+
+## Set `enable_data_collection`
+
+By default, `enable_data_collection` is `false` (see the [default
+configuration][source-builtin-conf]). This is to enable asking end users for
+consent before collecting or transmitting any data to Memfault services.
+
+Once the end user has given their consent, you can enable data collection like
+so:
+
+```shell
+$ memfaultd --enable-data-collection
+```
+
+To disable it:
+
+```shell
+$ memfaultd --disable-data-collection
+```
+
+The `memfaultd` service will restart automatically whenever you run either of
+those commands.
+
+Take a look at the [`/etc/memfaultd.conf` reference][docs-configuration] for
+more information.
 
 ## Application metrics
 
@@ -178,7 +219,7 @@ statsd = StatsClient(
 statsd.gauge("mygauge", 42)
 ```
 
-## Custom Metrics on the Web App
+## Viewing Metrics in the Web Application
 
 <p>
   To see detailed reports from a specific device, find the device in{" "}
@@ -218,9 +259,13 @@ statsd.gauge("mygauge", 42)
 [source-memfaultd]:
   https://github.com/memfault/memfault-linux-sdk/tree/main/meta-memfault/recipes-memfault/memfaultd/files/memfaultd
 [source-recommended-collectd-conf]:
-  https://github.com/memfault/memfault-linux-sdk/tree/master/meta-memfault-example/recipes-extended/collectd/files/collectd.conf
+  https://github.com/memfault/memfault-linux-sdk/tree/main/meta-memfault-example/recipes-extended/collectd/files/collectd.conf
+[source-layer-conf]:
+  https://github.com/memfault/memfault-linux-sdk/tree/main/meta-memfault/layer.conf
 [source-memfaultd-collectd-plugin]:
   https://github.com/memfault/memfault-linux-sdk/blob/main/meta-memfault/recipes-memfault/memfaultd/files/memfaultd/plugins/collectd.c
+[source-builtin-conf]:
+  https://github.com/memfault/memfault-linux-sdk/tree/main/meta-memfault/recipes-memfault/memfaultd/files/memfaultd/builtin.conf
 [docs-linux-getting-started]: /docs/linux/linux-getting-started-guide
 [docs-linux-control-plugins]:
   /docs/linux/linux-getting-started-guide#optional-opt-out-of-memfaultd-built-in-plugins
