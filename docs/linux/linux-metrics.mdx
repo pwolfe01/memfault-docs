@@ -113,9 +113,13 @@ If you inspect the generated `/tmp/collectd.conf` file, you'll find that it
 configures the `write_http` plugin to talk to Memfault, and also sets an
 `Interval` and a `FlushInterval`.
 
+:::note
+
 You don't need to add a `LoadPlugin write_http` in your own config. One such
 line is included in the generated configuration. Subsequent `LoadPlugin` lines
 for the same plugin will have no effect.
+
+:::
 
 ### `Interval` and `FlushInterval`
 
@@ -128,9 +132,13 @@ Using `memfaultd`, you can control both settings at once using the
 `collectd.interval_seconds` configuration option of `/etc/memfaultd.conf`. See
 [a full configuration reference here][docs-configuration].
 
+:::note
+
 The `FlushInterval` parameter to `write_http` is shared among all instances of
 the plugin. That means that if you have your own, it will flush at the
 Memfault-configured `FlushInterval`, too. This is a limitation of `write_http`.
+
+:::
 
 ### Recommended configuration
 
@@ -138,7 +146,7 @@ See [our recommended CollectD configuration in
 `meta-memfault-example`][source-recommended-collectd-conf]. This configuration
 makes use of standard plugins that enjoy special support on the Memfault
 platform. Copying this configuration over to your project will guarantee a good
-first experience with the Memfault platform.
+first experience.
 
 Note that as long as the generated configuration file `/tmp/collectd.conf` is
 included at the very bottom of your CollectD configuration, you're free to add
@@ -255,6 +263,23 @@ statsd = StatsClient(
 
 statsd.gauge("mygauge", 42)
 ```
+
+## Testing your integration
+
+During the development phase, we recommend setting a low value (e.g. 60 seconds)
+for the `collectd.interval_seconds` setting in `/etc/memfaultd.conf`. Take a
+look at the [`/etc/memfaultd.conf` reference][docs-configuration] for more
+information.
+
+For changes in `/etc/memfaultd.conf` to take effect, you'll need to restart the
+`memfaultd` daemon:
+
+```sh
+$ systemctl restart memfaultd
+```
+
+The following section should help you figure out where you may expect data to be
+accessible in the Memfault Web Application.
 
 ## Viewing Metrics in the Web Application
 
