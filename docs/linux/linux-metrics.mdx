@@ -106,8 +106,9 @@ Include "/tmp/collectd.conf" # Or the value of your collectd_plugin.output_file
 ```
 
 It is important that the `Include` of the `memfaultd`-generated file is **the
-last line in your configuration**. This ensures each request contains the full
-set of configured metrics.
+last line in your configuration**. This ensures each HTTP request that
+CollectD's `write_http` plugin performs to the Memfault backend contains the
+full set of configured metrics.
 
 If you inspect the generated `/tmp/collectd.conf` file, you'll find that it
 configures the `write_http` plugin to talk to Memfault, and also sets an
@@ -115,9 +116,10 @@ configures the `write_http` plugin to talk to Memfault, and also sets an
 
 :::note
 
-You don't need to add a `LoadPlugin write_http` in your own config. One such
-line is included in the generated configuration. Subsequent `LoadPlugin` lines
-for the same plugin will have no effect.
+You _must not_ add a `LoadPlugin write_http` in your own config (either before
+or after `Include`ing the generated config file). One such line is included in
+the generated configuration. Subsequent `LoadPlugin` lines for the same plugin
+will have no effect.
 
 :::
 
@@ -130,7 +132,8 @@ here][docs-configuration].
 #### `collectd.interval_seconds`
 
 The `collectd.interval_seconds` setting in `/etc/memfaultd.conf` controls both
-`Interval` and `FlushInterval`.
+`Interval` and `FlushInterval`. This means that you should not configure either
+setting in your own configuration file.
 
 In CollectD, the `Interval` setting regulates how often read plugins will
 attempt a reading by default (plugin instances may override this for their own
