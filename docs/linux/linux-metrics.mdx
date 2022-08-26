@@ -96,22 +96,33 @@ A minimal configuration file to configure CollectD to post to Memfault looks
 like this:
 
 ```conf
-Interval 3600
-
 # Your configuration here.
 
 Include "/tmp/collectd.conf" # Or the value of your collectd_plugin.output_file
 ```
 
 If you inspect the generated `/tmp/collectd.conf` file, you'll find that it
-simply configures the `write_http` plugin to talk to Memfault.
+configures the `write_http` plugin to talk to Memfault, and also sets an
+`Interval` and a `FlushInterval`.
 
-:::warning TODO
+You don't need to add a `LoadPlugin write_http` in your own config. One such
+line is included in the generated configuration. Subsequent `LoadPlugin` lines
+for the same plugin will have no effect.
 
-Specify how to configure `Interval` in conjunction with Memfault's flush
-interval (TBD)
+### `Interval` and `FlushInterval`
 
-:::
+In CollectD, the `Interval` setting regulates how often read plugins will
+attempt a reading by default (plugin instances may override this for their own
+metrics), and the `FlushInterval` setting for the `write_http` plugin controls
+how often CollectD will flush its cache and attempt to post metrics to Memfault.
+
+Using `memfaultd`, you can control both settings at once using the
+`collectd.interval_seconds` configuration option of `/etc/memfaultd.conf`. See
+[a full configuration reference here][docs-configuration].
+
+The `FlushInterval` parameter to `write_http` is shared among all instances of
+the plugin. That means that if you have your own, it will flush at the
+Memfault-configured `FlushInterval`, too. This is a limitation of `write_http`.
 
 ### Recommended configuration
 
@@ -126,6 +137,26 @@ the Memfault platform...
 Specify the plugins in use (TBD)
 
 :::
+
+### Configuring additional chains
+
+See [CollectD chains][collectd-chains] for an introduction.
+
+#### Jumping to your custom chain after the `memfaultd`-generated chain
+
+By default, the `memfaultd`-generated chain will bottom out in a `Target stop`
+directive. You can change this final directive to instruct CollectD to jump to
+your own chain. To do this, set the value of `collectd.non_memfaultd_chain` in
+`/etc/memfaultd.conf` and add a chain with a matching name. See [a full
+configuration reference here][docs-configuration].
+
+#### On setting `PostCacheChain`
+
+The value of the `PostCacheChain` is set by the `memfaultd`-generated
+configuration. That means it's the first node of the `PostCacheChain`. If you
+change its value to something else, you need to make sure that your chains
+bottom out in a call to the `memfaultd`-generated chain. Please inspect
+`/tmp/collectd.conf` to see its identifier.
 
 ## Set `enable_data_collection`
 
