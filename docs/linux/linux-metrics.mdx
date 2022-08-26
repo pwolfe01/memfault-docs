@@ -51,11 +51,15 @@ project, we've opted for adding it to `MACHINE_ESSENTIAL_EXTRA_RRECOMMENDS` in
 [source-collectd-recipe]:
   https://github.com/openembedded/meta-openembedded/tree/master/meta-oe/recipes-extended/collectd
 
-#### Optional: StatsD
+#### Optional: an application metrics client
 
-[StatsD][statsd-homepage] clients can be configured to talk to CollectD using
-[the StatsD plugin][collectd-plugin-statsd]. This will allow you to send
-application metrics through to Memfault.
+There are different ways to track application metrics using CollectD. We
+recommend using a [StatsD][statsd-homepage] client, but other mechanisms are
+expected to work equally well.
+
+StatsD clients can be configured to communicate with CollectD using [the StatsD
+plugin][collectd-plugin-statsd]. This will allow you to send application metrics
+through to Memfault.
 
 You can find a list of StatsD clients for a diversity of languages [in the
 StatsD repository][statsd-clients].
@@ -101,6 +105,10 @@ like this:
 Include "/tmp/collectd.conf" # Or the value of your collectd_plugin.output_file
 ```
 
+It is important that the `Include` of the `memfaultd`-generated file is **the
+last line in your configuration**. This ensures each request contains the full
+set of configured metrics.
+
 If you inspect the generated `/tmp/collectd.conf` file, you'll find that it
 configures the `write_http` plugin to talk to Memfault, and also sets an
 `Interval` and a `FlushInterval`.
@@ -127,16 +135,14 @@ Memfault-configured `FlushInterval`, too. This is a limitation of `write_http`.
 ### Recommended configuration
 
 See [our recommended CollectD configuration in
-`meta-memfault-example`][source-recommended-collectd-conf].
+`meta-memfault-example`][source-recommended-collectd-conf]. This configuration
+makes use of standard plugins that enjoy special support on the Memfault
+platform. Copying this configuration over to your project will guarantee a good
+first experience with the Memfault platform.
 
-This configuration makes use of standard plugins that enjoy special support on
-the Memfault platform...
-
-:::warning TODO
-
-Specify the plugins in use (TBD)
-
-:::
+Note that as long as the generated configuration file `/tmp/collectd.conf` is
+included at the very bottom of your CollectD configuration, you're free to add
+your own directives before it, and in addition to the recommended settings.
 
 ### Configuring additional chains
 
