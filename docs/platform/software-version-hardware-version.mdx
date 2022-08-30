@@ -45,6 +45,20 @@ a given device. This can be images running on different MCUs (i.e `main-mcu-app`
 `main-mcu-bootloader` & `main-mcu-app`). You can also use Software Types to
 distinguish between build variants (i.e. `main-mcu-dvt` & `main-mcu-evt`).
 
+Memfault's platform uses the notion of "Primary Software Type" to identify the
+main software version for a device.
+
+Each **Hardware Version** has a single matching **Primary Software Type**
+associated with it, which is set from the **Software Type** for the first device
+reporting in with a particular **Hardware Version**. The association can also be
+modified later from the Settings page. An example:
+
+![](/img/docs/platform/primary-software-type.drawio.svg)
+
+The **Primary Software Type** is used to populate the Software Version field on
+the individual Device page, as well as when filtering for the device, and how it
+appears in various fleet-level charts.
+
 ### MCU
 
 The software running on your devices will need to report its Software Type
