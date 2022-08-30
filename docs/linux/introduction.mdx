@@ -18,7 +18,7 @@ reason tracking, and in the future reporting crashes and logs.
 <p>
   <figure>
     <img
-      src="/img/docs/linux/sdk-overview.svg"
+      src="/img/docs/linux/sdk-overview-0.3.0.svg"
       alt="Overview of the Memfault Linux SDK"
     />
     <figcaption>
@@ -96,13 +96,15 @@ configure it to talk to our hawkBit DDI-compatible endpoint.
 [hawkbit-ddi]: https://www.eclipse.org/hawkbit/apis/ddi_api/
 [swupdate-homepage]: https://swupdate.org/
 
-### Metrics (available with next release)
+### Metrics
 
 The Memfault Linux SDK relies on [`collectd`][collectd-homepage] for the
 collection and transmission of metrics. Application metrics can be sent to
-`collectd` by means of [`statsd`][statsd-homepage].
+`collectd` by means of [`statsd`][statsd-homepage]. Read more about setting up
+metrics for Linux [here].
 
 [collectd-homepage]: https://collectd.org/
+[docs-metrics]: /docs/linux/linux-metrics
 [statsd-homepage]: https://github.com/statsd/statsd
 
 ### Reboot Reason Tracking, Crash Reports and Logs
