@@ -230,6 +230,14 @@ this Release.
 
 :::
 
+:::caution
+
+If you're on Android, we recommend reading the
+[Android-specific OTA guide](/docs/android/android-releases-integration-guide)
+in order to create Releases.
+
+:::
+
 #### Creating a Full Release
 
 To create a Full Release, click on the _Create Release_ button on the top-right
@@ -252,6 +260,15 @@ the top-right corner of the _OTA payloads_ card.
 Alongside the actual payload file, you'll be prompted for different inputs that
 a device querying the [Device OTA Endpoint](#device-ota-endpoint) must match for
 this Release to be applicable to it.
+
+:::caution
+
+If you're on Android, you'll need to follow the
+[Android-specific OTA guide](/docs/android/android-releases-integration-guide)
+to upload an OTA payload, since it can only done using the
+[Memfault CLI](/docs/ci/install-memfault-cli/).
+
+:::
 
 See the [updating behavior](#updating-behavior) section for more details.
 
