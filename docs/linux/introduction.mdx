@@ -89,10 +89,10 @@ lives in a Yocto layer in [`/meta-memfault`][source-meta-memfault].
 
 ### OTA Updates
 
-To provide [OTA Updates][docs-ota], the Memfault Cloud implements an API endpoint compatible
-with the [hawkBit DDI API][hawkbit-ddi]. Various clients are available, but
-`memfaultd` supports [SWUpdate][swupdate-homepage] out of the box and is able to
-configure it to talk to our hawkBit DDI-compatible endpoint.
+To provide [OTA Updates][docs-ota], the Memfault Cloud implements an API
+endpoint compatible with the [hawkBit DDI API][hawkbit-ddi]. Various clients are
+available, but `memfaultd` supports [SWUpdate][swupdate-homepage] out of the box
+and is able to configure it to talk to our hawkBit DDI-compatible endpoint.
 
 [docs-ota]: /docs/linux/linux-releases-integration-guide
 [hawkbit-homepage]: https://www.eclipse.org/hawkbit/
@@ -101,7 +101,13 @@ configure it to talk to our hawkBit DDI-compatible endpoint.
 
 ### Metrics
 
-Use [metrics and diagnostic data][docs-metrics] to measure the success of software updates (OTA) and to proactively diagnose anomalies before users even experience their effect. The SDK ships with a configurable set of plugins for [`collectd`][collectd-homepage] to obtain standard KPIs at the operating system level (e.g. available storage or RAM, CPU utilization, or network status and traffic). You can also use the SDK to collect product-specific custom metrics via [`statsd`][statsd-homepage].
+Use [metrics and diagnostic data][docs-metrics] to measure the success of
+software updates (OTA) and to proactively diagnose anomalies before users even
+experience their effect. The SDK ships with a configurable set of plugins for
+[`collectd`][collectd-homepage] to obtain standard KPIs at the operating system
+level (e.g. available storage or RAM, CPU utilization, or network status and
+traffic). You can also use the SDK to collect product-specific custom metrics
+via [`statsd`][statsd-homepage].
 
 [collectd-homepage]: https://collectd.org/
 [docs-metrics]: /docs/linux/linux-metrics
