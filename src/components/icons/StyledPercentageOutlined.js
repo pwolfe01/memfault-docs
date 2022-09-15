@@ -1,6 +1,6 @@
 import React from "react";
 
-import Icon from "./styled-square-percentage.png";
+import Icon from "./styled-square-percentage.gif";
 
 export default function StyledPercentageOutlined() {
     return (
