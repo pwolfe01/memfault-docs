@@ -1,16 +1,16 @@
 import React from "react";
 
-import iconLight from "./icon-normalized-charts-light-64x64.gif";
-import iconDark from "./icon-normalized-charts-dark-64x64.gif";
+const IconLightUrl = "/components/icons/icon-normalized-charts-light-64x64.gif";
+const IconDarkUrl = "/components/icons/icon-normalized-charts-dark-64x64.gif";
 
 import { useColorMode } from "@docusaurus/theme-common";
 
 export default function NormalizedCharts() {
     const { isDarkTheme } = useColorMode();
-    const icon = isDarkTheme ? iconDark : iconLight;
+    const iconUrl = isDarkTheme ? IconDarkUrl : IconLightUrl;
     return (
         <img
-            src={icon}
+            src={iconUrl}
             style={{ width: "1em", height: "1em" }}
             alt="Icon to Toggle Chart Normalization "
         />

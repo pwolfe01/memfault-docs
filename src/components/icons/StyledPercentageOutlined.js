@@ -1,11 +1,11 @@
 import React from "react";
 
-import Icon from "./styled-square-percentage.gif";
+const IconUrl = "/components/icons/styled-square-percentage.png";
 
 export default function StyledPercentageOutlined() {
     return (
         <img
-            src={Icon}
+            src={IconUrl}
             style={{ width: "1em", height: "1em" }}
             alt="Blue percentage icon"
         />
