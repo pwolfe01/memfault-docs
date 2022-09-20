@@ -67,7 +67,18 @@ These variables must be captured in the coredump:
 - `_kernel_openocd_offsets`
 - `_kernel_openocd_size_t_size`
 
+### Azure RTOS ThreadX
+
+#### Required
+
+These variables must be captured in the coredump:
+
+- `_tx_thread_current_ptr`
+- `_tx_thread_created_ptr`
+- `_tx_thread_created_count`
+- `_tx_thread_system_state`
+
 ### Other RTOSes
 
 Memfault also supports these other RTOSes: Argon, ChibiOS, Mynewt, NuttX,
-Quantum Platform, Keil RTX5 / ARM mbedOS, ThreadX and TI RTOS.
+Quantum Platform, Keil RTX5 / ARM mbedOS, and TI RTOS.
