@@ -380,6 +380,39 @@ void some_periodic_task(void) {
 
 #### Bluetooth
 
+##### Using the Memfault Diagnostic Service (MDS), nRF-Connect SDK v2.1.0+
+
+As of the v2.1.0 release of the nRF-Connect SDK, there is built-in support for
+the Memfault Diagnostic Service, which is a BLE GATT service designed to enable
+exporting Memfault data in a standardized way.
+
+Nordic has detailed documentation on the Memfault Diagnostic service here:
+
+<https://developer.nordicsemi.com/nRF_Connect_SDK/doc/2.1.0/nrf/libraries/bluetooth_services/services/mds.html>
+
+There is also a sample application, "Bluetooth: Peripheral Memfault Diagnostic
+Service (MDS)", documented here:
+
+<https://developer.nordicsemi.com/nRF_Connect_SDK/doc/2.1.0/nrf/samples/bluetooth/peripheral_mds/README.html>
+
+Nordic and Memfault provide the following BLE gateways for testing the MDS implementation:
+
+- the Python MDS BLE gateway script, from the nRF-Connect SDK: <https://github.com/nrfconnect/sdk-nrf/tree/v2.1.0/scripts/memfault>
+
+- a WebBluetooth browser-based tool, from Memfault: <https://mflt.io/mds>
+
+- iOS and Android mobile applications and open-source libraries:
+  - Android app: <https://play.google.com/store/apps/details?id=no.nordicsemi.memfault>
+  - iOS app: <https://apps.apple.com/us/app/nrf-memfault/id1641119282>
+  - Android library: <https://github.com/NordicSemiconductor/Android-Memfault-Library>
+  - iOS library: <https://github.com/NordicSemiconductor/IOS-Memfault-Library>
+
+For a quick test, we recommend using the "Bluetooth: Peripheral Memfault
+Diagnostic Service (MDS)" sample application and one of the mobile apps with a
+compatible mobile device.
+
+##### Without using the MDS
+
 Extensive details about how data from the Memfault SDK makes it to the cloud
 [can be found here](data-from-firmware-to-the-cloud.mdx). In short, the Memfault
 SDK packetizes data into "chunks" that must be pushed to the Memfault cloud via
@@ -402,7 +435,8 @@ bool try_send_memfault_data(void) {
     return false; // no more data to send
   }
 
-  // send payload collected to chunks endpoint
+  // send payload collected to chunks endpoint; this could for example send the
+  // packet over a GATT characteristic to the peer device
   user_transport_send_chunk_data(buf, buf_len);
   return true;
 }
@@ -412,6 +446,8 @@ void send_memfault_data(void) {
   while (try_send_memfault_data()) { }
 }
 ```
+
+
 
 ### Force a Crash and Upload to Memfault
 
