@@ -64,6 +64,14 @@ replaced with a hash of that string, rendering it obfuscated. Since it is
 replaced with a stable hash, you will still be able to see if the same string
 appears multiple times in the logs.
 
+## Tombstone Scrubbing
+
+Tombstone files captured by Bort can optionally be scrubbed before upload to
+remove the content of memory/code dumps. Stacktraces will remain untouched.
+This can be controlled by navigating to **Settings** and **Data Sources**.
+
+This feature is available from Bort 4.3.0 onward.
+
 ## Custom Scrubbing Rules
 
 :::note

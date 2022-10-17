@@ -118,16 +118,22 @@ performance over time and find outlier devices.
 
 ### Storage Usage
 
-**Collected Since Bort 4.0**
+**Collected Since Bort 4.3.0**
+
+:::info
+
+Before Bort 4.3.0, these metrics were collected differently (as `storage.primary.*`).
+
+:::
 
 Bort regularly collects device storage usage metrics from the
-[StorageStatsManager](<https://developer.android.com/reference/android/app/usage/StorageStatsManager#getFreeBytes(java.util.UUID)>)
-(`getFreeBytes`/`getTotalBytes` for the primary volume):
+[Environment.getDataDirectory](https://developer.android.com/reference/android/os/Environment#getDataDirectory())
+(`getFreeSpace`/`getTotalSpace`):
 
-- `storage.primary.bytes_free`
-- `storage.primary.bytes_total`
-- `storage.primary.bytes_used`
-- `storage.primary.percentage_used`
+- `storage.data.bytes_free`
+- `storage.data.bytes_total`
+- `storage.data.bytes_used`
+- `storage.data.percentage_used`
 
 These metrics would be good candidates for Timeseries metrics, to monitor fleet
 performance over time and find outlier devices.
