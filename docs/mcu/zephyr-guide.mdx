@@ -86,6 +86,22 @@ void memfault_platform_get_device_info(sMemfaultDeviceInfo *info) {
 }
 ```
 
+## Memfault Zephyr Log Backend
+
+TODO
+
+(deferred vs immediate, compact logs, etc)
+
+## Configuring Coredump Regions
+
+TODO
+
+MEMFAULT_COREDUMP_COLLECT_BSS_REGIONS
+
+MEMFAULT_RAM_BACKED_COREDUMP_SIZE
+
+MEMFAULT_COREDUMP_COLLECT_DATA_REGIONS
+
 ## Testing the Integration
 
 If the project successfully builds, now we're ready to test the integration. If
@@ -104,6 +120,12 @@ CONFIG_LOG=y
 CONFIG_LOG_BACKEND_UART=y
 CONFIG_MEMFAULT_LOGGING_ENABLE=y
 ```
+
+> Note: on boards that do not reserve a UART for console, an alternative is RTT.
+> See more information here:
+>
+> - <https://developer.nordicsemi.com/nRF_Connect_SDK/doc/2.1.1/nrf/gs_testing.html#how-to-use-rtt>
+> - <https://blog.golioth.io/use-rtt-with-zephyr-when-console-output-via-uart-just-isnt-convenient/>
 
 Flash an application with the console enabled and open a serial terminal to run
 the test commands:
@@ -220,8 +242,8 @@ documentation and usage information.
 1. Zephyr example with networking enabled, targeting the
    [STM32L4 Discovery Kit for IoT Node (B-L475E-IOT01A)](https://www.st.com/en/evaluation-tools/b-l475e-iot01a.html):
 
-   - [https://github.com/memfault/memfault-firmware-sdk/tree/master/examples/zephyr/README.md](https://github.com/memfault/memfault-firmware-sdk/blob/73fab8656b17bde6efa11bf78fbe155a8dbabf78/examples/zephyr/README.md)
+   - [https://github.com/memfault/memfault-firmware-sdk/tree/0.33.5/examples/zephyr/stm32l4_disco](https://github.com/memfault/memfault-firmware-sdk/tree/0.33.5/examples/zephyr/stm32l4_disco)
 
 2. Non-networked example, can be used with any Cortex-M board:
 
-   - [https://github.com/memfault/zephyr-memfault-example/tree/memfault/README.md](https://github.com/memfault/zephyr-memfault-example/blob/aeb3853851c7f92bc4015d548a246d1a856d1588/README.md)
+   - [https://github.com/memfault/memfault-firmware-sdk/tree/0.33.5/examples/zephyr/qemu](https://github.com/memfault/memfault-firmware-sdk/tree/0.33.5/examples/zephyr/qemu)
