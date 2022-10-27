@@ -58,7 +58,8 @@ Memfault.
 ### Android
 
 If you are using the [Bort SDK](/docs/android/android-bort), the relevant
-battery metrics are automatically reported and you can skip down to...
+battery metrics are automatically reported and you can skip down to the later
+sections to learn how to use these metrics within Memfault.
 
 ### MCU & Linux
 
@@ -114,13 +115,18 @@ This value should be based on a linear scale. Millivolts should not be sent.
 This value represents the amount the battery charge level dropped within the
 heartbeat interval, normalized between 0 to 10,000. This can also be interpreted
 as the first derivative of the
-[current battery charge level](#current-battery-charge-level).
+[current battery charge level](#current-battery-charge-level)
 
 This metric _should report an invalid reading of -1_ if a charger or other power
 source was connected at any point during the heartbeat interval.
 
-A value of -1 should be sent when the battery charge level drop can not be
+A value of -1 should also be sent when the battery charge level drop can not be
 obtained, is known to be invalid, or happens to be negative.
+
+There's a reason to send -1 in these events. We want to capture only normally
+occurring battery charge level drops during intervals. If anything makes it a
+non-normal event, it should be thrown out so as to not ruin the fleet-level
+aggregation.
 
 ##### Setup Within Memfault
 
@@ -155,6 +161,23 @@ Below is C pseudocode that can be used to track the current
 [battery charge level drop](#battery-level-drop-over-interval) over a given
 heartbeat interval.
 
+##### memfault_metrics_heartbeat_config.def
+
+```c
+MEMFAULT_METRICS_KEY_DEFINE_WITH_RANGE(Battery_ChargeLevel,
+                                       kMemfaultMetricType_Signed,
+                                       0, 10000)
+MEMFAULT_METRICS_KEY_DEFINE_WITH_RANGE(Battery_ChargeLevelDrop,
+                                       kMemfaultMetricType_Signed,
+                                       0, 10000)
+```
+
+Note that the value of -1 can be sent even though the range is defined as
+0 - 10000. The range is primarily used to improve the experience of viewing the
+metric within the UI.
+
+##### Memfault C Instrumentation
+
 ```c
 // Stores the battery charge level from the start of the heartbeat interval
 static int32_t s_battery_charge_level_previous;
@@ -174,7 +197,7 @@ static void prv_device_metrics_start_heartbeat() {
 }
 
 // Calculate and record the drop in battery charge over the heartbeat interval
-static void prv_metrics_heartbeat_record_battery_info() {
+static void prv_metrics_heartbeat_record_battery_info(void) {
     // Charge level normalized between 0 and 10,000
     const int32_t battery_charge_level = battery_charge_level_get();
 
@@ -252,8 +275,8 @@ are configured to send. If this guide was followed, the metric would be called
 ## Analyzing Battery Life for a Fleet of Devices
 
 A requirement of battery-operated devices is that they meet a minimum expected
-battery life. If a smartwatch promised to last 7 days under normal usage, it
-should ideally last 7 days or more in real-world environments.
+battery life. If a smartwatch promised to last for a week under normal usage, it
+should ideally last a week or more in real-world environments.
 
 Fleet-wide battery trends can also be easily analyzed within Memfault.
 
@@ -344,7 +367,7 @@ connected to a charger. It might report 100% for 3 days, and these calculations
 should not be taken into account when determining battery life calculations for
 a fleet of devices.
 
-### Sending Current Battery Life Sporadically
+### Sending Current Battery Charge Level Sporadically
 
 Firmware could be configured to send up battery life information at a
 non-standard interval. It may be whenever it connects to Wi-Fi, when it's within
@@ -371,6 +394,11 @@ When only taking into account the four captured data points, the battery life
 looks like it drops at a normal rate. However, there was a large drop in the
 middle.
 
+The other reason why sending battery charge levels at non-regular intervals is
+hard is because of the large-scale calculation that needs to be done to
+aggregate millions of devices battery life expectancies becomes incredibly
+complex, expensive, and potentially impossible.
+
 ### Not Waiting For Battery Measure to Settle
 
 Batteries are quirky devices, and we don't have perfect tools at our disposal to
@@ -382,12 +410,11 @@ to be stable, but the battery may experience a voltage drop during a sudden high
 current draw, such as the backlight being turned on or a vibration motor
 suddenly activating.
 
-In these situations, you need to be extra careful to avoid using the battery
-charge level reading during an event of a voltage drop. To mitigate this, it is
-advised to take a handful of samples at both the start and end of heartbeat
-intervals, each sample being a few seconds apart. Of these samples, the outliers
-can be discarded or all samples can be averaged to come up with a more stable
-reading.
+In these situations, you need to be extra careful when using the battery charge
+level reading. To mitigate this, it is advised to take a handful of samples at
+both the start and end of heartbeat intervals, each sample being a few seconds
+apart. Of these samples, the outliers can be discarded or all samples can be
+averaged to come up with a more stable reading.
 
 ## Preventing Battery Life Regressions
 
