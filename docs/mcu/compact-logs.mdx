@@ -129,3 +129,82 @@ MEMFAULT_TRACE_EVENT_WITH_LOG("String Pointer: %p", int_ptr);
 const char *str = "hello world";
 MEMFAULT_TRACE_EVENT_WITH_LOG("String Pointer: %p", (void *)str);
 ```
+
+### For ESP-IDF builds, which symbol file should I upload?
+
+For ESP32 builds, Memfault suggests including some additional `POST_BUILD`
+commands to strip the `log_fmt` section from the executable. These commands can
+be added to the application's top-level `CMakeLists.txt`:
+
+```cmake
+# Remove the 'log_fmt' section from the application after linking. This section
+# causes esptool.py to generate an invalid .bin (for flashing + OTA) and needs
+# to be removed before the binary is generated.
+set(IDF_PROJECT_EXECUTABLE ${PROJECT_NAME}.elf)
+add_custom_command(TARGET ${IDF_PROJECT_EXECUTABLE}
+  POST_BUILD
+  # Save a copy of the ELF that includes the 'log_fmt' section
+  BYPRODUCTS ${IDF_PROJECT_EXECUTABLE}.memfault_log_fmt
+  COMMAND ${CMAKE_COMMAND} -E copy ${IDF_PROJECT_EXECUTABLE} ${IDF_PROJECT_EXECUTABLE}.memfault_log_fmt
+  COMMAND ${CMAKE_COMMAND} -E echo "*** NOTE: the symbol file to upload to app.memfault.com is ${IDF_PROJECT_EXECUTABLE}.memfault_log_fmt ***"
+  # Remove the 'log_fmt' compact log section, which confuses elf2image
+  COMMAND ${CMAKE_OBJCOPY} --remove-section log_fmt ${IDF_PROJECT_EXECUTABLE}
+)
+```
+
+This results in a second `.elf` file, named
+`build/memfault-esp32-demo-app.elf.memfault_log_fmt`, which contains the
+`log_fmt` section.
+
+This is the Symbol File that should be uploaded to the Memfault platform for
+decoding compact logs.
+
+This is the technique used in the `esp32`
+[example app](https://github.com/memfault/memfault-firmware-sdk/blob/0.34.0/examples/esp32/apps/memfault_demo_app/CMakeLists.txt#L23-L28)
+in the Memfault Firmware SDK.
+
+<details>
+  <summary>👇 See here for details on why this is necessary</summary>
+
+In the case of Compact Logs, including compact log statements will emit a
+`log_fmt` section in the `.elf`:
+
+```bash
+❯ xtensa-esp32-elf-size -Ax build/memfault-esp32-demo-app.elf | grep -E '(section)|(log_fmt)'
+section                                                 size         addr
+log_fmt                                                 0xa5   0xf0000000
+```
+
+This unfortunately causes the `esptool.py` to output the `log_fmt` section into
+the flashable `.bin` that's generated as part of the build:
+
+```bash
+❯ ../../esp-idf/components/esptool_py/esptool/esptool.py --chip esp32 image_info build/memfault-esp32-demo-app.bin
+esptool.py v3.1-dev
+Image version: 1
+Entry point: 40081a98
+7 segments
+
+Segment 1: len 0x25174 load 0x3f400020 file_offs 0x00000018 [DROM]
+Segment 2: len 0x03b30 load 0x3ffb0000 file_offs 0x00025194 [BYTE_ACCESSIBLE,DRAM]
+Segment 3: len 0x07344 load 0x40080000 file_offs 0x00028ccc [IRAM]
+Segment 4: len 0xa49d8 load 0x400d0020 file_offs 0x00030018 [IROM]
+Segment 5: len 0x106a4 load 0x40087344 file_offs 0x000d49f8 [IRAM]
+Segment 6: len 0x00064 load 0x400c0000 file_offs 0x000e50a4 [RTC_IRAM]
+# see this bad section below! this will cause a bootloop on the board
+Segment 7: len 0x000a8 load 0xf0000000 file_offs 0x000e5110 []
+Checksum: 7f (valid)
+Validation Hash: fd388c619d75da39d9646b247bdf568a69a6e2c5b801c88fe7bd07b300b184fb (valid)
+```
+
+Flashing that image to an ESP32 board results in a bootloop:
+
+```plaintext
+E (419) esp_image: Segment 6 0xf0000000-0xf00000a8 invalid: bad load address range
+```
+
+The fundamental problem is that the `esptool.py` tool, which processes the .elf
+tool, includes the non-loadable `log_fmt` section in the `.bin` file used for
+flashing or OTA.
+
+</details>
