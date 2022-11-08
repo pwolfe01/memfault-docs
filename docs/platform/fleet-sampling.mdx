@@ -4,114 +4,195 @@ title: Fleet Sampling
 sidebar_label: Fleet Sampling
 ---
 
-As your fleet grows, it becomes more costly to send, process and store the data from each one of your devices. The fleet sampling feature will help keeping the costs low by collecting diagnostics and performance data only from a subset of your fleet but at the same time provide enough insights to understand issues happening across your fleet. 
+As your fleet grows, it becomes more costly to send, process and store the data
+from each one of your devices. The fleet sampling feature will help keeping the
+costs low by collecting diagnostics and performance data only from a subset of
+your fleet but at the same time provide enough insights to understand issues
+happening across your fleet.
 
 :::note
 
-Fleet Sampling is only supported on the [Bort SDK](https://github.com/memfault/bort), starting with [version 4.2.0](https://github.com/memfault/bort/blob/master/CHANGELOG.md#v420---september-14th-2022). 
+Fleet Sampling is only supported on the
+[Bort SDK](https://github.com/memfault/bort), starting with
+[version 4.2.0](https://github.com/memfault/bort/blob/master/CHANGELOG.md#v420---september-14th-2022).
 
 :::
 
 :::note
 
-Memfault strongly recommends usage of [Normalized Charts](/docs/platform/charts/#chart-normalization) on Dashboard and Metric Charts with Fleet Sampling to understand trends across your fleet correctly since the population of devices reporting issues from the field can change over time with the updates to diagnostic or performance reporting aspects of the devices. 
+Memfault strongly recommends usage of
+[Normalized Charts](/docs/platform/charts/#chart-normalization) on Dashboard and
+Metric Charts with Fleet Sampling to understand trends across your fleet
+correctly since the population of devices reporting issues from the field can
+change over time with the updates to diagnostic or performance reporting aspects
+of the devices.
 
-e.g. When every device of a million-device fleet crashes once a day this would normally be 1M crashes per day. However, when only 5% of the devices in the fleet are set to sent crash reports to Memfault, this might be reduced to 50K/day, which would suggest a drop in crash counts, so to counteract this skewing of data, chart normalization will instead report 1K₁ₖ (one thousand crashes per thousand devices) for both scenarios.
+e.g. When every device of a million-device fleet crashes once a day this would
+normally be 1M crashes per day. However, when only 5% of the devices in the
+fleet are set to sent crash reports to Memfault, this might be reduced to
+50K/day, which would suggest a drop in crash counts, so to counteract this
+skewing of data, chart normalization will instead report 1K₁ₖ (one thousand
+crashes per thousand devices) for both scenarios.
 
 :::
-
 
 ## Sampling Aspects
 
-Each device in the fleet has 3 aspects that represent different core features offered by Memfault. See the differences between the aspects and their respective states in the table: 
+Each device in the fleet has 3 aspects that represent different core features
+offered by Memfault. See the differences between the aspects and their
+respective states in the table:
 
-| Aspects/Resolutions | Off | On |
-| --- | --- | --- |
-| Monitoring | No hourly heartbeats | [Batterystats metrics](/docs/android/android-builtin-metrics#battery-and-related-metrics) are uploaded every 2h  |
-| Debugging | No crash collection | Crash report collection (via Bug Reports or Caliper), reboot reasons |
-| Logging | No logs, except if they are part of a crash report  | Log collection and upload in the case of an overlap with a trace event (see details [here](/docs/android/android-logging/)). <br />Logs that have been already collected on the device and not yet sent will also be uploaded as soon as the device receives the logging resolution change to `On` |
+| Aspects/Resolutions | Off                                                | On                                                                                                                                                                                                                                                                                                 |
+| ------------------- | -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Monitoring          | No hourly heartbeats                               | [Batterystats metrics](/docs/android/android-builtin-metrics#battery-and-related-metrics) are uploaded every 2h                                                                                                                                                                                    |
+| Debugging           | No crash collection                                | Crash report collection (via Bug Reports or Caliper), reboot reasons                                                                                                                                                                                                                               |
+| Logging             | No logs, except if they are part of a crash report | Log collection and upload in the case of an overlap with a trace event (see details [here](/docs/android/android-logging/)). <br />Logs that have been already collected on the device and not yet sent will also be uploaded as soon as the device receives the logging resolution change to `On` |
 
-Your devices won’t be “in the dark” even if all three aspect resolutions are set to `Off`: They’ll still continue contacting Memfault to check for OTA updates and download, be considered as active devices and visible under [Devices page](https://app.memfault.com/organizations/-/projects/-/devices) along with their software versions and last check-in times.
+Your devices won’t be “in the dark” even if all three aspect resolutions are set
+to `Off`: They’ll still continue contacting Memfault to check for OTA updates
+and download, be considered as active devices and visible under
+[Devices page](https://app.memfault.com/organizations/-/projects/-/devices)
+along with their software versions and last check-in times.
 
 ## Managing aspect resolutions of your devices
 
-It’s helpful to have the best visibility on devices that are prone to be problematic on the field (frequent customer complains/tickets) for further investigation or devices used during the development/testing phases so that crashes and performance issues can be detected ahead of time. 
+It’s helpful to have the best visibility on devices that are prone to be
+problematic on the field (frequent customer complains/tickets) for further
+investigation or devices used during the development/testing phases so that
+crashes and performance issues can be detected ahead of time.
 
-To set an aspect resolution of an individual device, navigate to [Device Details](/docs/platform/inspecting-a-device#device-details) page, then select *Fleet Sampling Resolutions* and click on the *pencil icon* next to the resolution value.
+To set an aspect resolution of an individual device, navigate to
+[Device Details](/docs/platform/inspecting-a-device#device-details) page, then
+select _Fleet Sampling Resolutions_ and click on the *pencil icon* next to the
+resolution value.
 
 ![fleet_sampling_single_device.png](/img/docs/platform/fleet-sampling-single-device.png)
 _Figure 1: Updating the sampling resolutions of a single device_
 
-Devices will be polling these changes periodically (by default every 2h) and will report their state back once the configuration is applied. Config state can have the following values: 
+Devices will be polling these changes periodically (by default every 2h) and
+will report their state back once the configuration is applied. Config state can
+have the following values:
 
-- Never reported: The device hasn’t reported any config state yet and most probably a [“pending” device](/docs/platform/memfault-terminology).
+- Never reported: The device hasn’t reported any config state yet and most
+  probably a [“pending” device](/docs/platform/memfault-terminology).
 - Pending: Device downloaded the new config but hasn't acknowledged it yet
 - Synced: Device is using the configuration as seen on the Device Details page
 - Outdated: Device hasn’t contacted Memfault since the config was changed
 
-When integrating the [Bort SDK](https://github.com/memfault/bort), using the [Bort Development Mode](/docs/android/android-getting-started-guide/#development-mode-since-bort-420) an immediate configuration update can be requested after changing the fleet sampling configuration, instead of waiting for the next polling period. 
+When integrating the [Bort SDK](https://github.com/memfault/bort), using the
+[Bort Development Mode](/docs/android/android-getting-started-guide/#development-mode-since-bort-420)
+an immediate configuration update can be requested after changing the fleet
+sampling configuration, instead of waiting for the next polling period.
 
 ## Quotas
 
-If the aspect resolution quota configured for the project is reached, an error message will be shown at the top of the page when changing the resolution of a device:
-![fleet_sampling_quota_limit_single_device.svg](/img/docs/platform/fleet_sampling_quota_limit_single_device.svg) 
-_Figure 2: Hitting the quota limit when updating sampling resolution of a single device_
+If the aspect resolution quota configured for the project is reached, an error
+message will be shown at the top of the page when changing the resolution of a
+device:
+![fleet_sampling_quota_limit_single_device.svg](/img/docs/platform/fleet_sampling_quota_limit_single_device.svg)
+_Figure 2: Hitting the quota limit when updating sampling resolution of a single
+device_
 
+In order to free up quota, devices with the relevant aspect resolution `On` can
+be filtered under
+[Device Search](https://app.memfault.com/organizations/-/projects/-/devices) and
+their resolution can be set to `Off` in bulk, as explained in
+[Setting aspect resolution of multiple devices](#setting-aspect-resolutions-of-multiple-devices)
+section.
 
-In order to free up quota, devices with the relevant aspect resolution `On` can be filtered under [Device Search](https://app.memfault.com/organizations/-/projects/-/devices) and their resolution can be set to `Off` in bulk, as explained in [Setting aspect resolution of multiple devices](#setting-aspect-resolutions-of-multiple-devices) section. 
-
-![fleet_sampling_search_devices_monitoring_on.png](/img/docs/platform/fleet_sampling_search_devices_monitoring_on.png) 
+![fleet_sampling_search_devices_monitoring_on.png](/img/docs/platform/fleet_sampling_search_devices_monitoring_on.png)
 _Figure 3: Searching for devices with logging resolution “On”_
 
-Quota and usage information can be accessed under [Settings → Quotas](https://app.memfault.com/organizations/-/projects/-/settings/quotas). 
-![fleet_sampling_quota_page.png](/img/docs/platform/fleet_sampling_quota_page.png) 
+Quota and usage information can be accessed under
+[Settings → Quotas](https://app.memfault.com/organizations/-/projects/-/settings/quotas).
+![fleet_sampling_quota_page.png](/img/docs/platform/fleet_sampling_quota_page.png)
 _Figure 4: Quotas and usage information_
 
 ### Setting aspect resolution(s) of multiple devices
 
-Memfault’s [Device Search](https://app.memfault.com/organizations/-/projects/-/devices) allows one to precisely describe a population of devices before assigning their respective sampling resolutions. Using the search parameters, specific parts of the fleet where the most visibility is needed (i.e. devices experiencing fast battery discharges/connectivity issues in the past or devices in a specific cohort) can be defined and their sampling resolutions can be updated accordingly. Having such a visibility is also important before rolling out new software versions to be able to proactively monitor the potential negative effects of the roll out.
+Memfault’s
+[Device Search](https://app.memfault.com/organizations/-/projects/-/devices)
+allows one to precisely describe a population of devices before assigning their
+respective sampling resolutions. Using the search parameters, specific parts of
+the fleet where the most visibility is needed (i.e. devices experiencing fast
+battery discharges/connectivity issues in the past or devices in a specific
+cohort) can be defined and their sampling resolutions can be updated
+accordingly. Having such a visibility is also important before rolling out new
+software versions to be able to proactively monitor the potential negative
+effects of the roll out.
 
-![fleet_sampling_turn_on_all_aspects.png](/img/docs/platform/fleet_sampling_turn_on_all_aspects.png) 
+![fleet_sampling_turn_on_all_aspects.png](/img/docs/platform/fleet_sampling_turn_on_all_aspects.png)
 _Figure 5: Turning on all aspects of all devices in the Test Cohort_
 
-In the event of hitting [quota limits](#quotas) when assigning sampling resolutions in bulk, a warning message will be presented to the user (see the screenshot below). Memfault strongly recommends freeing up the required quota for the assignment before continuing with the assignment. **Add why there may be surprises if over quota assignment is done for multiple aspects** This can be done via: 
+In the event of hitting [quota limits](#quotas) when assigning sampling
+resolutions in bulk, a warning message will be presented to the user (see the
+screenshot below). Memfault strongly recommends freeing up the required quota
+for the assignment before continuing with the assignment. **Add why there may be
+surprises if over quota assignment is done for multiple aspects** This can be
+done via:
 
 1. Updating your plan by emailing sales@memfault.com
 2. Turning the respective resolutions of some other devices to `Off`
 
-![fleet_sampling_turn_on_all_aspects_quota_limit.png](/img/docs/platform/fleet_sampling_turn_on_all_aspects_quota_limit.png) 
-_Figure 6: Turning on all aspects of all devices with software version 1.0.0 and hitting the quota limit for Logging_
+![fleet_sampling_turn_on_all_aspects_quota_limit.png](/img/docs/platform/fleet_sampling_turn_on_all_aspects_quota_limit.png)
+_Figure 6: Turning on all aspects of all devices with software version 1.0.0 and
+hitting the quota limit for Logging_
 
-Another option for predictably assigning sampling resolutions is to “limit” the number of devices that’ll be affected from the bulk operation: It limits the assignment to be applied on `the first N devices` that match with the search criteria and the sorting order. In the example below, the quota for logging is limited to 10 but 80 devices match the search query `software_version = 1.0.0`: Using the limit option, the change will be applied on the last seen 5 devices with the `software version` `1.0.0`.
+Another option for predictably assigning sampling resolutions is to “limit” the
+number of devices that’ll be affected from the bulk operation: It limits the
+assignment to be applied on `the first N devices` that match with the search
+criteria and the sorting order. In the example below, the quota for logging is
+limited to 10 but 80 devices match the search query `software_version = 1.0.0`:
+Using the limit option, the change will be applied on the last seen 5 devices
+with the `software version` `1.0.0`.
 
-![fleet_sampling_turn_on_all_aspects_with_limit.png](/img/docs/platform/fleet_sampling_turn_on_all_aspects_with_limit.png) 
-_Figure 7: Limiting the number of devices with software version 1.0.0 that will be updated_
-
+![fleet_sampling_turn_on_all_aspects_with_limit.png](/img/docs/platform/fleet_sampling_turn_on_all_aspects_with_limit.png)
+_Figure 7: Limiting the number of devices with software version 1.0.0 that will
+be updated_
 
 :::info
 
-The list of devices to be updated with new sampling resolutions will only be materialized once the request is received upon clicking on “Start Bulk Operation” button. That means, the assignment will be performed against the search query that’s used (or against the **whole fleet** in case of no search query) and the numbers should be taken as an estimation. 
+The list of devices to be updated with new sampling resolutions will only be
+materialized once the request is received upon clicking on “Start Bulk
+Operation” button. That means, the assignment will be performed against the
+search query that’s used (or against the **whole fleet** in case of no search
+query) and the numbers should be taken as an estimation.
 
-This conveys that in the context of the example above (Figure 7), the devices to be updated may be different than what’s displayed in the search results since new devices may have contacted Memfault and have a more recent last seen information in the meantime.  
+This conveys that in the context of the example above (Figure 7), the devices to
+be updated may be different than what’s displayed in the search results since
+new devices may have contacted Memfault and have a more recent last seen
+information in the meantime.
 
-If devices to be updated with new sampling resolutions need to be precisely selected, checkboxes can be used and in this case only the selected devices will be updated.
+If devices to be updated with new sampling resolutions need to be precisely
+selected, checkboxes can be used and in this case only the selected devices will
+be updated.
 
 :::
 
-As this operation can take a long time, the result will be communicated via email to the user initiated the action. The email contains a summary of the changes and how many devices are affected by the change: 
+As this operation can take a long time, the result will be communicated via
+email to the user initiated the action. The email contains a summary of the
+changes and how many devices are affected by the change:
 
-![fleet_sampling_email.png](/img/docs/platform/fleet_sampling_email.png) 
+![fleet_sampling_email.png](/img/docs/platform/fleet_sampling_email.png)
 
 ### Default fleet sampling configuration of new devices
 
-Memfault will assign best possible resolutions to the newly enrolled devices, as long as the quota limits permit. When a device contacts Memfault for the first time, the default configuration to be propagated would be: 
+Memfault will assign best possible resolutions to the newly enrolled devices, as
+long as the quota limits permit. When a device contacts Memfault for the first
+time, the default configuration to be propagated would be:
 
 - Monitoring: `On`
 - Debugging: `On`
 - Logging: `Off` (as this is only offered for a small set of devices)
 
-In the case of quota limits are reached, the respective aspect with no quota will be set to `Off` resolution. See [Setting aspect resolution of multiple devices](#setting-aspect-resolutions-of-multiple-devices) section to free up quota before a mass roll-out. 
+In the case of quota limits are reached, the respective aspect with no quota
+will be set to `Off` resolution. See
+[Setting aspect resolution of multiple devices](#setting-aspect-resolutions-of-multiple-devices)
+section to free up quota before a mass roll-out.
 
 ## API
 
-Using Memfault’s REST API the devices belonging to a project can be listed together with their aspect resolutions. See the [API docs](https://api-docs.memfault.com/#2634f3fb-d137-42a8-b093-e05d420b8932) for more information.
+Using Memfault’s REST API the devices belonging to a project can be listed
+together with their aspect resolutions. See the
+[API docs](https://api-docs.memfault.com/#2634f3fb-d137-42a8-b093-e05d420b8932)
+for more information.
