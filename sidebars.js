@@ -24,6 +24,7 @@ module.exports = {
                 "platform/charts",
                 "platform/alerts",
                 "platform/notifications",
+                "platform/fleet-sampling",
                 "platform/rate-limiting",
                 "platform/sso",
                 "platform/jira-integration",
