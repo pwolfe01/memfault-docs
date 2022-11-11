@@ -68,16 +68,16 @@ skip to that section if necessary.
    SDK version: `SDK_2.10.1_MIMXRT1060-EVKB` (**NOTE: v2.11.1 was not compatible
    with MCUXpresso v11.4.0**)
 
-   ![Untitled](/img/docs/mcu/mcuxpresso/download_sdk-min.png)
+   ![Untitled](/img/docs/mcu/mcuxpresso/download_sdk.png)
 
 3. Import the SDK into MCUXpresso:
 
-   ![Untitled](/img/docs/mcu/mcuxpresso/installed_sdks-min.png)
+   ![Untitled](/img/docs/mcu/mcuxpresso/installed_sdks.png)
 
 4. To create the sample project, click “Import SDK example(s)...”, then select
    our board, and select `lwip_httpscli_mbedTLS_freertos`:
 
-   ![Untitled](/img/docs/mcu/mcuxpresso/sdk_import_wizard-min.png)
+   ![Untitled](/img/docs/mcu/mcuxpresso/sdk_import_wizard.png)
 
 5. Default settings in the next screen are all OK, **except for**:
    1. **Set library type (and hosting variant)**: change it to “NewlibNano
@@ -142,7 +142,7 @@ implementation.
 1. To enable the Memfault SDK sources in the build, uncheck “Exclude from build”
    for the “memfault_components” virtual folder:
 
-   ![Untitled](/img/docs/mcu/mcuxpresso/uncheck_exclude_from_build-min.png)
+   ![Untitled](/img/docs/mcu/mcuxpresso/uncheck_exclude_from_build.png)
 
 1. Add the `memfault_platform_ram_backed_coredump.c` source file to a new
    virtual folder
@@ -155,9 +155,9 @@ implementation.
       `memfault-firmware-sdk/ports/panics/src/memfault_platform_ram_backed_coredump.c`,
       by dragging from a file explorer window into the virtual folder:
 
-      ![Untitled](/img/docs/mcu/mcuxpresso/virtual_port_folder-min.png)
+      ![Untitled](/img/docs/mcu/mcuxpresso/virtual_port_folder.png)
 
-      ![Untitled](/img/docs/mcu/mcuxpresso/add_ram_backed_coredump-min.png)
+      ![Untitled](/img/docs/mcu/mcuxpresso/add_ram_backed_coredump.png)
 
    3. Right-click on the new virtual folder, select “Properties”, and uncheck
       “Exclude from build”
@@ -277,14 +277,14 @@ implementation.
       left pane, open “C/C++ Build”→”Settings”, then select MCU
       Linker→Miscellaneous, and add the `--build-id` build flag:
 
-      ![Untitled](/img/docs/mcu/mcuxpresso/build_id-min.png)
+      ![Untitled](/img/docs/mcu/mcuxpresso/build_id.png)
 
    4. Add a second flag to add the linker script fragment file to the build:
       `-T "${workspace_loc:/${ProjName}/source/gnu_build_id.ld}"`
 
 2. Set Debug Level to `-g3` in “MCU C Compiler”→Settings:
 
-   ![Untitled](/img/docs/mcu/mcuxpresso/set_debug_level-min.png)
+   ![Untitled](/img/docs/mcu/mcuxpresso/set_debug_level.png)
 
 3. Clean and build. flash the project to the board and confirm the startup text
    appears in the serial console:

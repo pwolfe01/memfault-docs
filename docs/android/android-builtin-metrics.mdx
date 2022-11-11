@@ -33,7 +33,7 @@ itself.
 
 These metrics are displayed on the device timeline:
 
-![](/img/docs/android/metrics-battery-timeline-min.png)
+![](/img/docs/android/metrics-battery-timeline.png)
 
 And several summary metrics are also available. Each metric is listed below,
 noting the batterystats output code that it is derived from (they are defined in
@@ -147,13 +147,13 @@ Bort can collect installed app versions as metrics. These can be configured on
 the Memfault Settings Dashboard, on the **Data Sources** tab, by entering
 package names to collect:
 
-![](/img/docs/android/metrics-configure-app-versions-min.png)
+![](/img/docs/android/metrics-configure-app-versions.png)
 
 Wildcards can be used, to collect multiple apps sharing the same package root.
 
 Each collected version is stored as a metric, prefixed with `version.`:
 
-![](/img/docs/android/metrics-app-versions-min.png)
+![](/img/docs/android/metrics-app-versions.png)
 
 These metrics would be good candidates for Attributes, to enable e.g. searching
 for devices with a given app version installed, or checking the installed
@@ -167,11 +167,11 @@ Bort can collect Android System Properties. These can be configured on the
 Memfault Settings Dashboard, on the **Data Sources** tab, by entering each
 property to collect:
 
-![](/img/docs/android/metrics-configure-system-properties-min.png)
+![](/img/docs/android/metrics-configure-system-properties.png)
 
 Each collected property is stored as a metric, prefixed with `sysprop.`:
 
-![](/img/docs/android/metrics-system-properties-min.png)
+![](/img/docs/android/metrics-system-properties.png)
 
 These metrics would be good candidates for Attributes, to enable e.g. searching
 for devices with a given system property, or checking the properties for a
