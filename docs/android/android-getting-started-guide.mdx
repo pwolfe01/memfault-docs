@@ -122,7 +122,7 @@ with the `ANDROID_HOME` env var, or by opening the project with Android Studio
 
 ### Create a keystore for the Bort app
 
-**The bort app requires a Java keystore file so that the app can be signed**.
+**The Bort app requires a Java keystore file so that the app can be signed**.
 
 Instructions on how to create a keystore in Android Studio can be found
 [here](https://developer.android.com/studio/publish/app-signing#generate-key).
@@ -317,6 +317,8 @@ and finding the device that uploaded the bug report.
 If you do not see the bug report, you can check your project's `Queue Status`
 feature in the top right hand side of the `Issues` page. This shows a list of
 bug reports that were recently received and their processing status.
+
+A bug report's status would stay `Stored` if the maximum number of bug reports that will be analyzed from a device per day is reached. Quotas can be accessed from [Settings -> Quotas](https://app.memfault.com/organizations/-/projects/-/settings/quotas). When a bug report is `Processed`, results of analysis can be viewed from the respective Issue page.
 
 ## Troubleshooting
 
