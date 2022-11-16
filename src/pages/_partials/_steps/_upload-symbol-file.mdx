@@ -1,13 +1,29 @@
+import { ProjectMagicLink } from "@site/src/components/ProjectMagicLink";
+
 At this point, you should be able to generate test events and crashes and push
 the data to the Memfault UI.
 
 You can confirm the error traces and crashes have arrived successfully by
-navigating to the "Issues" page. Follow the link pointed to below and upload a
-symbol file.
+navigating to the "Issues" page. Follow the link pointed to below and **upload a
+symbol file**.
 
 ![](/img/docs/mcu/first-trace.png)
 
 After this step, you will see the trace in the list of issues!
+
+<p>
+  Symbol files can also be uploaded from the <b>Software -> Symbol Files</b> tab
+  (follow
+  <ProjectMagicLink path="/symbol-files?new">
+    {" "}
+    this deep link
+  </ProjectMagicLink> to be brought to the symbol file upload point in the UI):
+</p>
+
+![](/img/docs/mcu/upload-symbol-file.png)
+
+In addition to supporting decoding trace/coredump data, symbol files are also
+required for decoding [Metrics](/docs/mcu/metrics-api).
 
 :::tip
 
@@ -15,3 +31,6 @@ You can programmatically upload symbol files with the
 [Memfault CLI tool](/docs/ci/install-memfault-cli).
 
 :::
+
+Symbol files should be uploaded to Memfault before devices send any data, to
+ensure all device data can be decoded.
