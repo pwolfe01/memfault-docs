@@ -37,12 +37,12 @@ Ingestion of Reboots Events may be
 
 :::
 
-### Tracking custom reset reasons
+### Tracking specific reset reasons
 
 Sometimes resets take place due to software initiated behavior (i.e firmware
 update, button resets, etc). Recording when and where these types of resets take
 place can easily be achieved with Memfault's
-`memfault_reboot_tracking_mark_reset_imminent` API. For example, consider we
+`memfault_reboot_tracking_mark_reset_imminent()` API. For example, consider we
 want to track anytime a reset occurs due to an over-the-air update:
 
 ```c
