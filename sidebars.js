@@ -179,7 +179,10 @@ module.exports = {
                 type: "doc",
                 id: "troubleshooting/uploading-symbol-file-is-invalid",
             },
-            items: ["troubleshooting/uploading-symbol-file-is-invalid"],
+            items: [
+                "troubleshooting/uploading-symbol-file-is-invalid",
+                "troubleshooting/data-transfer-troubleshooting",
+            ],
         },
     ],
 };

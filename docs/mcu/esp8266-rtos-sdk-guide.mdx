@@ -331,15 +331,4 @@ You can programmatically upload symbol files with the
 :::
 
 ### Troubleshooting Data Transfer
-
-If you run into any issues with your data transfer implementation, we have tools
-to help!
-
-- A UI you can use to
-  [view the raw "Chunk" data payloads](/docs/mcu/test-patterns-for-chunks-endpoint#troubleshooting)
-  that have arrived for your project.
-- [Precanned Data Payloads](/docs/mcu/test-patterns-for-chunks-endpoint) you can
-  pass through your `user_transport_send_chunk_data()` implementation to test
-  data transfer in isolation.
-- A [GDB Script](/docs/mcu/test-data-collection-with-gdb) which can be installed
-  to send chunks programmatically every time a breakpoint is hit.
+See the docs on [data transfer troubleshooting](/docs/troubleshooting/data-transfer-troubleshooting).
