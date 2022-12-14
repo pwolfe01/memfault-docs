@@ -60,3 +60,13 @@ flushed to disk if no buffers have expired. This does not affect how log files
 are chunked for upload.
 
 Log upload works the same way as for **Periodic**.
+
+## Log Collection
+
+:::info
+
+Log Collection feature is available from [Bort 4.2.0](https://github.com/memfault/bort/blob/master/CHANGELOG.md#v420---september-14th-2022) onward.
+
+:::
+
+Log Collection allows you to collect logs from a small set of devices, even when there is not an event of interest, such as a crash. In addition to continuous retrieval of logs, when combined with [Fleet Sampling](docs/platform/fleet-sampling#log-collection), it's possible to fetch past logs that haven't been sent to Memfault from devices. 

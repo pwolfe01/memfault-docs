@@ -14,16 +14,6 @@ smaller "sampled" population of devices provide sufficiently representative data
 to still provide all relevant insights and to understand issues as they occur
 across your fleet.
 
-:::note
-
-Fleet Sampling is only supported on the
-[Bort SDK](https://github.com/memfault/bort), starting with
-[version 4.2.0](https://github.com/memfault/bort/blob/master/CHANGELOG.md#v420---september-14th-2022).
-
-:::
-
-:::note
-
 Memfault strongly recommends usage of
 [Normalized Charts](/docs/platform/charts/#chart-normalization) on Dashboard and
 Metric Charts with Fleet Sampling to understand trends across your fleet
@@ -41,7 +31,7 @@ states in the table:
 | ------------------- | -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Monitoring          | No hourly heartbeats                               | [Batterystats metrics](/docs/android/android-builtin-metrics#battery-and-related-metrics) are uploaded every 2h                                                                                                                                                                                    |
 | Debugging           | No crash collection                                | Crash report collection (via Bug Reports or Caliper), reboot reasons                                                                                                                                                                                                                               |
-| Logging             | No logs, except if they are part of a crash report | Log collection and upload in the case of an overlap with a trace event (see details [here](/docs/android/android-logging/)). <br />Logs that have been already collected on the device and not yet sent will also be uploaded as soon as the device receives the logging resolution change to `On` |
+| Logging             | No logs, except if they are part of a crash report | Log collection and upload in the case of an overlap with a trace event (see details [here](/docs/android/android-logging/)). <br /> (Only on Bort SDK, see [Log Collection](/docs/platform/fleet-sampling#log-collection)) Logs that have been already collected on the device and not yet sent will also be uploaded as soon as the device receives the logging resolution change to `On` |
 
 Your devices won’t be “in the dark” even if all three aspect resolutions are set
 to `Off`: They’ll still continue contacting Memfault to check for OTA updates
@@ -186,6 +176,22 @@ In the case of quota limits are reached, the respective aspect with no quota
 will be set to `Off` resolution. See
 [Setting aspect resolution of multiple devices](#setting-aspect-resolutions-of-multiple-devices)
 section to free up quota before a mass roll-out.
+
+## Log Collection
+
+:::note
+
+Log Collection feature is only supported on the
+[Bort SDK](https://github.com/memfault/bort), starting with
+[version 4.2.0](https://github.com/memfault/bort/blob/master/CHANGELOG.md#v420---september-14th-2022).
+
+:::
+
+Log Collection 
+
+Even if a device has not been sending any crash reports or monitoring data, Log Collection feature allows you to retrieve past logs from devices when the Logging resolution is set to `On`. Upon receiving the change of the Logging resolution to `On`, Device will send all previously stored logs and once caught up, it will continue sending new logs (See[Android Logging](/docs/android/android-logging) for more details). This is helpful when debugging issues on devices and find the need of previous logs for more insights. 
+
+Logs are kept on the device as long as the storage limit permits. However, this limit is only configurable by Memfault. Please contact support@memfault.com for updating the configuration. 
 
 ## API
 
