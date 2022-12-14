@@ -20,16 +20,7 @@ Fleet Sampling is only supported on the
 Memfault strongly recommends usage of
 [Normalized Charts](/docs/platform/charts/#chart-normalization) on Dashboard and
 Metric Charts with Fleet Sampling to understand trends across your fleet
-correctly since the population of devices reporting issues from the field can
-change over time with the updates to diagnostic or performance reporting aspects
-of the devices.
-
-e.g. When every device of a million-device fleet crashes once a day this would
-normally be 1M crashes per day. However, when only 5% of the devices in the
-fleet are set to sent crash reports to Memfault, this might be reduced to
-50K/day, which would suggest a drop in crash counts, so to counteract this
-skewing of data, chart normalization will instead report 1K₁ₖ (one thousand
-crashes per thousand devices) for both scenarios.
+correctly. This is enabled for fleet sampling projects by default. 
 
 :::
 
