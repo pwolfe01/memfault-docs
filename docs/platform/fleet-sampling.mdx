@@ -64,17 +64,18 @@ Devices will be polling these changes periodically (by default every 2h) and
 will report their state back once the configuration is applied. Config state can
 have the following values:
 
-- Never reported: The device hasn’t reported any config state yet and most
-  probably a [“pending” device](/docs/platform/memfault-terminology).
+- Never reported: Device hasn’t reported any config state yet and is most
+  probably a [“pending” device](/docs/platform/memfault-terminology)
 - Outdated: Device hasn’t contacted Memfault since the config was changed
 - Pending: Device downloaded the new config but hasn't applied and acknowledged
   it yet
 - Synced: Device is using the configuration as seen on the Device Details page
 
-When integrating the [Bort SDK](https://github.com/memfault/bort), using the
-[Bort Development Mode](/docs/android/android-getting-started-guide/#development-mode-since-bort-420)
+When using
+[Bort's Development Mode](/docs/android/android-getting-started-guide/#development-mode-since-bort-420),
 an immediate configuration update can be requested after changing the fleet
-sampling configuration, instead of waiting for the next polling period.
+sampling configuration, instead of waiting for the next regular time the device
+is going to poll its configuration.
 
 ## Quotas
 
