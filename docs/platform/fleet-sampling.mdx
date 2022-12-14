@@ -110,7 +110,7 @@ respective sampling resolutions. Using the search parameters, specific
 populations of the fleet where the most visibility is needed (i.e. devices
 experiencing fast battery discharges/connectivity issues in the past or devices
 in a specific cohort) can be defined and their sampling resolutions can be
-updated accordingly. Having such a visibility is also important before rolling
+updated all at once in bulk. Having such a visibility is also important before rolling
 out new software versions to be able to proactively monitor the potential
 negative effects of the roll out.
 
@@ -183,7 +183,5 @@ section to free up quota before a mass roll-out.
 
 ## API
 
-Using Memfault’s REST API the devices belonging to a project can be listed
-together with their aspect resolutions. See the
-[API docs](https://api-docs.memfault.com/#2634f3fb-d137-42a8-b093-e05d420b8932)
-for more information.
+Using [Memfault’s REST API](https://api-docs.memfault.com/#2634f3fb-d137-42a8-b093-e05d420b8932) the devices belonging to a project can be listed
+together with their aspect resolutions. However, there is currently no API to set the Fleet Sampling resolution programmatically. Instead, configure [Device Attributes](https://docs.memfault.com/docs/platform/metrics/#attributes) [via API](https://api-docs.memfault.com/#f4e2584a-36f2-4184-82ec-3b9d0108588c) and perform a bulk assignment searching for matching devices via the frontend as described above.
