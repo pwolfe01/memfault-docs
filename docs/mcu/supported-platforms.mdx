@@ -1,0 +1,32 @@
+---
+id: supported-platforms
+title: Supported Platforms
+sidebar_label: Supported Platforms
+---
+
+MCU development is incredibly complicated. A given platform not only consists of the chosen MCU hardware, but also many other options such as:
+
+* SDK/Framework/RTOS availability
+* Compiler/toolchain options
+* IDE/build system options
+
+While we cannot support every platform, we strive to cover as many as possible. This page is a reference for what platforms we support with our MCU SDK.
+
+## Minimum Requirements
+
+The Memfault MCU SDK does have a few minimum requirements on the hardware it runs on:
+
+| Attribute | Constraint |
+| --------- | ---------- |
+| RAM       | > 16 kB    |
+| ROM       | > 32 kB    |
+| Core      | 32-bit     |
+
+These limits do not represent how much RAM/ROM the MCU SDK uses, but rather the minimum sizes that we find are doable to integrate with.
+
+## Supported Hardware Families
+
+This table represents a list of hardware families that are supported by the MCU SDK. This list is not exhaustive. If you don't see your MCU
+on this list but it is a Cortex-M, please see our general Cortex-M Getting Started Guide for more info on adding the MCU SDK into your system.
+
+| 
