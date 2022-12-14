@@ -66,7 +66,8 @@ have the following values:
 
 - Never reported: The device hasn’t reported any config state yet and most
   probably a [“pending” device](/docs/platform/memfault-terminology).
-- Pending: Device downloaded the new config but hasn't acknowledged it yet
+- Pending: Device downloaded the new config but hasn't applied and acknowledged
+  it yet
 - Synced: Device is using the configuration as seen on the Device Details page
 - Outdated: Device hasn’t contacted Memfault since the config was changed
 
@@ -155,8 +156,8 @@ new devices may have contacted Memfault and have a more recent last seen
 information in the meantime.
 
 If devices to be updated with new sampling resolutions need to be precisely
-selected, checkboxes can be used and in this case only the selected devices will
-be updated.
+selected, please select them explicitly via the checkboxes in the search result
+before performing the action.
 
 :::
 
@@ -166,7 +167,7 @@ changes and how many devices are affected by the change.
 
 ### Default Fleet Sampling configuration of new devices
 
-Memfault will assign best possible resolutions to the newly enrolled devices, as
+Memfault will automatically assign resolutions to the newly enrolled devices, as
 long as the quota limits permit. When a device contacts Memfault for the first
 time, the default configuration to be propagated would be:
 
