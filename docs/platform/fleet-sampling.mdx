@@ -4,6 +4,8 @@ title: Fleet Sampling
 sidebar_label: Fleet Sampling
 ---
 
+import DeviceDetailEditButton from "@site/src/components/icons/DeviceDetailEditButton";
+
 As your fleet grows, it becomes more costly to send, process and store the data
 from each one of your devices. Fleet Sampling will help keeping the costs low by collecting diagnostics and performance data only from a smaller, yet statistically significant, subset of your fleet. At large fleet sizes, this smaller "sampled" population of devices provide sufficiently representative data to still provide all relevant insights and to understand issues as they occur across your fleet.
 
@@ -37,9 +39,9 @@ respective states in the table:
 
 Your devices won’t be “in the dark” even if all three aspect resolutions are set
 to `Off`: They’ll still continue contacting Memfault to check for OTA updates
-and download, be considered as active devices and visible under
+and download, be considered as active devices (which also contributes to the Memfault dashboard) and visible under
 [Devices page](https://app.memfault.com/organizations/-/projects/-/devices)
-along with their software versions and last check-in times.
+along with their software versions and last check-in times. 
 
 ## Managing aspect resolutions of your devices
 
@@ -50,11 +52,11 @@ crashes and performance issues can be detected ahead of time.
 
 To set an aspect resolution of an individual device, navigate to
 [Device Details](/docs/platform/inspecting-a-device#device-details) page, then
-select _Fleet Sampling Resolutions_ and click on the *pencil icon* next to the
+select _Fleet Sampling Resolutions_ and click on the edit icon <DeviceDetailEditButton /> next to the
 resolution value.
 
 ![fleet_sampling_single_device.png](/img/docs/platform/fleet-sampling-single-device.png)
-_Figure 1: Updating the sampling resolutions of a single device_
+_Updating the sampling resolutions of a single device_
 
 Devices will be polling these changes periodically (by default every 2h) and
 will report their state back once the configuration is applied. Config state can
@@ -77,7 +79,7 @@ If the aspect resolution quota configured for the project is reached, an error
 message will be shown at the top of the page when changing the resolution of a
 device:
 ![fleet_sampling_quota_limit_single_device.svg](/img/docs/platform/fleet_sampling_quota_limit_single_device.svg)
-_Figure 2: Hitting the quota limit when updating sampling resolution of a single
+_Hitting the quota limit when updating sampling resolution of a single
 device_
 
 In order to free up quota, devices with the relevant aspect resolution `On` can
@@ -88,12 +90,12 @@ their resolution can be set to `Off` in bulk, as explained in
 section.
 
 ![fleet_sampling_search_devices_monitoring_on.png](/img/docs/platform/fleet_sampling_search_devices_monitoring_on.png)
-_Figure 3: Searching for devices with logging resolution “On”_
+_Searching for devices with logging resolution “On”_
 
 Quota and usage information can be accessed under
 [Settings → Quotas](https://app.memfault.com/organizations/-/projects/-/settings/quotas).
 ![fleet_sampling_quota_page.png](/img/docs/platform/fleet_sampling_quota_page.png)
-_Figure 4: Quotas and usage information_
+_Quotas and usage information_
 
 ### Setting aspect resolution(s) of multiple devices
 
@@ -109,7 +111,7 @@ software versions to be able to proactively monitor the potential negative
 effects of the roll out.
 
 ![fleet_sampling_turn_on_all_aspects.png](/img/docs/platform/fleet_sampling_turn_on_all_aspects.png)
-_Figure 5: Turning on all aspects of all devices in the Test Cohort_
+_Turning on all aspects of all devices in the Test Cohort_
 
 In the event of hitting [quota limits](#quotas) when assigning sampling
 resolutions in bulk, a warning message will be presented to the user (see the
@@ -122,7 +124,7 @@ done via:
 2. Turning the respective resolutions of some other devices to `Off`
 
 ![fleet_sampling_turn_on_all_aspects_quota_limit.png](/img/docs/platform/fleet_sampling_turn_on_all_aspects_quota_limit.png)
-_Figure 6: Turning on all aspects of all devices with software version 1.0.0 and
+_Turning on all aspects of all devices with software version 1.0.0 and
 hitting the quota limit for Logging_
 
 Another option for predictably assigning sampling resolutions is to “limit” the
@@ -134,18 +136,18 @@ Using the limit option, the change will be applied on the last seen 5 devices
 with the `software version` `1.0.0`.
 
 ![fleet_sampling_turn_on_all_aspects_with_limit.png](/img/docs/platform/fleet_sampling_turn_on_all_aspects_with_limit.png)
-_Figure 7: Limiting the number of devices with software version 1.0.0 that will
+_Limiting the number of devices with software version 1.0.0 that will
 be updated_
 
 :::info
 
 The list of devices to be updated with new sampling resolutions will only be
 materialized once the request is received upon clicking on “Start Bulk
-Operation” button. That means, the assignment will be performed against the
+Operation” button. That means, the assignment will be performed against the
 search query that’s used (or against the **whole fleet** in case of no search
 query) and the numbers should be taken as an estimation.
 
-This conveys that in the context of the example above (Figure 7), the devices to
+This conveys that in the context of the screenshot above, the devices to
 be updated may be different than what’s displayed in the search results since
 new devices may have contacted Memfault and have a more recent last seen
 information in the meantime.
