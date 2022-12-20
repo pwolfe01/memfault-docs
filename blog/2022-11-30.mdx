@@ -6,66 +6,137 @@ title: November 2022
 
 ## Debug Devices with Custom Data Recordings
 
-[Memfault’s new Custom Data Recordings (CDRs)](/docs/platform/inspecting-a-device#custom-data-recordings) allow devices to send any custom data for specific events or periods at arbitrary times. Memfault’s Device Timeline shows these recordings grouped by their user-defined reason in relation to the existing debug information, such as metrics, logs, traces, or reboots to provide even more detail about the state a device was in at a given moment.
+[Memfault’s new Custom Data Recordings (CDRs)](/docs/platform/inspecting-a-device#custom-data-recordings)
+allow devices to send any custom data for specific events or periods at
+arbitrary times. Memfault’s Device Timeline shows these recordings grouped by
+their user-defined reason in relation to the existing debug information, such as
+metrics, logs, traces, or reboots to provide even more detail about the state a
+device was in at a given moment.
 
 ![tracking_battery_life_best_practices.png](/img/blog/2022-11-30-Custom-Data-Recordings.png)
 
-The underlying data of CDRs can be of any format and is accessible for download for further analysis outside of Memfault. This allows devices to send vendor-specific or proprietary debug data from their sub-components. Via the Memfault CLI, one can also augment the device timeline with data captured outside of the device (e.g. reports for hardware-in-the-loop tests).
+The underlying data of CDRs can be of any format and is accessible for download
+for further analysis outside of Memfault. This allows devices to send
+vendor-specific or proprietary debug data from their sub-components. Via the
+Memfault CLI, one can also augment the device timeline with data captured
+outside of the device (e.g. reports for hardware-in-the-loop tests).
+
 <!-- truncate -->
 
 ## General
 
-- Added: Onboarding flow for [Infineon](https://memfault.com/news/infineon-memfault-partner-improve-iot-development-in-field-iteration-more-reliable-devices/) customers
-- Added: Sorting of the [Settings → Metrics](https://app.memfault.com/organizations/-/projects/-/settings/metrics) list on Attribute / Timeseries fields
-- Improved: UI of the Device Timeline (indication of extrapolated values with `locf` label, using “Range” values from [Settings → Metrics](https://app.memfault.com/organizations/-/projects/-/settings/metrics) to fit values into the swimlane, setting viewport of the Device Timeline to day boundaries when accessed through a direct link, combination of `min/mean/max` values of the same metric into one swimlane under Device Timeline, more accessible line colors)
-- Improved: Link to the Device Timeline from Log Details page (via Captured Date)
-- Improved: Various places in UI (Better placement of the system status into the side menu, removal of duplicate information text in Archive Software Type modal, more explicit OTA version checking explanation text, alignment of the log fields in Android and MCU projects, more explicit error message in the case of a timeout)
+- Added: Onboarding flow for
+  [Infineon](https://memfault.com/news/infineon-memfault-partner-improve-iot-development-in-field-iteration-more-reliable-devices/)
+  customers
+- Added: Sorting of the
+  [Settings → Metrics](https://app.memfault.com/organizations/-/projects/-/settings/metrics)
+  list on Attribute / Timeseries fields
+- Improved: UI of the Device Timeline (indication of extrapolated values with
+  `locf` label, using “Range” values from
+  [Settings → Metrics](https://app.memfault.com/organizations/-/projects/-/settings/metrics)
+  to fit values into the swimlane, setting viewport of the Device Timeline to
+  day boundaries when accessed through a direct link, combination of
+  `min/mean/max` values of the same metric into one swimlane under Device
+  Timeline, more accessible line colors)
+- Improved: Link to the Device Timeline from Log Details page (via Captured
+  Date)
+- Improved: Various places in UI (Better placement of the system status into the
+  side menu, removal of duplicate information text in Archive Software Type
+  modal, more explicit OTA version checking explanation text, alignment of the
+  log fields in Android and MCU projects, more explicit error message in the
+  case of a timeout)
 - Improved: Load time of all Issue Occurrence charts
-- Fixed: Error when creating project through [Particle](https://github.com/memfault/memfault-firmware-sdk/blob/master/ports/particle/README.md#memfault-library-for-use-with-particle-device-os) registration link
+- Fixed: Error when creating project through
+  [Particle](https://github.com/memfault/memfault-firmware-sdk/blob/master/ports/particle/README.md#memfault-library-for-use-with-particle-device-os)
+  registration link
 - Fixed: Duplicate project creation modal when registering through a partner URL
-- Fixed: “Create Token” button opening SSO connection modal if SSO page was visited first
+- Fixed: “Create Token” button opening SSO connection modal if SSO page was
+  visited first
 - Fixed: Possible timeout when staging releases on very large cohorts
-- Fixed: Possible timeout when searching devices in very large fleets using custom attributes
+- Fixed: Possible timeout when searching devices in very large fleets using
+  custom attributes
 - Fixed: Possible timeout when processing Qualcomm crash reports
-- Fixed: Device attributes not populated in projects where Fleet Sampling is enabled
+- Fixed: Device attributes not populated in projects where Fleet Sampling is
+  enabled
 - Fixed: Error when loading the dashboard on Safari Mobile
-- Fixed: [Alert Notifications](/docs/platform/alerts) not being triggered when the metric in alert condition has a “.” in its name
+- Fixed: [Alert Notifications](/docs/platform/alerts) not being triggered when
+  the metric in alert condition has a “.” in its name
 
 ## MCU
 
-- SDK versions [0.34.0](https://github.com/memfault/memfault-firmware-sdk/blob/master/CHANGES.md#changes-between-memfault-sdk-0340-and-sdk-0335---nov-1-2022), [0.34.1](https://github.com/memfault/memfault-firmware-sdk/blob/master/CHANGES.md#changes-between-memfault-sdk-0341-and-sdk-0340---nov-7-2022), [0.34.2](https://github.com/memfault/memfault-firmware-sdk/blob/master/CHANGES.md#changes-between-memfault-sdk-0342-and-sdk-0341---nov-8-2022), [0.35.0](https://github.com/memfault/memfault-firmware-sdk/blob/master/CHANGES.md#changes-between-memfault-sdk-0350-and-sdk-0342---nov-22-2022) were released. Some highlights:
-    - Added: **Experimental** [Custom Data Recording](/docs/platform/inspecting-a-device/#custom-data-recordings) API for sending custom data (modem traces, vendor-specific crash reports, etc.)
-    - Added: Support for [ModusToolbox™️ Software](https://www.infineon.com/cms/en/design-support/tools/sdk/modustoolbox-software/) 3.0
-    - Added: Support for [Heap Allocation Tracking](https://mflt.io/mcu-heap-stats) on Zephyr port
-    - Improved: Zephyr port’s heap stats to only collect during allocations/deallocations from threads
-    - Improved: [Various utility and quality of life improvements](https://github.com/memfault/memfault-firmware-sdk/blob/master/CHANGES.md#chart_with_upwards_trend-improvements-3) for [ESP32 port](https://github.com/memfault/memfault-firmware-sdk/tree/master/ports/esp_idf) and [example app](https://github.com/memfault/memfault-firmware-sdk/blob/master/examples/esp32/apps/memfault_demo_app)
-    - Changed: Memfault Project Key configuration when ESP32 HTTP Client is used
+- SDK versions
+  [0.34.0](https://github.com/memfault/memfault-firmware-sdk/blob/master/CHANGES.md#changes-between-memfault-sdk-0340-and-sdk-0335---nov-1-2022),
+  [0.34.1](https://github.com/memfault/memfault-firmware-sdk/blob/master/CHANGES.md#changes-between-memfault-sdk-0341-and-sdk-0340---nov-7-2022),
+  [0.34.2](https://github.com/memfault/memfault-firmware-sdk/blob/master/CHANGES.md#changes-between-memfault-sdk-0342-and-sdk-0341---nov-8-2022),
+  [0.35.0](https://github.com/memfault/memfault-firmware-sdk/blob/master/CHANGES.md#changes-between-memfault-sdk-0350-and-sdk-0342---nov-22-2022)
+  were released. Some highlights:
+  - Added: **Experimental**
+    [Custom Data Recording](/docs/platform/inspecting-a-device/#custom-data-recordings)
+    API for sending custom data (modem traces, vendor-specific crash reports,
+    etc.)
+  - Added: Support for
+    [ModusToolbox™️ Software](https://www.infineon.com/cms/en/design-support/tools/sdk/modustoolbox-software/)
+    3.0
+  - Added: Support for
+    [Heap Allocation Tracking](https://mflt.io/mcu-heap-stats) on Zephyr port
+  - Improved: Zephyr port’s heap stats to only collect during
+    allocations/deallocations from threads
+  - Improved:
+    [Various utility and quality of life improvements](https://github.com/memfault/memfault-firmware-sdk/blob/master/CHANGES.md#chart_with_upwards_trend-improvements-3)
+    for
+    [ESP32 port](https://github.com/memfault/memfault-firmware-sdk/tree/master/ports/esp_idf)
+    and
+    [example app](https://github.com/memfault/memfault-firmware-sdk/blob/master/examples/esp32/apps/memfault_demo_app)
+  - Changed: Memfault Project Key configuration when ESP32 HTTP Client is used
 
 ## Android
 
-- Added: [Documentation on Android Multi-Device Support](/docs/android/android-multi-device-support)
+- Added:
+  [Documentation on Android Multi-Device Support](/docs/android/android-multi-device-support)
 - Improved: Visualization of Android custom metrics on Device Timeline
-- SDK versions [4.3.1](https://github.com/memfault/bort/blob/master/CHANGELOG.md#v431---november-7th-2022) and [4.3.2](https://github.com/memfault/bort/blob/master/CHANGELOG.md#v432---november-22nd-2022) were released. Some highlights: 
-    - Fixed: Failure collecting Batterystats metrics when the device clock changes
-    - Fixed: Exceeding the rate limit of the collection of WTFs with the same signature blocks collection of other WTFs
-    - Fixed: Sporadic failures of bugreport processing by Bort if the Bort OTA app is installed on the device.
+- SDK versions
+  [4.3.1](https://github.com/memfault/bort/blob/master/CHANGELOG.md#v431---november-7th-2022)
+  and
+  [4.3.2](https://github.com/memfault/bort/blob/master/CHANGELOG.md#v432---november-22nd-2022)
+  were released. Some highlights:
+  - Fixed: Failure collecting Batterystats metrics when the device clock changes
+  - Fixed: Exceeding the rate limit of the collection of WTFs with the same
+    signature blocks collection of other WTFs
+  - Fixed: Sporadic failures of bugreport processing by Bort if the Bort OTA app
+    is installed on the device.
 
 ## Linux
 
-- Added: Documentation for [Linux Reboot Reasons](/docs/linux/reboot-reason-tracking/)
-- Improved: [Yocto](https://www.yoctoproject.org/) symbol upload instructions (using memfault-cli) on [Issues Page](https://app.memfault.com/organizations/-/projects/-/issues)
-- SDK version [1.1.0](https://github.com/memfault/memfault-linux-sdk/blob/kirkstone/CHANGELOG.md#110---2022-11-10) was released. Some highlights:
-    - Added: [Support for setting the reboot reason using the `last_reboot_reason_file`](/docs/linux/reboot-reason-tracking/#the-last_reboot_reason_file-api)
-    - Fixed: Sporadic failures to collect the correct reboot reason:
-        - Kernel panics showing up in the application as "brown out reset"
-        - Collection of multiple reboot events for a single reboot
-        - Failure to collect the reboot reason "firmware update" after the installation of an OTA update using [SWUpdate](https://sbabic.github.io/swupdate/swupdate.html)
-    - Fixed: Compilation errors when building the SDK on 32-bit systems
+- Added: Documentation for
+  [Linux Reboot Reasons](/docs/linux/reboot-reason-tracking/)
+- Improved: [Yocto](https://www.yoctoproject.org/) symbol upload instructions
+  (using memfault-cli) on
+  [Issues Page](https://app.memfault.com/organizations/-/projects/-/issues)
+- SDK version
+  [1.1.0](https://github.com/memfault/memfault-linux-sdk/blob/kirkstone/CHANGELOG.md#110---2022-11-10)
+  was released. Some highlights:
+  - Added:
+    [Support for setting the reboot reason using the `last_reboot_reason_file`](/docs/linux/reboot-reason-tracking/#the-last_reboot_reason_file-api)
+  - Fixed: Sporadic failures to collect the correct reboot reason:
+    - Kernel panics showing up in the application as "brown out reset"
+    - Collection of multiple reboot events for a single reboot
+    - Failure to collect the reboot reason "firmware update" after the
+      installation of an OTA update using
+      [SWUpdate](https://sbabic.github.io/swupdate/swupdate.html)
+  - Fixed: Compilation errors when building the SDK on 32-bit systems
 
 ## CLI
 
-- CLI versions [0.13.0](https://pypi.org/project/memfault-cli/0.13.0/), [0.14.0](https://pypi.org/project/memfault-cli/0.14.0/), [0.15.0](https://pypi.org/project/memfault-cli/0.15.0/), [0.15.1](https://pypi.org/project/memfault-cli/0.15.1/) and [0.15.2](https://pypi.org/project/memfault-cli/0.15.2/) were released. Some highlights:
-    - Fixed: Timeouts when [posting large chunks using memfault-cli](/docs/mcu/export-chunks-over-console/)
-    - Fixed: Some compatibility issues for python3.6 and python3.7
-    - Changed: Renamed subcommand `upload-debug-data-recording` to `custom-data-recording`
-    - Changed: `upload-yocto-symbols` subcommand now takes root filesystem image path and debug filesystem image path as required arguments
+- CLI versions [0.13.0](https://pypi.org/project/memfault-cli/0.13.0/),
+  [0.14.0](https://pypi.org/project/memfault-cli/0.14.0/),
+  [0.15.0](https://pypi.org/project/memfault-cli/0.15.0/),
+  [0.15.1](https://pypi.org/project/memfault-cli/0.15.1/) and
+  [0.15.2](https://pypi.org/project/memfault-cli/0.15.2/) were released. Some
+  highlights:
+  - Fixed: Timeouts when
+    [posting large chunks using memfault-cli](/docs/mcu/export-chunks-over-console/)
+  - Fixed: Some compatibility issues for python3.6 and python3.7
+  - Changed: Renamed subcommand `upload-debug-data-recording` to
+    `custom-data-recording`
+  - Changed: `upload-yocto-symbols` subcommand now takes root filesystem image
+    path and debug filesystem image path as required arguments
