@@ -5,6 +5,7 @@ sidebar_label: Charts
 ---
 
 import NormalizedCharts from "@site/src/components/icons/NormalizedCharts";
+import { ProjectMagicLink } from "@site/src/components/ProjectMagicLink";
 
 Memfault charts allow you to proactively monitor any smart device, anywhere.
 Monitor your releases and view data-driven device and fleet-level metrics, like
@@ -12,9 +13,11 @@ battery health, connectivity, and more in real-time dashboards.
 
 ## Overview Dashboard
 
-The Overview Dashboard offers a selection of charts that provide an outlook of
-the state of your fleet at a glance. To open it, go to **Dashboards ->
-Overview**.
+<p>
+  The Overview Dashboard offers a selection of charts that provide an outlook of
+  the state of your fleet at a glance. To open it, go to{" "}
+  <ProjectMagicLink path="/overview">Dashboards -> Overview</ProjectMagicLink>.
+</p>
 
 ![Active Devices and Software Versions of your fleet in the Memfault Overview Dashboard](/img/docs/platform/overview-dashboard-top.png)
 _Active Devices and Software Versions of your fleet in the Memfault Overview
@@ -45,8 +48,11 @@ Memfault indexes and aggregates the metrics collected by your devices to provide
 you not only with insights of how individual devices are performing, but also
 the emergent behavior of your entire fleet.
 
-You can add charts to visualize these aggregated, fleet-wide metrics by
-navigating to the sidebar and selecting **Dashboards** and then **Metrics**.
+<p>
+  You can add charts to visualize these aggregated, fleet-wide metrics by
+  navigating to the sidebar and selecting{" "}
+  <ProjectMagicLink path="/metrics">Dashboards -> Metrics</ProjectMagicLink>.
+</p>
 
 Creating a new chart is as simple as clicking `Create Chart`, selecting your
 metric of interest, and choosing the desired aggregation type. Note that only
@@ -93,8 +99,22 @@ of the features of Metric Charts, including [Comparison Mode](#comparison-mode).
 Issue Charts are created from an Issue search. With them, you can represent the
 evolution over time of a group of Issues of particular interest to your team.
 
-To create an Issue Chart, first go to **Issues** and perform a search to filter
-down the results. Then, click on **Create Chart from Search**.
+<p>
+  To create an Issue Chart, go to{" "}
+  <ProjectMagicLink path="/metrics">Dashboards -> Metrics</ProjectMagicLink> and
+  click <strong>Create Chart</strong> -> <strong>Create Issue Chart</strong>.
+  You will be redirected to the{" "}
+  <ProjectMagicLink path="/issues?intent=create-issue-chart">
+    Issue Search page
+  </ProjectMagicLink>
+  . Perform a search to filter down the results. Then, click on <strong>
+    Create Chart from Search
+  </strong>. A modal will appear where the title and optional description for the
+  chart can be entered. Click <strong>Create</strong> to save the chart. Finally,
+  you will be redirected back to the <ProjectMagicLink path="/metrics">
+    Metrics
+  </ProjectMagicLink> page, where the new chart will be displayed.
+</p>
 
 ### Filtering Charts
 
