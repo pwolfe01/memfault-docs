@@ -167,6 +167,8 @@ module.exports = {
             {
                 docs: {
                     sidebarPath: require.resolve("./sidebars.js"),
+                    editUrl:
+                        "https://github.com/memfault/memfault-docs/edit/main/",
                     remarkPlugins: [math],
                     rehypePlugins: [katex],
                 },
