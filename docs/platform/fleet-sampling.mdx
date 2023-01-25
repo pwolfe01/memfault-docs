@@ -191,15 +191,13 @@ section to free up quota before a mass roll-out.
 Log Collection feature is only supported on the
 [Bort SDK](https://github.com/memfault/bort), starting with
 [version 4.2.0](https://github.com/memfault/bort/blob/master/CHANGELOG.md#v420---september-14th-2022).
-
-:::
+See [Android Logging](/docs/android/android-logging) for more details. :::
 
 Log Collection feature allows you to retrieve past logs from devices when the
 Logging resolution is set to `On`, even when the devices have not been sending
 any crash reports or monitoring data. Upon receiving the change of the Logging
 resolution to `On`, Device will send all previously stored logs and once caught
-up, it will continue sending new logs until the resolution is set to `Off`. (See
-[Android Logging](/docs/android/android-logging) for more details).
+up, it will continue sending new logs until the resolution is set to `Off`.
 
 Logs are kept on the device as long as the storage limit (which can only be
 configured by Memfault) permits. Please contact support@memfault.com for
