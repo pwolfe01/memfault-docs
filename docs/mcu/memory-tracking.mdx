@@ -1,0 +1,151 @@
+---
+id: memory-tracking
+title: Tracking Stack and Heap Usage
+sidebar_label: Tracking Stack and Heap Usage
+---
+
+import IntegrationCompletePrerequisite from "@site/src/pages/_partials/_integration-complete-prerequisite.mdx";
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
+<IntegrationCompletePrerequisite />
+
+This document describes strategies for tracking Memory Usage (i.e. RAM usage) in
+your application using Memfault.
+
+<p align="center">
+  <img
+    width="800"
+    src="/img/docs/mcu/heap-usage-zephyr-example-chart.png"
+    alt="/img/docs/mcu/heap-usage-zephyr-example-chart.png"
+  />
+</p>
+
+## Stack Usage
+
+<!-- For many of the supported RTOS's, Memfault will automatically capture stack
+information in coredumps CITATION NEEDED... I think the TCBs have this info? -->
+
+To track stack usage at runtime, [Custom Metrics](/docs/mcu/metrics-api/) can be
+added for each stack of interest.
+
+Memfault recommends recording the Stack Unused Byte count, instead of the
+absolute amount of stack used. The Unused stack value is useful for setting up
+[Device Alerts](/docs/platform/alerts#device-threshold-alerts), as well as
+comparing statistics between versions with different stack size configurations-
+recording "unused" stack space avoids needing to have the total stack size
+numbers handy.
+
+### RTOS Task Stack Usage Metrics
+
+Most RTOS's have APIs for providing stack usage on a per-thread basis, for
+example:
+
+**FreeRTOS:**
+
+- [uxTaskGetStackHighWaterMark()](https://www.freertos.org/uxTaskGetStackHighWaterMark.html)
+  (see related reference page
+  [here](https://www.freertos.org/Stacks-and-stack-overflow-checking.html))
+
+**Zephyr RTOS:**
+
+- [k_thread_stack_space_get()](https://github.com/zephyrproject-rtos/zephyr/blob/c5a4bb9daf811b60e01c4c37d2c1f0daa8e4a13f/include/zephyr/kernel.h#L353-L374)
+
+Those APIs can be used inside the `memfault_metrics_heartbeat_collect_data()`
+heartbeat sampling function to record stack usage.
+
+### Bare Metal Stack Usage Metric
+
+For bare metal systems, or cases where stack usage information is not available,
+one approach to computing stack usage is by using a stack high watermark
+pattern, also known as "stack painting".
+
+The approach follows these steps:
+
+1. During system initialization, write a known pattern into the stack memory
+   region:
+
+   ```c
+   //! The stack watermark value
+   #define STACK_WATERMARK_BYTE (0xA5U)
+   #define STACK_WATERMARK_U32                                      \
+     ((STACK_WATERMARK_BYTE << 24) | (STACK_WATERMARK_BYTE << 16) | \
+      (STACK_WATERMARK_BYTE << 8) | STACK_WATERMARK_BYTE)
+
+   // Write the stack watermark value into the stack memory region. This program's
+   // stack region is from the end of .bss to the __stack_top linker-defined location.
+   // Write the stack watermark pattern in 32-bit words.
+   for (uint32_t *ptr = &__bss_end; ptr < (uint32_t *) __stack_top; ++ptr) {
+     *ptr = STACK_WATERMARK_U32;
+   }
+   ```
+
+2. To compute stack usage at runtime, starting at the lowest address in the
+   stack region, find where the stack watermark pattern ends:
+
+   ```c
+   size_t get_stack_free_bytes(void) {
+     uint8_t *ptr = &__bss_end;
+     for (; ptr < (uint8_t *) __stack_top; ptr++) {
+       if (*ptr != STACK_WATERMARK_BYTE) {
+         break;
+       }
+     }
+
+     return (size_t)(ptr) - (size_t)(&__bss_end);
+   }
+   ```
+
+   This is the highest point in the stack that had a value other than `0xA5`
+   written to it, which should be a pretty good measurement of stack usage.
+
+[FreeRTOS](https://github.com/FreeRTOS/FreeRTOS-Kernel/blob/bb6071e1df3168a64dc2ce79de8aa91b7995ba23/tasks.c#L3852-L3865)
+
+## Heap Usage
+
+### RTOS Heap Usage Metric
+
+RTOS's usually have APIs for measuring heap usage, for example:
+
+**FreeRTOS:**
+
+- [xPortGetFreeHeapSize](https://www.freertos.org/a00111.html#heap_4)
+
+**Zephyr RTOS:**
+
+- [sys_heap_runtime_stats_get](https://github.com/zephyrproject-rtos/zephyr/blob/0fe2c1fe90bf215c0edcb75de0c98f0920ae7f73/include/zephyr/sys/sys_heap.h#L71-L79)
+
+Those example APIs apply to the system heap- if there are separately managed
+heaps, the appropriate stats functions will need to be called instead.
+
+### Bare Metal Heap Usage Metric
+
+On single-threaded systems that use dynamic memory allocation, the APIs used to
+extract that information will depend on the heap implementation. For the popular
+Newlib (and Newlib-Nano) libc, the standard `mallinfo()` function can be used to
+retrieve heap usage information:
+
+```c
+#include <malloc.h>
+struct mallinfo info = mallinfo();
+printf("fordblks %u\n", info.fordblks);  // total non-inuse space, in bytes
+```
+
+It's important to experiment a bit on the actual system under test, since heap
+implementations can vary quite a lot.
+
+It's also worth consulting the source for the heap implementation- in the case
+of Newlib-Nano, that can be found
+[here](https://github.com/bminor/newlib/blob/a68e99f8839e4697790077c8a77b506d528cc674/newlib/libc/stdlib/nano-mallocr.c#L582).
+
+## Allocation Tracking
+
+Memfault provides a component for tracking unfreed heap allocations, called
+"Heap Stats". Find more details on this functionality here:
+
+- [Heap Allocation Tracking](/docs/mcu/heap-stats)
+
+## References
+
+- [General background on stacks in Cortex-M processors](https://community.arm.com/arm-community-blogs/b/architectures-and-processors-blog/posts/how-much-stack-memory-do-i-need-for-my-arm-cortex--m-applications)
+- [Example of "2-pass" stack overflow protection technique](https://blog.japaric.io/stack-overflow-protection/#cortex-m-rt-ld)

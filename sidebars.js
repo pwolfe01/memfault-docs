@@ -85,6 +85,7 @@ module.exports = {
                     label: "User Guides",
                     items: [
                         "mcu/coredump-elf-with-gdb",
+                        "mcu/memory-tracking",
                         "mcu/uploading-data-with-mqtt",
                         "mcu/sdk-submodule",
                         "mcu/watchdogs",
