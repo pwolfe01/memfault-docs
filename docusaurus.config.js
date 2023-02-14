@@ -18,6 +18,9 @@ module.exports = {
     onBrokenMarkdownLinks: "throw",
     projectName: "memfault-firmware-sdk", // Usually your repo name.
     themeConfig: {
+        colorMode: {
+            respectPrefersColorScheme: true,
+        },
         algolia: {
             appId: "4SXF6GYFKZ",
             apiKey: "2028276a4fc7f09eeb0bd082fbd85164",

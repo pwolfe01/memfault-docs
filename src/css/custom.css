@@ -41,6 +41,12 @@
     --ifm-color-primary-lighter: rgb(102, 212, 189);
     --ifm-color-primary-lightest: rgb(146, 224, 208);
     --ifm-color-warning: #ff8100; /* white text on yellow background is hard to read */
+
+    /* This is annoying- if Auto Dark Mode is enabled on Chrome, it'll overwrite
+    any element without the prefers-color-scheme attribute to be a janky forced
+    re-colored version. Use this to globally disable the Auto Dark Mode thing,
+    since we _already_ use the Docusaurus respectPrefersColorScheme config! */
+    color-scheme: only light;
 }
 
 .docusaurus-highlight-code-line {
