@@ -1,4 +1,4 @@
-# Memfault Docusaurus
+# Memfault Docs
 
 [![Netlify Status](https://api.netlify.com/api/v1/badges/53e9bd12-7f75-468c-ab7f-eb4b70d10e07/deploy-status)](https://app.netlify.com/sites/memfault-docs/deploys)
 [![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/memfault/memfault-docs)
