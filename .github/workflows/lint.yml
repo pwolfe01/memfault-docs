@@ -25,6 +25,9 @@ jobs:
         run: |
           git remote set-url origin git@github.com:memfault/memfault-docs.git
 
+          mkdir -p ~/.ssh
+          ssh-keyscan -H github.com >> ~/.ssh/known_hosts
+
       - name: Prettify code
         uses: creyD/prettier_action@v3.1
         with:
