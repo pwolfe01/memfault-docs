@@ -21,6 +21,10 @@ jobs:
           # Make sure the actual branch is checked out when running on pull requests
           ref: ${{ github.head_ref }}
 
+      - name: switch to ssh
+        run: |
+          git remote set-url origin git@github.com:memfault/memfault-docs.git
+
       - name: Prettify code
         uses: creyD/prettier_action@v3.1
         with:
