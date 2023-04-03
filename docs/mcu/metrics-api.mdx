@@ -122,6 +122,10 @@ reported value will not be overwritten by Memfault's backend. This can be used
 as a bandwidth optimization by only reporting values on bootup or when they
 change.
 
+For SDK versions 0.42.0 and above, if an integer metric is not set in a
+heartbeat interval, a null value is sent and ignored by Memfault's backend. For
+SDK versions before 0.42.0, a value of 0 is sent and recorded.
+
 :::
 
 ## Including Sampled Values in a Heartbeat

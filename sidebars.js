@@ -70,6 +70,7 @@ module.exports = {
                         "mcu/coredumps",
                         "mcu/compact-logs",
                         "mcu/custom-data-recording",
+                        "mcu/event-timestamps",
                         "mcu/reboot-reason-tracking",
                         "mcu/metrics-api",
                         "mcu/trace-events",
@@ -139,6 +140,7 @@ module.exports = {
             items: [
                 "linux/introduction",
                 "linux/quickstart",
+                "linux/quickstart-raspberrypi",
                 "linux/integration-guide",
                 {
                     type: "category",

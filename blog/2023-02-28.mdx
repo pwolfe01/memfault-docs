@@ -1,0 +1,85 @@
+---
+title: February 2023
+---
+
+## Memfault Support for RISC-V on ESP32-C3 Devices
+
+Memfault now supports RISC-V on ESP32-C3 devices. By following the steps in the
+[ESP32 ESP-IDF](/docs/mcu/esp32-guide/) integration guide, you will be able to
+integrate the Memfault Firmware SDK into a system that is using the
+[ESP-IDF](https://docs.espressif.com/projects/esp-idf), including the ESP32-C3
+chip. The integration guide assumes you already have a working project/toolchain
+for the ESP32. If you do not, the
+[official getting started guide](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/index.html)
+is a great resource.
+
+![riscv-support.png](/img/blog/2023-02-28-Memfault-RISCV-Support.png)
+
+<!-- truncate -->
+
+## General
+
+- Added: Support for
+  [“Out of Memory” reboot reason](/docs/platform/reference-reboot-reason-ids/#error-reboot-reasons)
+- Added:
+  [Support for archiving metrics](/docs/platform/metrics/#archiving--unarchiving-metrics)
+- Added: Project ID under
+  [Settings → General](https://app.memfault.com/organizations/-/projects/-/settings)
+- Improved: Support for older browser versions
+- Fixed: Timeseries metric quota not correctly calculated when
+  enabling/disabling [Timeseries metrics](/docs/platform/metrics/#timeseries)
+- Fixed: Error when filtering devices with “Any” Config State under
+  [Device Search](https://app.memfault.com/organizations/-/projects/-/devices)
+- Fixed: Bulk fleet sampling updates not resulting in a new config revision
+- Fixed:
+  [Issues page](https://app.memfault.com/organizations/-/projects/-/issues)
+  refreshing continuously when accessed through a pre-filtered URL
+- Fixed: Captcha error during registration
+- Fixed: Altered metric names on Device Timeline under
+  [High-Res Telemetry](/docs/android/android-custom-metrics/#high-resolution-telemetry-hrt)
+  panel
+- Fixed: Times on the Device Timeline not updated based on the selected timezone
+- Fixed: Sporadic failures of the metric exports
+- Fixed: Logs are rate limited although device’s logging resolution is set to
+  `On`
+- Fixed: Sporadic timeouts of Software Version Charts on Dashboard
+- Changed: Device’s first seen timestamp is used instead of the creation date
+  under Device Details → First Seen
+
+## MCU
+
+- Improved: Forming Qualcomm issue titles with function name that called the
+  assert function, instead of just the assert function name
+- Improved: Deduplication of Qualcomm issues due to Out of Memory errors
+- SDK versions
+  [0.38.0](https://github.com/memfault/memfault-firmware-sdk/blob/master/CHANGES.md#changes-between-memfault-sdk-0380-and-sdk-0372---feb-1-2023),
+  [0.39.0](https://github.com/memfault/memfault-firmware-sdk/blob/master/CHANGES.md#changes-between-memfault-sdk-0390-and-sdk-0380---feb-3-2023),
+  [0.39.1](https://github.com/memfault/memfault-firmware-sdk/blob/master/CHANGES.md#changes-between-memfault-sdk-0391-and-sdk-0390---feb-3-2023),
+  [0.40.0](https://github.com/memfault/memfault-firmware-sdk/blob/master/CHANGES.md#changes-between-memfault-sdk-0400-and-sdk-0391---feb-15-2023)
+  and
+  [0.41.0](https://github.com/memfault/memfault-firmware-sdk/blob/master/CHANGES.md#changes-between-memfault-sdk-0410-and-sdk-0400---feb-22-2023)
+  were released. Some highlights:
+  - Added: Support for coredumps on ESP32-S2 and ESP32-S3 chips
+  - Added: Support for coredumps on ESP32-C3 (RISC-V) chip. Thanks
+    [@jlubawy](https://github.com/jlubawy) for the patch!
+  - Added: (Experimental) CMSIS Pack support
+  - Added: (Experimental) Support for “Out of Memory” reboot reason
+  - Changed: The Kconfig `CONFIG_MEMFAULT_AUTOMATIC_INIT` has been deprecated
+    and is no longer supported. Please see
+    [docs](/docs/mcu/esp32-guide#initializing-memfault) for more information.
+
+## Android
+
+- We did not publish a new version of the
+  [Android Bort AOSP SDK](https://github.com/memfault/bort) in February.
+
+## Linux
+
+- We did not publish a new version of the
+  [Memfault Linux SDK](https://github.com/memfault/memfault-linux-sdk) in
+  February.
+
+## CLI
+
+- We did not publish a new version of the
+  [memfault-cli](https://pypi.org/project/memfault-cli/) in February.

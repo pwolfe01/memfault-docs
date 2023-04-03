@@ -1,0 +1,59 @@
+---
+id: event-timestamps
+title: Event Timestamps
+sidebar_label: Event Timestamps
+---
+
+By default, events ([Reboot Reason Tracking](/docs/mcu/reboot-reason-tracking),
+[Trace Events](/docs/mcu/trace-events), and
+[Heartbeat Metrics](/docs/mcu/metrics-api)) are timestamped when they're
+uploaded to Memfault. This works well for frequently-connected devices, but for
+devices that batch-upload many heartbeats at once, the data points may end up
+tightly clustered in the Device Timeline view.
+
+For fleet-level aggregate values ("Percent State-of-Charge Drop per Hour") the
+timestamping has no impact, but it can be helpful to correlate Trace or Reboot
+events with metric values.
+
+Devices with this constrained connectivity can implement the
+`memfault_platform_time_get_current()` platform API, to provide a Unix timestamp
+which is included in the Event payload.
+
+:::note
+
+Only systems that maintain a notion of time, for example using a Real Time Clock
+or synced from a GPS or mobile phone, should implement this API. Memfault will
+not correct out-of-sync timestamps, for example when a Real Time Clock has not
+been initialized. In that case, be sure to return `false` from
+`memfault_platform_time_get_current()` if there's any uncertainty about the
+device time quality.
+
+:::
+
+See the header file here for details:
+
+<https://github.com/memfault/memfault-firmware-sdk/blob/master/components/include/memfault/core/platform/system_time.h>
+
+An example implementation for a system that uses a C standard time API:
+
+```c
+#include <time.h>
+bool memfault_platform_time_get_current(sMemfaultCurrentTime *thistime) {
+  // fetch the current unix timestamp in seconds
+  time_t timestamp = time(NULL);
+  // if it's less than January 1 2000, return false; time hasn't been
+  // initialized
+  if (timestamp < 946702800){
+    return false;
+  }
+
+  // load the timestamp and return true for a valid timestamp
+  *thistime = (sMemfaultCurrentTime){
+    .type = kMemfaultCurrentTimeType_UnixEpochTimeSec,
+    .info = {
+      .unix_timestamp_secs = (uint64_t)timestamp,
+    },
+  };
+  return true
+}
+```

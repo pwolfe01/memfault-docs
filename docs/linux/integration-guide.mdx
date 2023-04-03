@@ -160,7 +160,6 @@ cargo build
 The available plugins are:
 
 - `swupdate`: used for [OTA management][docs-linux-ota].
-- `reboot`: used for reboot reason tracking.
 - `collectd`: used for collection of [metrics][docs-linux-metrics].
 - `coredump`: used for collection of [coredumps][docs-linux-coredumps].
 - `logging`: used to [collect and upload][docs-linux-logging] logs.
@@ -173,13 +172,13 @@ included in the `memfaultd` build. For example, you can add a
 `memfaultd.bbappend` recipe with the following contents:
 
 ```
-PACKAGECONFIG := "plugin_swupdate plugin_reboot plugin_collectd plugin_coredump plugin_logging"
+PACKAGECONFIG := "plugin_swupdate plugin_collectd plugin_coredump plugin_logging"
 ```
 
 Alternatively, in your `local.conf` file:
 
 ```
-PACKAGECONFIG:pn_memfaultd := "plugin_swupdate plugin_reboot plugin_collectd plugin_coredump plugin_logging"
+PACKAGECONFIG:pn_memfaultd := "plugin_swupdate plugin_collectd plugin_coredump plugin_logging"
 ```
 
   </TabItem>
@@ -188,7 +187,7 @@ PACKAGECONFIG:pn_memfaultd := "plugin_swupdate plugin_reboot plugin_collectd plu
 The included plugins can be configured using Cargo features:
 
 ```
-  cargo build --no-default-features --feature swupdate reboot collectd coredump logging
+  cargo build --no-default-features --feature swupdate collectd coredump logging
 ```
 
   </TabItem>
@@ -355,8 +354,8 @@ more information.
 ### Test the integration
 
 <p>
-  If you've included the reboot reasons plugin, you can test your integration by
-  rebooting your test device. Then, on the Memfault app, open{" "}
+  You can test your integration by rebooting your test device. Then, on the
+  Memfault app, open{" "}
   <ProjectMagicLink path="/devices">
     <b>Fleet -> Devices</b>
   </ProjectMagicLink>{" "}

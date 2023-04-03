@@ -100,8 +100,7 @@ A [full configuration example can be found in the source directory of
     "output_file": "/tmp/swupdate.cfg"
   },
   "reboot_plugin": {
-    "last_reboot_reason_file": "/media/last_reboot_reason",
-    "uboot_fw_env_file": "/etc/fw_env.config"
+    "last_reboot_reason_file": "/media/last_reboot_reason"
   },
   "collectd_plugin": {
     "footer_include_output_file": "/tmp/collectd-footer-include.conf",
@@ -148,7 +147,7 @@ file.
 | `project_key`              | A write-only key for your Project. Find yours in <ProjectMagicLink path="/settings" title="Open Project -> Settings in your Project">**Project -> Settings**</ProjectMagicLink> in the app.        | _Project-specific_                        |
 | `data_dir`                 | A directory where `memfaultd` can store application data persistently (needs to survive firmware upgrades). Read more [here][docs-data-dir].                                                       | _Project-specific_                        |
 | `swupdate_plugin`          | Configuration values for `plugin_swupdate` if enabled in `memfaultd` (default). [Read more][docs-control-memfaultd-plugins].                                                                       | See [`swupdate_plugin`](#swupdate_plugin) |
-| `reboot_plugin`            | Configuration values for `plugin_reboot` if enabled in `memfaultd` (default). [Read more][docs-control-memfaultd-plugins].                                                                         | See [`reboot_plugin`](#reboot_plugin)     |
+| `reboot_plugin`            | Configuration values for `plugin_reboot`. [Read more][docs-control-memfaultd-plugins].                                                                                                             | See [`reboot_plugin`](#reboot_plugin)     |
 | `collectd_plugin`          | Configuration values for `plugin_collectd` if enabled in `memfaultd` (default). [Read more][docs-control-memfaultd-plugins].                                                                       | See [`reboot_plugin`](#reboot_plugin)     |
 | `coredump_plugin`          | Configuration values for `plugin_coredump` if enabled in `memfaultd` (default). [Read more][docs-control-memfaultd-plugins].                                                                       | See [`coredump_plugin`](#coredump_plugin) |
 
@@ -173,16 +172,14 @@ file.
 ```json
 {
   "reboot_plugin": {
-    "last_reboot_reason_file": "/media/last_reboot_reason",
-    "uboot_fw_env_file": "/etc/fw_env.config"
+    "last_reboot_reason_file": "/media/last_reboot_reason"
   }
 }
 ```
 
-| Field                     | Description                                                                                                                                                                                                                                                         | Recommended value    |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
-| `last_reboot_reason_file` | The path where `memfaultd`'s reboot reason tracking plugin will attempt to find the [device-specific reboot reason][docs-reboot-reason-tracking-device-specific]. If the file does not exist, `memfaultd` will interpret this as "no device specific reason known". | _Project-specific_   |
-| `uboot_fw_env_file`       | Path to a valid `fw_env.config` file. See [the SWUpdate dependency of Reboot Reason Tracking][docs-reboot-reason-tracking-swupdate] for more information. Read [about `libubootenv`][source-libubootenv] and see [an example][source-fwenv-config].                 | `/etc/fw_env.config` |
+| Field                     | Description                                                                                                                                                                                                                                                         | Recommended value  |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ |
+| `last_reboot_reason_file` | The path where `memfaultd`'s reboot reason tracking plugin will attempt to find the [device-specific reboot reason][docs-reboot-reason-tracking-device-specific]. If the file does not exist, `memfaultd` will interpret this as "no device specific reason known". | _Project-specific_ |
 
 ### `collectd_plugin`
 
@@ -343,7 +340,6 @@ Older entries will be deleted automatically to keep the total size smaller than
   /docs/linux/integration-guide#configure-a-persistent-storage-directory-for-memfaultd
 [docs-control-memfaultd-plugins]:
   /docs/linux/integration-guide#optional-opt-out-of-memfaultd-built-in-plugins
-[source-libubootenv]: https://github.com/sbabic/libubootenv
 [source-memfaultd]:
   https://github.com/memfault/memfault-linux-sdk/blob/-/meta-memfault/recipes-memfault/memfaultd/files/memfaultd
 [source-memfaultd-service]:
@@ -352,7 +348,5 @@ Older entries will be deleted automatically to keep the total size smaller than
   https://github.com/memfault/memfault-linux-sdk/blob/-/meta-memfault
 [source-swupdate-args]:
   https://github.com/memfault/memfault-linux-sdk/blob/-/meta-memfault-example/recipes-support/swupdate/files/09-swupdate-args.in
-[source-fwenv-config]:
-  https://github.com/memfault/memfault-linux-sdk/blob/-/meta-memfault-example/recipes-bsp/u-boot/files/fw_env.config
 [swupdate-cfg-docs]:
   https://sbabic.github.io/swupdate/swupdate.html#command-line-parameters

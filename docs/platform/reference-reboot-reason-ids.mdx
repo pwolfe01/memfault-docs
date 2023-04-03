@@ -48,6 +48,7 @@ MCU SDK][reboot_reason_types.h].
 | Clock Failure           | 32775        | 0x8007   | `kMfltRebootReason_ClockFailure`        | A reset triggered due to the CPU losing a stable clock. This can happen, for example, if power to the clock is cut or the lock for the PLL is lost. |
 | Kernel Panic            | 32776        | 0x8008   | `kMfltRebootReason_KernelPanic`         | A software reset triggered when the OS or RTOS end-user code is running on top of identifies a fatal error condition.                               |
 | Firmw Update Error      | 32777        | 0x8009   | `kMfltRebootReason_FirmwareUpdateError` | A reset triggered when an attempt to upgrade to a new OTA image has failed and a rollback to a previous version was initiated.                      |
+| Out of Memory           | 32778        | 0x800A   | `kMfltRebootReason_OutOfMemory`         | A software reset triggered due to a dynamic memory (heap) allocation failure.                                                                       |
 
 ## ARM-specific Error Reboot Reasons
 

@@ -34,15 +34,12 @@ following the steps in this tutorial.
 
 ## Prerequisites
 
-### The `memfaultd` daemon, built with `plugin_reboot`
+### The `memfaultd` daemon
 
 Follow the [integration guide][docs-linux-integration] to learn how to set this
 up for your device. A key function of `memfaultd` is to detect, classify and
 upload reboot events to the Memfault platform. It does this via its
 `plugin_reboot`.
-
-`plugin_reboot` is enabled by default. Read more on [how to configure which
-plugins `memfaultd` builds with][docs-linux-control-plugins].
 
 ### Linux kernel `pstore` / `ramoops` configuration
 
@@ -113,8 +110,7 @@ auto-generates a Device Tree on-the-fly and extending it is more complicated.
 ### Systemd configuration
 
 The `memfaultd` daemon will take care of cleaning up `/sys/fs/pstore` after a
-reboot of the system (but only if the reboot reason tracking plugin,
-`plugin_reboot`, is enabled).
+reboot of the system.
 
 Often, [systemd-pstore.service] is configured to carry out this task. This would
 conflict with `memfaultd` performing this task. Therefore,
@@ -131,48 +127,17 @@ work-around is to create a service that performs the archiving and runs before
 [systemd-bbappend]:
   https://github.com/memfault/memfault-linux-sdk/blob/-/meta-memfault/recipes-core/systemd/systemd_%25.bbappend
 
-### SWUpdate configuration
+### Detecting reboot due to Over The Air updates
 
-The Memfault SDK relies on the SWUpdate OTA agent to download and install OTA
-updates. The reboot plugin can detect when a reboot is due to an OTA update
-being installed. This depends on a feature of SWUpdate called ["update
-transaction and status marker"][swupdate-status-marker]. In a nutshell, SWUpdate
-writes the status of the pending OTA update to a bootloader environment variable
-just before the system shuts down. The reboot plugin will attempt to read this
-variable and will apply the "Firmware Update" reboot reason, if applicable.
+The OTA agent you are using (for example `swupdate`) should inform the Memfault
+SDK before rebooting after installing an update.
 
-For this to work, SWUpdate need to be configured correctly:
+In our `meta-memfault-example` this is accomplished by [configuring
+`swupdate`][ota-reboot-example] to run the command
+`memfaultctl reboot --reason 3` after installing the update.
 
-1. SWUpdate's [update transaction and status marker][swupdate-status-marker]
-   (`bootloader_transaction_marker`) must be enabled (the default).
-2. It must be configured to use U-Boot.
-3. The configured "fw env" file must match the `reboot_plugin.uboot_fw_env_file`
-   key in memfaultd.conf.
-4. It must use the bootloader (U-Boot) to store the update state in a variable
-   called `ustate` (this is the default).
-
-The relevant parts of a correctly configured `defconfig` look like this:
-
-```
-CONFIG_UBOOT=y
-# Must match reboot_plugin.uboot_fw_env_file in memfaultd.conf:
-CONFIG_UBOOT_FWENV="/etc/fw_env.config"
-CONFIG_BOOTLOADER_DEFAULT_UBOOT=y
-CONFIG_UPDATE_STATE_CHOICE_BOOTLOADER=y
-CONFIG_UPDATE_STATE_BOOTLOADER="ustate"
-```
-
-:::note
-
-In case you decide not to [use SWUpdate for OTA][docs-ota], you can use
-[the `last_reboot_reason_file` API (described in the next section)](#device-specific)
-to associate the "Firmware Update" reason to a reboot after your OTA agent has
-installed an update.
-
-:::
-
-[swupdate-status-marker]:
-  https://sbabic.github.io/swupdate/sw-description.html#update-transaction-and-status-marker
+[ota-reboot-example]:
+  https://github.com/memfault/memfault-linux-sdk/blob/-/meta-memfault-example/recipes-support/swupdate/files/swupdate.cfg#L11
 
 ## Reboot Reason Classification
 
@@ -181,11 +146,10 @@ installed an update.
 There are only a few reboot reasons that memfaultd can determine with confidence
 for all embedded Linux devices out-of-the-box:
 
-| Reason          | Description                                                                               | Information Source          |
-| --------------- | ----------------------------------------------------------------------------------------- | --------------------------- |
-| Kernel Panic    | The Linux kernel crashed                                                                  | `pstore` / `ramoops`        |
-| Firmware Update | The device rebooted because of an OTA update. Note: requires [integrating OTA][docs-ota]. | U-Boot environment variable |
-| User Reset      | "Graceful" shutdown of the system                                                         | `systemd` state             |
+| Reason       | Description                       | Information Source   |
+| ------------ | --------------------------------- | -------------------- |
+| Kernel Panic | The Linux kernel crashed          | `pstore` / `ramoops` |
+| User Reset   | "Graceful" shutdown of the system | `systemd` state      |
 
 ### Device-specific reboot reasons {#device-specific}
 
@@ -283,8 +247,7 @@ this order of precedence is used:
 
 1. `pstore`/`ramoops` (Kernel Panic)
 2. `last_reboot_reason_file`
-3. Other built-in reboot reason detection sources: SWUpdate/U-Boot OTA state
-   (Firmware Update) or `systemd` shutdown state (User Reset)
+3. `systemd` shutdown state (User Reset)
 
 If none of the sources determined a reason for a reboot, "Unspecified" will be
 used as the reason.
@@ -336,10 +299,10 @@ the topics discussed together.
 
 ## Test your integration
 
-You can easily test your integration with the `memfaultctl reboot <reason>`
-command. It accepts an [integer reboot reason][docs-reboot-reason-ids] (defaults
-to 0 `UNKNOWN_REASON`), will save the reason and reboot the system (using the
-`reboot`command).
+You can easily test your integration with the
+`memfaultctl reboot --reason <reason>` command. It accepts an [integer reboot
+reason][docs-reboot-reason-ids] (defaults to 0 `UNKNOWN_REASON`), will save the
+reason and reboot the system (using the `reboot`command).
 
 ```
 # memfaultctl reboot --reason 4    # Low Power reboot

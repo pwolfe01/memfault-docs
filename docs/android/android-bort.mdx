@@ -386,6 +386,30 @@ adb shell am broadcast --receiver-include-background \
   --ez com.memfault.intent.extra.BORT_ENABLED true
 ```
 
+### Setting Project Key at Runtime
+
+A project key is required at compilation time of the Bort APK, but it can also
+be changed at runtime if needed. This can be useful for moving test devices to a
+separate project so their metrics and issues don't pollute the main project
+being used. To use this feature, add `ALLOW_PROJECT_KEY_CHANGE=true` to your
+`bort.properties`.
+
+Once enabled, you can run the following adb command to change the key.
+
+```bash
+adb shell am broadcast \
+  -a com.memfault.intent.action.UPDATE_PROJECT_KEY
+  -n com.memfault.smartfridge.bort/com.memfault.bort.receivers.ShellControlReceiver
+  --es com.memfault.intent.extra.PROJECT_KEY "your_new_project_key"
+```
+
+:::note
+
+Changing the project key will delete all pending MAR files queued to be
+uploaded.
+
+:::
+
 ### Software Versions, Hardware Versions and Device Serials
 
 It is possible to customize which values to use as the Software Version,

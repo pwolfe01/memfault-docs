@@ -265,6 +265,51 @@ int bar(void) {
 }
 ```
 
+#### Capturing Peripheral Registers
+
+While debugging a crash it may be useful to know the state of your peripherals.
+Peripheral registers can be captured in a similar manner to other captured
+memory regions. Simply add the address and length of the register space you wish
+to capture to your `memfault_platform_coredump_get_regions()` implementation.
+Below is an example of capturing the UART peripheral registers for the nRF52840:
+
+:::note
+
+The memory regions mapped to your MCU's peripheral may require word aligned
+reads. The nRF52840 has such a limitation which is why
+`kMfltCoredumpRegionType_MemoryWordAccessOnly` is used over
+`kMfltCoredumpRegionType_Memory`.
+
+:::
+
+```c
+[...]
+// UARTE is the nRF52840 UART peripheral
+#define UARTE_PERIPHERAL_REGISTER_ADDRESS_START 0x40002000
+#define UARTE_PERIPHERAL_REGISTER_ADDRESS_SIZE 0x56F
+
+s_coredump_regions[region_idx++] =
+    (sMfltCoredumpRegion){.type = kMfltCoredumpRegionType_MemoryWordAccessOnly,
+                        .region_start = (void *)UARTE_PERIPHERAL_REGISTER_ADDRESS_START,
+                        .region_size = UARTE_PERIPHERAL_REGISTER_ADDRESS_SIZE};
+
+[...]
+```
+
+These registers will now be present in your coredump, and you can inspect their
+value
+[locally with GDB](https://docs.memfault.com/docs/mcu/coredump-elf-with-gdb/)
+and a [CMSIS SVD plugin](https://github.com/bnahill/PyCortexMDebug) to see
+decoded values.
+
+:::note
+
+Some peripheral registers change values when read. If changing the value of
+these registers would negatively affect the system during coredump collection,
+capturing their values should be avoided.
+
+:::
+
 #### Locating Sections at a Specific Location
 
 Another benefit working with linker scripts is the ability to place objects or
