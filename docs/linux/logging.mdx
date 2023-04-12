@@ -54,6 +54,11 @@ We include the same recipe (with some minor changes for compatibility with
 recent versions of Yocto) and a sample configuration file [in our
 `meta-memfault-example` layer][fluent-bit-recipe-memfault].
 
+When adding fluent-bit to your system, make sure it is started _after_
+`memfaultd`. If fluent-bit is started before `memfaultd`, the logs that happened
+before `memfaultd` started may be lost. To ensure the correct boot order using
+systemd, add `After=memfaultd.service` to the fluent-bit service file.
+
 [fluent-bit-recipe]:
   https://github.com/fluent/fluent-bit/blob/v2.0.9/fluent-bit_2.0.9.bb
 [fluent-bit-recipe-memfault]:
