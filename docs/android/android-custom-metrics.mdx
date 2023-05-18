@@ -11,29 +11,37 @@ Reporting APIs are available from Bort 4.0 onwards.
 :::
 
 Memfault has support for various built-in AOSP metrics, like battery health,
-wakelock counts, foregrounded apps and so on. See
-[Built-in Metrics](/docs/android/android-builtin-metrics) for more details.
+wakelock counts, foregrounded apps and so on (see
+[Built-in Metrics](/docs/android/android-builtin-metrics) for more details). It
+is also possible to use the custom `Reporting` API to collect custom metrics as
+defined by you.
 
-Aside from the built-in metrics, it is also possible to define custom ones. In
-this guide we describe the different kinds of metric that can be collected.
+In this section, we describe the different kinds of metrics that can be
+collected, and how to use them.
 
-## Summary
+## Overview
 
-The `Reporting` API enables logging individual metrics. These are uploaded in
-high resolution and in aggregate.
+The `Reporting` API enables logging individual metrics. These metrics are
+**collected** both individually as high resolution telemary events and as an
+aggregate metric, but only **uploaded** depending on the fleet sampling
+configuration.
 
 ### High Resolution Telemetry (HRT)
 
-Individual metric events are uploaded and displayed in high resolution on the
-device timeline. This will appear similar to the existing batterystats metrics.
+Bort supports very detailed views of metrics over time on the device timeline
+view.
 
-All metrics are uploaded as part of HRT, even if there are no aggregations
-requested.
+- All individual metric events are collected as HRT, regardless of the
+  aggregation specified, but will only be uploaded as HRT if the fleet sampling
+  permits.
+- Individual metric events are only visible on the device timeline. They cannot
+  be used in the Memfault metrics dashboard.
 
 :::note
 
 HRT is supported from Bort 4.4.0 onwards. This is part of the **Debugging**
-Fleet Sampling resolution.
+Fleet Sampling resolution. If the device does not have the debugging resolution
+enabled, its HRT metrics won't be uploaded.
 
 :::
 
@@ -42,7 +50,8 @@ Fleet Sampling resolution.
 Bort aggregates each metric at the end of the reporting period (usually 1 hour).
 These aggregates are:
 
-- Shown on the device timeline.
+- Shown on the device timeline, unless HRT events are also present for that
+  period.
 - Available for use as [Timeseries](/docs/platform/metrics#timeseries) or
   [Attributes](/docs/platform/metrics#attributes) metrics, aggregated across the
   entire fleet.
@@ -50,7 +59,8 @@ These aggregates are:
 :::note
 
 Aggregate metrics are supported from Bort 4.0.0 onwards. This is part of the
-**Monitoring** Fleet Sampling resolution.
+**Monitoring** Fleet Sampling resolution. If the device does not have the
+monitoring resolution enabled, its aggregate metrics won't be uploaded.
 
 :::
 
@@ -102,7 +112,7 @@ e.g.
 val distributionMetric = Reporting.report().distribution("my-distribution", numericAggs(NumericAgg.MEAN, NumericAgg.MIN))
 ```
 
-Then we can use this metric to record values from elsewhere in our codebase:
+Then we can use this metric to record values from elsewhere in the codebase:
 
 ```
 distributionMetric.record(6.89)
@@ -137,13 +147,15 @@ disconnectionCounter.incrementBy(7.9)
 This will create a metric in Memfault named `disconnection-events.sum`. In the
 example above, this would have a value of `12.9` for the current reporting
 period. This metric can be disabled by setting `sumInReport = false` when
-creating the metric (individual events will be shown in HRT on timeline).
+creating the metric
+
+Individual events will be shown in HRT on the timeline.
 
 :::info
 
 Counters could be useful as either
 [Timeseries Metrics](/docs/platform/metrics#timeseries) (tracking trends over
-time), or simply for reviewing on Device Timeline.
+time), or simply for reviewing on the Device Timeline.
 
 :::
 
@@ -185,6 +197,10 @@ The available distribution aggregations are defined in the `NumericAgg` enum:
 All values will be shown in HRT on timeline. Entries will only be created in the
 metric report for each requested aggregation.
 
+| HRT off                                                                | HRT on                                                                |
+| ---------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| ![](/img/docs/android/android-custom-metrics-distribution-hrt-off.png) | ![](/img/docs/android/android-custom-metrics-distribution-hrt-on.png) |
+
 :::info
 
 Distributions may we well suited to track selected metrics over time across the
@@ -195,10 +211,11 @@ useful on the Device Timeline as part of the Metric Report.
 
 ### State Tracker
 
-Tracks state transitions - for example, the connection state of a peripheral
-device or enabled state of a device function.
+Tracks state transitions. This is useful for say, tracking the connection state
+of a peripheral device or the enabled state of a device function.
 
-State trackers track state using an `enum`:
+State trackers track state using an `enum` (boolean and string state trackers
+are also available):
 
 ```
 enum class ConnectionState {
@@ -247,6 +264,13 @@ aggregation types, defined in `StateAgg`:
 
 Even if no aggregation types are requested, all state transitions will be
 displayed on timeline by HRT.
+
+Enum state trackers can be expanded via the dropdown to see the corresponding
+enum.
+
+| HRT off                                                         | HRT on                                                         |
+| --------------------------------------------------------------- | -------------------------------------------------------------- |
+| ![](/img/docs/android/android-custom-metrics-state-hrt-off.png) | ![](/img/docs/android/android-custom-metrics-state-hrt-on.png) |
 
 :::info
 
