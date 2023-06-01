@@ -1,0 +1,24 @@
+---
+id: builtin-metrics
+title: Built-in Metrics
+sidebar_label: Built-in Metrics
+---
+
+import IntegrationCompletePrerequisite from "@site/src/pages/_partials/_integration-complete-prerequisite.mdx";
+
+## All Platform Metrics
+
+Metrics that are built into the SDK and available on all target platforms:
+
+| Name                                       | Description                                                                                                                                                                                                                                                      |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| MemfaultSdkMetric_UnexpectedRebootCount    | Count of unexpected reboots, maintained through resets, but typically lost on power loss. Reset only when `memfault_reboot_tracking_reset_crash_count()` is called, i.e. when Memfault data is successfully exported from the device, or when a heartbeat fires. |
+| MemfaultSdkMetric_UnexpectedRebootDidOccur | Set to 1 if an unexpected reboot occurred in the current boot cycle. See [Measuring Fleet Reliability With Crash-Free Hours](/docs/best-practices/fleet-reliability-metrics-crash-free-hours) guide for detailed usage                                           |
+
+## Platform-Specific Metrics
+
+### Zephyr
+
+### ESP-IDF
+
+### FreeRTOS

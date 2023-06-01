@@ -95,6 +95,7 @@ module.exports = {
                         "mcu/event-timestamps",
                         "mcu/reboot-reason-tracking",
                         "mcu/metrics-api",
+                        "mcu/builtin-metrics",
                         "mcu/trace-events",
                         "mcu/logging",
                         "mcu/releases-integration-guide",
