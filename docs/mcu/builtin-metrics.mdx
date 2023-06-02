@@ -17,8 +17,35 @@ Metrics that are built into the SDK and available on all target platforms:
 
 ## Platform-Specific Metrics
 
+### nRF Connect 
+
+> Only the nRF91 at the moment
+
+| Metric Name                   | Description                                                                       |
+|-------------------------------|-----------------------------------------------------------------------------------|
+| Ncs_AtCmdUnusedStack          | Minimum free stack space measured for AT command thread critically low.           |
+| Ncs_ConnectionPollUnusedStack | Lowest available free stack space measured for connection poll thread.            |
+| Ncs_LteConnectionLossCount    | The number of LTE network disconnections after initial registration.              |
+| Ncs_LteTimeToConnect          | The time in milliseconds it takes to search for and register with an LTE network. |
+
+
 ### Zephyr
+
+| Metric Name        | Description |
+|--------------------|-------------|
+| AllTasksCpuUsage   |             |
+| TimerTaskCpuUsage  |             |
+| TimerTaskFreeStack |             |
 
 ### ESP-IDF
 
 ### FreeRTOS
+
+### Laird Pinnacle 100
+
+| Metric Name | Description                                                                            |
+|-------------|----------------------------------------------------------------------------------------|
+| lte_ttf     | Time in milliseconds to go back to roaming from LTE out-of-coverage or searching mode. |
+| lte_rsrp    | LTE RSRP (reference signal received power).                                            |
+| lte_sinr    | LTE SINR (signal-to-interference-plus-noise ratio).                                    |
+| lte_drop    | Number of times a device has lost LTE connection.                                      |
