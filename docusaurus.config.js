@@ -241,5 +241,6 @@ module.exports = {
                 disableInDev: false,
             },
         ],
+        './src/plugins/random-page'
     ],
 };

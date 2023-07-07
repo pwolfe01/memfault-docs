@@ -67,6 +67,12 @@ function Home() {
                     >
                         Feature Overview <FiExternalLink />
                     </a>
+                    <a
+                        className={styles["hero-link"]}
+                        href="/random"
+                    >
+                        Get Random Page
+                    </a>
                 </header>
                 <hr className={styles["divider"]} />
                 <div className={styles["resources"]}>
