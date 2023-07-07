@@ -16,13 +16,11 @@ export default function RandomPage() {
             return route;
         })
         .map((route) => route.path);
-    console.log(selectedRoutes);
 
     useEffect(() => {
         setRandomRoute(
             selectedRoutes[Math.floor(Math.random() * selectedRoutes.length)],
         );
-        console.log(randomRoute);
     }, []);
     return <Redirect to={randomRoute} />;
 }
