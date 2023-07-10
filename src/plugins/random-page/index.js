@@ -14,44 +14,44 @@ module.exports = async function randomPage(context, options) {
                 exact: true,
             });
 
-            const mcuSubRoute = '/docs/mcu';
+            const mcuSubRoute = "/docs/mcu";
             const mcuSubRouteJsonPath = await createData(
-                'mcuSubRoute.json',
+                "mcuSubRoute.json",
                 JSON.stringify(mcuSubRoute),
             );
             addRoute({
                 path: "/random/mcu",
                 component: "@site/src/components/RandomPage.js",
                 modules: {
-                    subRoute: mcuSubRouteJsonPath
+                    subRoute: mcuSubRouteJsonPath,
                 },
                 exact: true,
             });
 
-            const linuxSubRoute = '/docs/linux';
+            const linuxSubRoute = "/docs/linux";
             const linuxSubRouteJsonPath = await createData(
-                'linuxSubRoute.json',
+                "linuxSubRoute.json",
                 JSON.stringify(linuxSubRoute),
             );
             addRoute({
                 path: "/random/linux",
                 component: "@site/src/components/RandomPage.js",
                 modules: {
-                    subRoute: linuxSubRouteJsonPath
+                    subRoute: linuxSubRouteJsonPath,
                 },
                 exact: true,
             });
 
-            const androidSubRoute = '/docs/android';
+            const androidSubRoute = "/docs/android";
             const androidSubRouteJsonPath = await createData(
-                'androidSubRoute.json',
+                "androidSubRoute.json",
                 JSON.stringify(androidSubRoute),
             );
             addRoute({
                 path: "/random/android",
                 component: "@site/src/components/RandomPage.js",
                 modules: {
-                    subRoute: androidSubRouteJsonPath
+                    subRoute: androidSubRouteJsonPath,
                 },
                 exact: true,
             });
