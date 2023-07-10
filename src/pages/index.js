@@ -70,6 +70,15 @@ function Home() {
                     <a className={styles["hero-link"]} href="/random">
                         Get Random Page
                     </a>
+                    <a className={styles["hero-link"]} href="/random/mcu">
+                        Get Random MCU Page
+                    </a>
+                    <a className={styles["hero-link"]} href="/random/linux">
+                        Get Random Linux Page
+                    </a>
+                    <a className={styles["hero-link"]} href="/random/android">
+                        Get Random Android Page
+                    </a>
                 </header>
                 <hr className={styles["divider"]} />
                 <div className={styles["resources"]}>
