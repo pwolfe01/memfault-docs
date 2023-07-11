@@ -44,23 +44,6 @@ implementation.
 In order for the coredump save to complete, the chip will need to be configured
 to fire the interrupt for the Watchdog Timer, but not immediately reset.
 
-<!--
-
-This is really not recommended, since the backtrace won't be as nice as with the
-above technique. Leaving it for future reference only.
-
-```c
-void WDOG1_IRQHandler(void) {
-  // optionally, do one last feed here of the hardware watchdog in case more
-  // time is needed to ensure the coredump save can finish
-
-  // trigger a Memfault software watchdog
-  MEMFAULT_SOFTWARE_WATCHDOG();
-}
-```
-
--->
-
 ## Configuring Watchdog Timer Warning Threshold
 
 Depending on the particular chip, there's often a "warning" threshold that can
@@ -104,6 +87,31 @@ weakly-defined function:
 //! @return true if to continue saving the coredump, false to abort
 extern bool memfault_platform_coredump_save_begin(void);
 ```
+
+## Software Watchdog
+
+For other watchdog types that don't trigger a hardware interrupt, the Memfault
+assert macro `MEMFAULT_SOFTWARE_WATCHDOG()` can be used to trigger a coredump
+tagged as Software Watchdog.
+
+One common use case for this feature is a "task watchdog" in a multi-threaded
+system, which checks for tasks that aren't busy-looping, but are stuck waiting
+on some OS primitive (mutex or queue) when they should be proceeding.
+
+Call the `MEMFAULT_SOFTWARE_WATCHDOG()` macro when the task watchdog trips. Note
+that in order to diagnose such an issue, Memfault needs to support thread
+awareness for the RTOS in use, and the necessary threads and kernel data
+structures must be captured as part of the coredump (see the
+[RTOS Analysis](/docs/mcu/rtos-analysis/) documentation for details.)
+
+:::note
+
+Memfault provides a lightweight task watchdog subsystem which can be used if the
+system doesn't have one available. See
+[here](https://github.com/memfault/memfault-firmware-sdk/blob/master/components/include/memfault/core/task_watchdog.h)
+for more information.
+
+:::
 
 ## Sample Integrations
 
