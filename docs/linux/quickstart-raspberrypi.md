@@ -47,7 +47,7 @@ The instructions on this guide are compatible with Linux and macOS (Intel and
 Apple Silicon). Windows users should be able to follow along with minimal
 adjustments.
 
-[sdk]: https://github.com/memfault/memfault-linux-sdk/blob/-/
+[sdk]: https://github.com/memfault/memfault-linux-sdk/
 
 ### Create a Docker container to build with Yocto
 
