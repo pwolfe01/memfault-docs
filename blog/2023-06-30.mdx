@@ -1,0 +1,136 @@
+---
+title: June 2023
+---
+
+## Metric Charts: Comparison by Software Version or Cohort
+
+Metric charts have been enhanced with the addition of a new chart type
+presenting a direct comparison version to version or cohort to cohort without
+time as a variable. This new chart type presents a comparison of min/mean/max
+data aggregated across the entire comparison populations based on your selection
+(e.g. `min/mean/max` ever reported on `v1.0.0` vs `min/mean/max` ever reported
+on `v.1.0.1`).
+
+![2023-06-30-Metric-Charts-Comparison.png](/img/blog/2023-06-30-Metric-Charts-Comparison.png)
+
+The pre-existing “over-time” chart view restricts comparison to an 8 week window
+which is great for intensive monitoring but less good at judging absolute
+performance. This new chart type allows users to make more effective performance
+comparisons in real-world scenarios and take decisions with more confidence.
+
+You can read more about this new chart type
+[in Memfault's documentation](/docs/platform/charts/#metric-charts-by-cohort-or-software-version).
+
+### Increased Configurability for Alerting and Notifications
+
+[Alerting](/docs/platform/alerts/) and
+[notification](/docs/platform/notifications) functionality has received a set of
+significant enhancements. These include the introduction of configurable
+incident start and end delays, the ability to decide at which stages of an
+incident a user wants a notification, and increased control over the scheduling
+for incident summary notifications.
+
+![2023-06-30-Alerts-Configurability.png](/img/blog/2023-06-30-Alerts-Configurability.png)
+
+These changes are designed to give users greater control on an alert-by-alert
+basis over the alerting behavior and incident related notifications, reducing
+unnecessary “noise” without sacrificing visibility. Ultimately these changes
+help ensure alerts trigger notifications which are highly relevant and timely.
+
+You can read more about these changes to alerting, incidents and notifications
+in [Memfault's documentation.](/docs/platform/alerts/#device-threshold-alerts)
+
+<!-- truncate -->
+
+## General
+
+- Added: Support for Incident start and end delays when creating
+  [Device-threshold Alerts](/docs/platform/alerts#device-threshold-alerts)
+- Added: New notifications options for Device Alerts:
+  [Get notified when incident starts/resolves or a receive a digest on an configurable frequency](/docs/platform/alerts#creating-a-device-threshold-alert)
+- Added: [Documentation on Alert improvements](/docs/platform/alerts)
+- Added:
+  [Documentation on Metric Charts by Cohort or Software Version](/docs/platform/charts/#metric-charts-by-cohort-or-software-version)
+- Improved: Various UI glitches and improvements (Issue details not being
+  visible when opened in small windows, increasing the automatic window refresh
+  from 5m to 12h, tooltips for dates/times rendering with less than full opacity
+  after initially blinking fully opaque, include chart name in the deletion
+  modal, show SSO creation date under
+  [Admin → Single Sign-on (SSO) page](https://app.memfault.com/organizations/-/settings/sso),
+  add number of samples contributing to a metric chart, metric chart filters
+  [under Dashboard → Metrics](https://app.memfault.com/organizations/-/projects/-/metrics)
+  are now sticky)
+- Fixed:
+  [Metric Charts by Cohort or Software Version](/docs/platform/charts/#metric-charts-by-cohort-or-software-version)
+  not populated for certain accounts
+- Fixed: Limits are not displayed correctly under
+  [Settings → Quotas page](https://app.memfault.com/organizations/-/projects/-/settings/quotas)
+- Fixed: Metric/Issue Charts fetching the latest values when clicked on the
+  refresh button only when the last refresh was more than 15 minutes ago
+- Fixed: Certain [Device Set](/docs/platform/projects-and-fleets/#device-sets)
+  calculations timing out
+
+## MCU
+
+- SDK versions
+  [🎉 1.0.0](https://github.com/memfault/memfault-firmware-sdk/blob/master/CHANGES.md#changes-between-memfault-sdk-100-and-0433---june-1-2023),
+  [1.0.1](https://github.com/memfault/memfault-firmware-sdk/blob/master/CHANGES.md#changes-between-memfault-sdk-101-and-100---june-9-2023),
+  [1.1.0](https://github.com/memfault/memfault-firmware-sdk/blob/master/CHANGES.md#changes-between-memfault-sdk-101-and-110---june-29-2023),
+  [1.1.1](https://github.com/memfault/memfault-firmware-sdk/blob/master/CHANGES.md#changes-between-memfault-sdk-110-and-111---june-30-2023)
+  released (please note, the move to `1.0.0` is for consistency and does not
+  signal a breaking change). Some highlights:
+  - Added: New built-in metrics (FreeRTOS Idle Task runtime percentage metric,
+    MbedTLS metrics for maximum and current memory used, WiFi performance
+    metrics to the (ESP-IDF port), `FileSystem_BytesFree` for tracking VFS bytes
+    free)
+  - Added: Memfault Metrics tracking LwIP runtime statistics (packet counts) for
+    ESP-IDF port.
+  - Improved: The quality of Zephyr stack usage detection (originally released
+    in SDK `0.43.0`) when capturing less than the full stack contents for each
+    thread.
+  - Improved: (Zephyr port) Include latest log statements in the coredump log
+    data during fault when deferred logging is enabled.
+  - Fixed: A bug in the
+    [mbedtls port](https://github.com/memfault/memfault-firmware-sdk/blob/master/ports/mbedtls)
+    causing an infinite loop under certain error conditions on TLS handshake
+  - Fixed: `ESP_ERROR_CHECK()` assert coredumps will now correctly show as
+    assert in the Memfault coredump analysis view, instead of "Hard Fault"
+  - Fixed: Reduce the amount of error logs emitted by the MbedTLS port HTTP
+    client while polling for session established.
+  - Changed:
+    [Renamed built-in metrics to use a consistent scheme (lower_case_w_underscores)](https://github.com/memfault/memfault-firmware-sdk/blob/master/CHANGES.md#chart_with_upwards_trend-improvements-2).
+    This convention will be used going forward.
+
+## Android
+
+- We did not publish a new version of the
+  [Android Bort AOSP SDK](https://github.com/memfault/bort) in June.
+
+## Linux
+
+- Fixed: The backend processing of coredumps now also works for coredumps from
+  programs that had dynamic libraries loaded from symlinked paths or relative
+  paths.
+- We did not publish a new version of the
+  [Memfault Linux SDK](https://github.com/memfault/memfault-linux-sdk) in June.
+
+## CLI
+
+CLI versions [0.18.0](https://pypi.org/project/memfault-cli/0.18.0/),
+[0.18.1](https://pypi.org/project/memfault-cli/0.18.1/),
+[🎉 1.0.0,](https://pypi.org/project/memfault-cli/1.0.0/)
+[1.0.1](https://pypi.org/project/memfault-cli/1.0.1/) were released (please
+note, the move to `1.0.0` is for consistency and does not signal a breaking
+change). Some highlights:
+
+- Added: New `extra-metadata` option to `upload-ota-payload` to attach custom
+  metadata to that OTA release. The metadata will be returned from Memfault
+  Cloud when fetching the latest Android OTA release.
+- Added: `--deactivate` option to `deploy-release`, which disables a release for
+  a cohort
+- Improved: Continue uploading the entire folder of symbols even if any single
+  upload fails due to the symbol file being too large.
+- Fixed: `upload-mcu-symbols` to skip uploading if the symbol file has already
+  been uploaded, and return a zero exit code in this case
+- Fixed: `upload-custom-data-recording` to print a more helpful error message
+  when exceeding device rate limits.
