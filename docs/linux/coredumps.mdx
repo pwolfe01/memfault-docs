@@ -112,15 +112,6 @@ Note that `memfaultd` respects privacy settings and only sets `core_pattern`
 [systemd-as-handler]:
   https://git.yoctoproject.org/poky/plain/meta/recipes-core/systemd/systemd_251.4.bb
 
-### Extend `LICENSE_FLAGS_ACCEPTED`
-
-Since `memfaultd` and `memfaultd-core-handler` both have a commercial license,
-you'll need to add an exception for them, for example in your `local.conf`:
-
-```
-LICENSE_FLAGS_ACCEPTED:append = " commercial_memfaultd commercial_memfault-core-handler"
-```
-
 ### Make sure prelinking is disabled
 
 [Prelinking][prelinking-wikipedia] is an operation which optimizes applications
@@ -169,10 +160,10 @@ in your Linux image. We recommend doing this as part of your build process
 part of continuous integration, in order to keep Memfault up to date with your
 build's newest debugging symbols.
 
-In order to facilitate this, we've added a Yocto-specific helper subcommand to
-the [Memfault CLI][docs-memfault-cli] (starting with version `0.11.0`):
-`memfault upload-yocto-symbols`. Before you use it, you'll need to update your
-base image to include the following, and then run a build:
+### Automatic upload with Yocto
+
+First, configure Yocto to generate a separate `DEBUGFS` image containing all the
+debug symbols for your system image:
 
 ```
 # Support memfault-cli upload-yocto-symbols command
@@ -180,24 +171,6 @@ DEPENDS:append = " elfutils-native"
 IMAGE_GEN_DEBUGFS = "1"
 IMAGE_FSTYPES_DEBUGFS = "tar.bz2"
 ```
-
-Here's an example `memfault upload-yocto-symbols` invocation:
-
-```bash
-$ source oe-init-build-env
-$ memfault \
-    --org $YOUR_ORGANIZATION_SLUG \
-    --org-token $ORGANIZATION_AUTH_TOKEN \
-    --project $YOUR_PROJECT_SLUG upload-yocto-symbols \
-    --image tmp/deploy/images/raspberrypi3/base-image-raspberrypi3.tar.bz2 \
-    --dbg-image tmp/deploy/images/raspberrypi3/base-image-raspberrypi3-dbg.tar.bz2
-```
-
-Supported formats are `.tar`, `.tar.bz2`, `.tar.gz` and `.tar.xz`. The format of
-`--image` may differ from that of `--dbg-image`.
-
-It's recommended that you run this command after having sourced the build
-environment script using `source oe-init-build-env`.
 
 :::tip
 
@@ -231,21 +204,62 @@ generates unstripped copies of the binaries and their symbols.
 [split-style]:
   https://docs.yoctoproject.org/ref-manual/variables.html#term-PACKAGE_DEBUG_SPLIT_STYLE
 
-If you're not using Yocto, you can replicate its behavior by using our [REST API
-to upload symbols][api-docs-upload-symbols].
+To upload your debug symbols, use the [Memfault CLI][docs-memfault-cli] (version
+`0.11.0` or newer): `memfault upload-yocto-symbols`.
+
+```bash
+$ source oe-init-build-env
+$ memfault \
+    --org $YOUR_ORGANIZATION_SLUG \
+    --org-token $ORGANIZATION_AUTH_TOKEN \
+    --project $YOUR_PROJECT_SLUG \
+    upload-yocto-symbols \
+    --image tmp/deploy/images/raspberrypi3/base-image-raspberrypi3.tar.bz2 \
+    --dbg-image tmp/deploy/images/raspberrypi3/base-image-raspberrypi3-dbg.tar.bz2
+```
+
+:::note Project and Organization slugs and keys
 
 <p>
-  You can always upload symbol files individually using the Memfault Web
-  Application. Open <b>Software -> Symbol Files</b> and click on{" "}
+  Your <code>ORGANIZATION_SLUG</code> and <code>PROJECT_SLUG</code> can be found
+  in the{" "}
+  <ProjectMagicLink path="/settings">
+    {" "}
+    settings page of your project
+  </ProjectMagicLink>
+  .
+</p>
+
+[The `ORGANIZATION_AUTH_TOKEN` can be generated][docs-org-auth-tokens] in
+**Admin → Organization Auth Tokens**. This can only be done by an organization
+administrator.
+
+:::
+
+The format of your `--dbg-image` may differ from that of your `--image`.
+Supported formats are `.tar`, `.tar.bz2`, `.tar.gz` and `.tar.xz`.
+
+It's recommended that you source the Yocto build environment script using
+`source oe-init-build-env` before running `upload-yocto-symbols`.
+
+### Manual upload
+
+If you're not using Yocto, you can manually upload symbols using our [REST
+API][api-docs-upload-symbols].
+
+<p>
+  Another option is to upload the symbol files individually using the Memfault
+  Web Application. Open <b>Software -> Symbol Files</b> and click on{" "}
   <b>Upload Symbol File</b>, or simply{" "}
   <ProjectMagicLink path="/symbol-files?new">
+    {" "}
     click on this deep link to the app
-  </ProjectMagicLink>
-  . Note that the symbol files you upload here must be individual ELF files containing
-  both the program text as well as debugging symbols. The Yocto-generated debug image
-  (for example in <code>.tar.bz2</code> format) contains stripped binaries and (separately)
-  debug binaries. To upload them to Memfault, you'll need to use the Memfault CLI
-  as shown above.
+  </ProjectMagicLink>{" "}
+  . Note that the symbol files you upload here must be individual ELF files
+  containing both the program text as well as debugging symbols. The
+  Yocto-generated debug image (for example in <code>.tar.bz2</code>
+  format) contains stripped binaries and (separately) debug binaries. To upload them
+  to Memfault, you'll need to use the Memfault CLI as shown above.
 </p>
 
 :::tip
@@ -372,3 +386,4 @@ Dec 21 10:45:30 qemuarm64 memfaultd[246]: network:: Successfully transmitted fil
 [docs-configuration]: /docs/linux/reference-memfaultd-configuration
 [docs-linux-integration]: /docs/linux/integration-guide
 [developer-mode]: /docs/linux/reference-memfaultctl-cli#developer-mode
+[docs-org-auth-tokens]: /docs/platform/organization-auth-tokens
