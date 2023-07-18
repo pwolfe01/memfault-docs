@@ -28,13 +28,16 @@ respective states in the table:
 | Android  | Monitoring | Only periodic device check-ins                     | [Batterystats](/docs/android/android-builtin-metrics#battery-and-related-metrics) metrics and [Custom Metrics](/docs/android/android-custom-metrics) are collected every 2h                                                                                                                                                                                                                                                                                                                                         |
 | Android  | Debugging  | No crash/log collection                            | [Crash reports (via Bug Reports or Caliper)](/docs/android/android-bort#collection-types---bug-reports-and-caliper), [reboot reasons](/docs/android/android-reboot-events), [High-Resolution Telemetry](/docs/android/android-custom-metrics#high-resolution-telemetry-hrt) (including high-resolution battery metrics) and [Custom Events](/docs/android/custom-events) are collected. Log collection and upload in the case of an overlap with a trace event (see details [here](/docs/android/android-logging)). |
 | Android  | Logging    | No logs, except if they are part of a crash report | All log files are uploaded. For details, see [Log Collection](/docs/platform/fleet-sampling#log-collection).                                                                                                                                                                                                                                                                                                                                                                                                        |
+| Linux    | Monitoring | Disable attributes and metrics                     | [Attributes](/docs/linux/reference-memfaultctl-cli#write-attributes) and [metrics](/docs/linux/metrics) are sent.                                                                                                                                                                                                                                                                                                                                                                                                   |
+| Linux    | Debugging  | Coredumps and reboot events will not be uploaded   | [Coredumps](/docs/linux/coredumps) and [reboots](/docs/linux/reboot-reason-tracking) will be uploaded.                                                                                                                                                                                                                                                                                                                                                                                                              |
+| Linux    | Logging    | No logs                                            | All log files are uploaded. For details, see [Log Collection](/docs/platform/fleet-sampling#log-collection).                                                                                                                                                                                                                                                                                                                                                                                                        |
 | MCU      | Monitoring | Only periodic device check-ins                     | Periodic collection of [Metrics](/docs/mcu/metrics-api) with heartbeats                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | MCU      | Debugging  | No crash/debug data collection                     | [Coredumps](/docs/mcu/coredumps), [trace events](/docs/mcu/trace-events), [reboot reasons](/docs/mcu/reboot-reason-tracking) and [Custom Data Recordings](/docs/mcu/custom-data-recording) are collected                                                                                                                                                                                                                                                                                                            |
 
-On Android, data is stored on the device when the relevant resolution is "Off"
-(up to configured storage limits). When a resolution is turned to "On" then any
-previously stored data for that resolution is uploaded - e.g. when the Logging
-resolution is enabled then all previously stored logs will be uploaded.
+On Android and Linux, data is stored on the device when the relevant resolution
+is "Off" (up to configured storage limits). When a resolution is turned to "On"
+then any previously stored data for that resolution is uploaded - e.g. when the
+Logging resolution is enabled then all previously stored logs will be uploaded.
 
 :::note
 
@@ -197,9 +200,11 @@ section to free up quota before a mass roll-out.
 
 :::note
 
-Log Collection feature is only supported on the
+Log Collection feature is supported on the
 [Bort SDK](https://github.com/memfault/bort), starting with
-[version 4.2.0](https://github.com/memfault/bort/blob/master/CHANGELOG.md#v420---september-14th-2022).
+[version 4.2.0](https://github.com/memfault/bort/blob/master/CHANGELOG.md#v420---september-14th-2022)
+and in the Linux SDK, starting with
+[version 1.4.0](https://github.com/memfault/memfault-linux-sdk/blob/-/CHANGELOG.md#140---2023-04-25).
 
 :::
 
@@ -208,11 +213,14 @@ Logging resolution is set to `On`, even when the devices have not been sending
 any crash reports or monitoring data. Upon receiving the change of the Logging
 resolution to `On`, Device will send all previously stored logs and once caught
 up, it will continue sending new logs until the resolution is set to `Off`. (See
-[Android Logging](/docs/android/android-logging) for more details).
+[Android Logging](/docs/android/android-logging) and
+[Linux Logging](/docs/linux/logging) for more details).
 
-Logs are kept on the device as long as the storage limit (which can only be
-configured by Memfault) permits. Please contact support@memfault.com for
-updating it.
+Logs are kept on the device as long as the storage limit permits. On Linux, the
+limit is set in the
+[configuration file](/docs/linux/reference-memfaultd-configuration#top-level-etcmemfaultdconf-configuration).
+On Android the limit is configured by Memfault. Please contact
+support@memfault.com for updating it.
 
 ## API
 

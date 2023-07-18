@@ -18,16 +18,16 @@ timeline][docs-timeline].
 
 ## Prerequisites
 
-### The `memfaultd` daemon, built with `plugin_logging`
+### The `memfaultd` daemon, built with `logging`
 
 Follow the [integration guide][docs-linux-integration] to learn how to install
 `memfaultd` on your device.
 
-The logging plugin is enabled by default in the `meta-memfault` layer as of
+The logging feature is enabled by default in the `meta-memfault` layer as of
 `v1.4.0` of Memfault SDK.
 
-Read more on [how to configure which plugins `memfaultd` builds with]
-[docs-linux-control-plugins].
+Read more on [how to configure which features `memfaultd` builds with]
+[docs-linux-control-features].
 
 [example-enable-logging]:
   https://github.com/memfault/memfault-linux-sdk/blob/-/meta-memfault-example/recipes-memfault/memfaultd/memfaultd.bbappend
@@ -167,7 +167,7 @@ Regardless of size, log files are rotated when they reach a certain age.
 #### `logs.rotate_size_kib`
 
 Rotate the current log file when it reaches this size. After rotation, it will
-remain in the MAR staging area until the next refresh interval (see [general
+remain in the MAR staging area until the next upload (see [general
 configuration][docs-configuration]).
 
 ### Recommended configuration
@@ -234,8 +234,8 @@ The log will be visible in Memfault Dashboard as soon as it has been processed
   , and then open its <b>Timeline</b> tab.
 </p>
 
-[docs-linux-control-plugins]:
-  /docs/linux/integration-guide#optional-opt-out-of-memfaultd-built-in-plugins
+[docs-linux-control-features]:
+  /docs/linux/integration-guide#optional-opt-out-of-memfaultd-built-in-features
 [docs-linux-integration]: /docs/linux/integration-guide
 [docs-configuration]: /docs/linux/reference-memfaultd-configuration
 [docs-timeline]: /docs/platform/introduction/#metrics

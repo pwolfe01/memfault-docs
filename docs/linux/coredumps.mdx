@@ -54,14 +54,14 @@ following the steps in this tutorial.
 
 ## Prerequisites
 
-### The `memfaultd` daemon, built with `plugin_coredump`
+### The `memfaultd` daemon, built with the `coredump` feature
 
 Follow the [integration guide][docs-linux-integration] to learn how to set this
 up for your device. A key function of `memfaultd` is to preprocess and upload
-coredumps to the Memfault platform. It does this via its `plugin_coredump`.
+coredumps to the Memfault platform. It does this via its `coredump` feature.
 
-`plugin_coredump` is enabled by default. Read more on [how to configure which
-plugins `memfaultd` builds with][docs-linux-control-plugins].
+The `coredump` feature is enabled by default. Read more on [how to configure
+which features `memfaultd` builds with][docs-linux-control-features].
 
 ### Linux kernel configuration
 
@@ -372,8 +372,8 @@ Dec 21 10:45:24 qemuarm64 memfaultd[246]: coredump:: enqueued corefile for PID 2
 Dec 21 10:45:30 qemuarm64 memfaultd[246]: network:: Successfully transmitted file '/media/memfault/core/corefile-fbf1b4c8-b184-4b6c-87c1-6229bd55afd7.gz'
 ```
 
-[docs-linux-control-plugins]:
-  /docs/linux/integration-guide#optional-opt-out-of-memfaultd-built-in-plugins
+[docs-linux-control-features]:
+  /docs/linux/integration-guide#optional-opt-out-of-memfaultd-built-in-features
 [source-yocto-example]:
   https://github.com/memfault/memfault-linux-sdk/blob/-/meta-memfault-example
 [docs-memfault-cli]: /docs/ci/install-memfault-cli

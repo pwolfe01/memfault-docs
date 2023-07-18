@@ -16,15 +16,19 @@ Useful links:
 Running `memfaultd --help` prints the following:
 
 ```
-Usage: memfaultd [OPTION]...
+Usage: memfaultd [-c <config-file>] [-s] [-Z] [-v] [-V]
 
-      --config-file <file>       : Configuration file
-      --daemonize                : Daemonize process
-      --enable-data-collection   : Enable data collection, will restart the main memfaultd service
-      --disable-data-collection  : Disable data collection, will restart the main memfaultd service
-  -h, --help                     : Display this help and exit
-  -s, --show-settings            : Show settings
-  -v, --version                  : Show version information
+Memfault daemon.
+
+Options:
+  -c, --config-file use configuration file
+  -s, --show-settings
+                    show settings and exit immediately
+  -Z, --daemonize   daemonize (fork to background)
+  -v, --version     show version
+  -V, --verbose     verbose output
+  --help            display usage information
+
 ```
 
 The `--config-file` path defaults to `/etc/memfaultd.conf`. The settings you add
@@ -36,9 +40,8 @@ file][source-builtin-conf].
 As of v1.2.0, we recommend using [`memfaultctl`][docs-memfaultctl] to
 enable/disable data collection and view current settings.
 
-`--(enable|disable)-data-collection` and `--show-settings` are still present on
-`memfaultd` for backwards compatibility but will be removed in a future major
-version of the SDK.
+`--show-settings` is still present on `memfaultd` for backwards compatibility
+but will be removed in a future major version of the SDK.
 
 :::
 
@@ -77,7 +80,7 @@ need to be present before the respective services start.
 
 If you're not using [OTA][docs-ota] or [Metrics][docs-metrics], you may remove
 the corresponding part of the `Before=` parameter. You may also wish to [opt out
-of building the plugins with `memfaultd`][docs-control-memfaultd-plugins].
+of building the feature with `memfaultd`][docs-control-memfaultd-features].
 
 ## `/etc/memfaultd.conf`
 
@@ -86,38 +89,34 @@ A [full configuration example can be found in the source directory of
 
 ```json
 {
-  "queue_size_kib": 1024,
   "persist_dir": "/media/memfault",
-  "tmp_dir": "",
+  "tmp_dir": null,
   "tmp_dir_min_headroom_kib": 10240,
   "tmp_dir_min_inodes": 100,
   "tmp_dir_max_usage_kib": 102400,
-  "refresh_interval_seconds": 3600,
+  "upload_interval_seconds": 3600,
+  "heartbeat_interval_seconds": 3600,
   "enable_data_collection": false,
   "enable_dev_mode": false,
   "software_version": "<YOUR_SOFTWARE_VERSION>",
   "software_type": "<YOUR_SOFTWARE_TYPE>",
   "project_key": "<YOUR_PROJECT_KEY>",
   "base_url": "https://device.memfault.com",
-  "swupdate_plugin": {
+  "swupdate": {
     "input_file": "/etc/swupdate.cfg",
     "output_file": "/tmp/swupdate.cfg"
   },
-  "reboot_plugin": {
+  "reboot": {
     "last_reboot_reason_file": "/media/last_reboot_reason"
   },
-  "collectd_plugin": {
-    "header_include_output_file": "/tmp/collectd-header-include.conf",
-    "footer_include_output_file": "/tmp/collectd-footer-include.conf",
-    "non_memfaultd_chain": "",
-    "write_http_buffer_size_kib": 64,
-    "interval_seconds": 3600
-  },
-  "coredump_plugin": {
+  "coredump": {
     "coredump_max_size_kib": 96000,
     "compression": "gzip",
     "rate_limit_count": 5,
     "rate_limit_duration_seconds": 3600
+  },
+  "http_server": {
+    "bind_address": "127.0.0.1:8787"
   },
   "fluent-bit": {
     "extra_fluentd_attributes": [],
@@ -142,31 +141,48 @@ file.
 
 ### Top-level `/etc/memfaultd.conf` configuration
 
-| Field                      | Description                                                                                                                                                                                        | Recommended value                                                                    |
-| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| `queue_size_kib`           | Size of the event queue in kibibytes.                                                                                                                                                              | 1024                                                                                 |
-| `refresh_interval_seconds` | The frequency (in seconds) with which `memfaultd` will attempt to flush its queue and post it to Memfault. Note that a recovery system with exponential back-off is in place for network failures. | 3600                                                                                 |
-| `enable_data_collection`   | Whether `memfaultd` should collect and post data to Memfault by default. Read more [here][docs-enable-data-collection].                                                                            | `false` (ask for user consent first)                                                 |
-| `enable_dev_mode`          | Change memfaultd default settings for development. Read more [here][docs-enable-dev-mode].                                                                                                         | `false` (only use in development)                                                    |
-| `base_url`                 | The base URL to Memfault's device API.                                                                                                                                                             | `https://device.memfault.com`                                                        |
-| `software_version`         | The current version of your software. Read more [here][docs-software-version].                                                                                                                     | _Project-specific_                                                                   |
-| `software_type`            | The current version of your software. Read more [here][docs-software-type].                                                                                                                        | _Project-specific_                                                                   |
-| `project_key`              | A write-only key for your Project. Find yours in <ProjectMagicLink path="/settings" title="Open Project -> Settings in your Project">**Project -> Settings**</ProjectMagicLink> in the app.        | _Project-specific_                                                                   |
-| `persist_dir`              | A directory where `memfaultd` can store application data persistently (needs to survive firmware upgrades). Read more [here][docs-persist-dir].                                                    | _Project-specific_                                                                   |
-| `tmp_dir`                  | A directory where `memfaultd` can store temporary data. This can be a temporary filesystem. Read more [here][docs-tmp-dir].                                                                        | "" (will use `persist_dir`)                                                          |
-| `tmp_dir_min_headroom_kib` | Minimum space to keep available on the `tmp_dir` filesystem. `memfaultd` will stop writing and will delete buffered data when free space goes below this value.                                    | 10% of the filesystem space - or less if your application also uses this filesystem. |
-| `tmp_dir_min_inodes`       | Minimum number of inodes to keep available on the `tmp_dir` filesystem. `memfaultd` will stop writing when free inode count goes below this value.                                                 | 10% of the filesystem inodes.                                                        |
-| `tmp_dir_max_usage_kib`    | Maximum size of memfault data on the `tmp_dir` filesystem. Memfault will start deleting older data and stop writing when this limit is reached.                                                    | _Project-specific._                                                                  |
-| `swupdate_plugin`          | Configuration values for `plugin_swupdate` if enabled in `memfaultd` (default). [Read more][docs-control-memfaultd-plugins].                                                                       | See [`swupdate_plugin`](#swupdate_plugin)                                            |
-| `reboot_plugin`            | Configuration values for `plugin_reboot`. [Read more][docs-control-memfaultd-plugins].                                                                                                             | See [`reboot_plugin`](#reboot_plugin)                                                |
-| `collectd_plugin`          | Configuration values for `plugin_collectd` if enabled in `memfaultd` (default). [Read more][docs-control-memfaultd-plugins].                                                                       | See [`reboot_plugin`](#reboot_plugin)                                                |
-| `coredump_plugin`          | Configuration values for `plugin_coredump` if enabled in `memfaultd` (default). [Read more][docs-control-memfaultd-plugins].                                                                       | See [`coredump_plugin`](#coredump_plugin)                                            |
+| Field                        | Description                                                                                                                                                                                 | Recommended value                                                                    |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `upload_interval_seconds`    | The period (in seconds) to flush the queue and post it to Memfault. Note that a recovery system with exponential back-off is in place for network failures.                                 | 3600                                                                                 |
+| `heartbeat_interval_seconds` | The period (in seconds) of metrics aggregation into heartbeat event.                                                                                                                        | 3600                                                                                 |
+| `enable_data_collection`     | Whether `memfaultd` should collect and post data to Memfault by default. Read more [here][docs-enable-data-collection].                                                                     | `false` (ask for user consent first)                                                 |
+| `enable_dev_mode`            | Enable or disable developer mode. Read more [here][docs-enable-dev-mode].                                                                                                                   | `false` (only use in development)                                                    |
+| `base_url`                   | The base URL to Memfault's device API.                                                                                                                                                      | `https://device.memfault.com`                                                        |
+| `software_version`           | The current version of your software. Read more [here][docs-software-version].                                                                                                              | _Project-specific_                                                                   |
+| `software_type`              | The current version of your software. Read more [here][docs-software-type].                                                                                                                 | _Project-specific_                                                                   |
+| `project_key`                | A write-only key for your Project. Find yours in <ProjectMagicLink path="/settings" title="Open Project -> Settings in your Project">**Project -> Settings**</ProjectMagicLink> in the app. | _Project-specific_                                                                   |
+| `persist_dir`                | A directory where `memfaultd` can store application data persistently (needs to survive firmware upgrades). Read more [here][docs-persist-dir].                                             | _Project-specific_                                                                   |
+| `tmp_dir`                    | A directory where `memfaultd` can store temporary data. This can be a temporary filesystem. Read more [here][docs-tmp-dir].                                                                 | "" (will use `persist_dir`)                                                          |
+| `tmp_dir_min_headroom_kib`   | Minimum space to keep available on the `tmp_dir` filesystem. `memfaultd` will stop writing and will delete buffered data when free space goes below this value.                             | 10% of the filesystem space - or less if your application also uses this filesystem. |
+| `tmp_dir_min_inodes`         | Minimum number of inodes to keep available on the `tmp_dir` filesystem. `memfaultd` will stop writing when free inode count goes below this value.                                          | 10% of the filesystem inodes.                                                        |
+| `tmp_dir_max_usage_kib`      | Maximum size of memfault data on the `tmp_dir` filesystem. Memfault will start deleting older data and stop writing when this limit is reached.                                             | _Project-specific._                                                                  |
+| `http_server`                | Configuration values for the built-in HTTP server. [Read more][docs-http-server].                                                                                                           | See [`http_server`](#http_server)                                                    |
+| `swupdate`                   | Configuration values for the `swupdate` feature if enabled in `memfaultd` (default). [Read more][docs-control-memfaultd-features].                                                          | See [`swupdate`](#swupdate)                                                          |
+| `reboot`                     | Configuration values for the `reboot` feature. [Read more][docs-control-memfaultd-features].                                                                                                | See [`reboot`](#reboot)                                                              |
+| `coredump`                   | Configuration values for the `coredump` feature if enabled in `memfaultd` (default). [Read more][docs-control-memfaultd-features].                                                          | See [`coredump`](#coredump)                                                          |
 
-### `swupdate_plugin`
+### `http_server`
+
+```
+{
+  "http_server": {
+    "bind_address": "127.0.0.1:8787"
+  }
+}
+```
+
+| Field          | Description                                            | Recommended value |
+| -------------- | ------------------------------------------------------ | ----------------- |
+| `bind_address` | Address (including port) that the server will bind to. | "127.0.0.1:8787"  |
+
+The HTTP server is currently only used to receive metrics from CollectD. See the
+[metrics guide][docs-metrics] for more information.
+
+### `swupdate`
 
 ```json
 {
-  "swupdate_plugin": {
+  "swupdate": {
     "input_file": "/etc/swupdate.cfg",
     "output_file": "/tmp/swupdate.cfg"
   }
@@ -178,47 +194,25 @@ file.
 | `input_file`  | Will be used as the base SWUpdate configuration when generating `$output_file`. May specify a `suricatta` section (gets merged with generated parameters). If an `identify` section exists it will get replaced. See [upstream SWUpdate docs][swupdate-cfg-docs]. | `/etc/swupdate.cfg` |
 | `output_file` | Generated by `memfaultd` using `$input_file` as a base. Needs to be passed to SWUpdate as its config file. See [an example here][source-swupdate-args].                                                                                                           | `/tmp/swupdate.cfg` |
 
-### `reboot_plugin`
+### `reboot`
 
 ```json
 {
-  "reboot_plugin": {
+  "reboot": {
     "last_reboot_reason_file": "/media/last_reboot_reason"
   }
 }
 ```
 
-| Field                     | Description                                                                                                                                                                                                                                                         | Recommended value  |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ |
-| `last_reboot_reason_file` | The path where `memfaultd`'s reboot reason tracking plugin will attempt to find the [device-specific reboot reason][docs-reboot-reason-tracking-device-specific]. If the file does not exist, `memfaultd` will interpret this as "no device specific reason known". | _Project-specific_ |
+| Field                     | Description                                                                                                                                                                                                                                                          | Recommended value  |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ |
+| `last_reboot_reason_file` | The path where `memfaultd`'s reboot reason tracking feature will attempt to find the [device-specific reboot reason][docs-reboot-reason-tracking-device-specific]. If the file does not exist, `memfaultd` will interpret this as "no device specific reason known". | _Project-specific_ |
 
-### `collectd_plugin`
-
-```json
-{
-  "collectd_plugin": {
-    "footer_include_output_file": "/tmp/collectd-footer-include.conf",
-    "header_include_output_file": "/tmp/collectd-header-include.conf",
-    "interval_seconds": 3600,
-    "non_memfaultd_chain": "",
-    "write_http_buffer_size_kib": 64
-  }
-}
-```
-
-| Field                        | Description                                                                                                                                           | Recommended value                   |
-| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
-| `footer_include_output_file` | Generated by `memfaultd`. Needs [to be `Include`d in the main `collectd.conf`][collectd-configuration] as the last statement.                         | `/tmp/collectd-footer-include.conf` |
-| `header_include_output_file` | Generated by `memfaultd`. Needs [to be `Include`d in the main `collectd.conf`][collectd-configuration] as the first statement.                        | `/tmp/collectd-header-include.conf` |
-| `non_memfaultd_chain`        | An optional [collectd chain][collectd-chains] to jump to after the Memfault-generated chain. Read more [here][docs-metrics-chains].                   | _Project-specific_                  |
-| `write_http_buffer_size_kib` | Size of the collectd in-memory write buffer. Read more [here][docs-metrics-interval].                                                                 | 64                                  |
-| `interval_seconds`           | Governs collectd's `Interval` and the `FlushInterval` setting of the [`write_http` plugin][docs-write-http]. Read more [here][docs-metrics-interval]. | 3600                                |
-
-### `coredump_plugin`
+### `coredump`
 
 ```json
 {
-  "coredump_plugin": {
+  "coredump": {
     "compression": "gzip",
     "coredump_max_size_kib": 96000,
     "rate_limit_count": 5,
@@ -259,7 +253,7 @@ Unless there is no available storage, the coredump is written into a temporary
 holding area inside the [`tmp_dir`][docs-tmp-dir].
 
 Finally, the coredump is added to the upload queue. This queue is serviced
-periodically (see the top-level `refresh_interval_seconds`).
+periodically (see the top-level `upload_interval_seconds`).
 
 ### `fluent-bit`
 
@@ -351,8 +345,8 @@ reliable.
 [docs-software-version]:
   /docs/platform/software-version-hardware-version#software-version
 [docs-storage]: /docs/linux/integration-guide#configure-memfaultd-storage
-[docs-control-memfaultd-plugins]:
-  /docs/linux/integration-guide#optional-opt-out-of-memfaultd-built-in-plugins
+[docs-control-memfaultd-features]:
+  /docs/linux/integration-guide#optional-opt-out-of-memfaultd-built-in-features
 [source-memfaultd]:
   https://github.com/memfault/memfault-linux-sdk/blob/-/meta-memfault/recipes-memfault/memfaultd/files/memfaultd
 [source-memfaultd-service]:

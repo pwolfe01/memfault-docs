@@ -20,8 +20,7 @@ summarized in the main "Overview" dashboard:
   Reboots chart in the "Overview" dashboard of the Memfault Web App.
 </ImageFigure>
 
-In this guide we will walk through how to use the
-[reboot reason tracking module (`plugin_reboot`)](https://github.com/memfault/memfault-linux-sdk/blob/-/meta-memfault/recipes-memfault/memfaultd/files/memfaultd/plugins/reboot)
+In this guide we will walk through how to use the reboot reason tracking feature
 from the [Memfault Linux SDK][memfault-linux-sdk] to collect this data.
 
 :::tip
@@ -38,8 +37,8 @@ following the steps in this tutorial.
 
 Follow the [integration guide][docs-linux-integration] to learn how to set this
 up for your device. A key function of `memfaultd` is to detect, classify and
-upload reboot events to the Memfault platform. It does this via its
-`plugin_reboot`.
+upload reboot events to the Memfault platform. This is enabled through the
+`reboot` feature.
 
 ### Linux kernel `pstore` / `ramoops` configuration
 
@@ -170,8 +169,8 @@ the `last_reboot_reason_file`.
 #### The `last_reboot_reason_file` API
 
 The location of this file can be configured using the
-`reboot_plugin.last_reboot_reason_file` key in `memfaultd.conf`. Take a look at
-the [`/etc/memfaultd.conf` reference][docs-configuration] for more information.
+`reboot.last_reboot_reason_file` key in `memfaultd.conf`. Take a look at the
+[`/etc/memfaultd.conf` reference][docs-configuration] for more information.
 
 During the startup of the system, `memfaultd` will attempt to read this file. If
 the `last_reboot_reason_file` file exists, it is expected to contain the decimal
@@ -274,7 +273,7 @@ Once `memfaultd` determines the reboot reason, it will enqueue a reboot event
 for upload to the Memfault cloud. Note that uploading does not happen
 immediately. Instead, the queue of events is uploaded periodically. See the
 [`memfaultd.conf` configuration key
-`refresh_interval_seconds`][docs-configuration] for more information.
+`upload_interval_seconds`][docs-configuration] for more information.
 
 :::note Rate Limiting
 
@@ -318,8 +317,6 @@ After reboot, to immediately flush the reboot event to Memfault, you can use:
 [docs-configuration]: /docs/linux/reference-memfaultd-configuration
 [docs-reboot-reason-ids]: /docs/platform/reference-reboot-reason-ids
 [memfault-linux-sdk]: https://github.com/memfault/memfault-linux-sdk
-[docs-linux-control-plugins]:
-  /docs/linux/integration-guide#optional-opt-out-of-memfaultd-built-in-plugins
 [source-yocto-example]:
   https://github.com/memfault/memfault-linux-sdk/blob/-/meta-memfault-example
 [docs-linux-integration]: /docs/linux/integration-guide

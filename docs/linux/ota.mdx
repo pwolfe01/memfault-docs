@@ -193,10 +193,10 @@ INFO: You can view in the UI here:
 
 :::
 
-### Enable development mode
+### Enable developer mode
 
 By default, your devices will be asked to poll every 12 hours by the Memfault
-backend. In order to speed up the integration process, we've added a development
+backend. In order to speed up the integration process, we've added a developer
 mode setting to Cohorts.
 
 <p>
@@ -250,11 +250,12 @@ example][source-swupdate-defconfig]):
 
 #### Configuring the Suricatta on-device daemon to use Memfault
 
-The [`memfaultd`][source-memfaultd] daemon includes a SWUpdate plugin. You can
-[control which plugins are built-in][docs-linux-control-plugins], but by
-default, it builds with the SWUpdate plugin enabled.
+The [`memfaultd`][source-memfaultd] daemon includes a SWUpdate feature to
+automatically generate SWUpdate configuration file. You can [control which
+features are built-in][docs-linux-control-features], but by default, it builds
+with the SWUpdate feature enabled.
 
-The [SWUpdate plugin for `memfaultd`][source-memfaultd-swupdate-plugin]
+The [SWUpdate feature for `memfaultd`][source-memfaultd-swupdate-feature]
 constructs a valid SWUpdate configuration in a temporary file. The path of this
 temporary file defaults to `/tmp/swupdate.cfg`. To make SWUpdate use this file,
 you may add e.g. `--file /tmp/swupdate.cfg` to the `SWUPDATE_ARGS` environment
@@ -279,7 +280,7 @@ in `/etc/memfaultd.conf` (see a [full reference][docs-configuration]) like so:
   "software_type": "main",
   "project_key": "<YOUR_PROJECT_KEY>",
   // highlight-start
-  "swupdate_plugin": {
+  "swupdate": {
     "input_file": "/your/own/path/base-swupdate.cfg",
     "output_file": "/your/own/path/generated-swupdate.cfg"
   }
@@ -289,9 +290,9 @@ in `/etc/memfaultd.conf` (see a [full reference][docs-configuration]) like so:
 
 Remember to pass the path to `output_file` as a config file for SWUpdate.
 
-#### SWUpdate plugin dependencies
+#### SWUpdate feature dependencies
 
-The dependencies of the SWUpdate plugin are `u-boot-env` and `u-boot-fw-utils`.
+The dependencies of the SWUpdate feature are `u-boot-env` and `u-boot-fw-utils`.
 Make sure to include those in your image file like so:
 
 ```
@@ -305,7 +306,7 @@ information.
 #### Add `/etc/fw_env.config` to your build
 
 See [this example `/etc/fw_env.config` file][source-fwenv-config]. SWUpdate as
-well as `memfaultd`'s reboot reason tracking plugin depend on it.
+well as `memfaultd`'s reboot reason tracking feature depend on it.
 
 ### Rollback Release
 
@@ -313,7 +314,7 @@ Aborting or Rolling back from a Release which has a firmware regression is easy
 to do from the UI. Simply navigate to "Fleet" -> "Cohorts", click on the picker
 under "Options" and select the "Abort Rollout" option.
 
-### Disable development mode
+### Disable developer mode
 
 Remember to undo the steps you took in
 [Enable Developer Mode](#enable-developer-mode) and to configure your Cohort
@@ -329,8 +330,8 @@ with a value that'll work for your project on production.
   https://github.com/memfault/memfault-linux-sdk/blob/-/meta-memfault
 [source-memfaultd]:
   https://github.com/memfault/memfault-linux-sdk/blob/-/meta-memfault/recipes-memfault/memfaultd/files/memfaultd
-[source-memfaultd-swupdate-plugin]:
-  https://github.com/memfault/memfault-linux-sdk/blob/-/meta-memfault/recipes-memfault/memfaultd/files/memfaultd/plugins/swupdate.c
+[source-memfaultd-swupdate-feature]:
+  https://github.com/memfault/memfault-linux-sdk/blob/-/meta-memfault/recipes-memfault/memfaultd/files/memfaultd/libmemfaultc/src/swupdate.c
 [source-swupdate-bbappends]:
   https://github.com/memfault/memfault-linux-sdk/blob/-/meta-memfault-example/recipes-support/swupdate
 [source-fwenv-config]:
@@ -339,8 +340,8 @@ with a value that'll work for your project on production.
   https://github.com/memfault/memfault-linux-sdk/blob/-/meta-memfault-example/recipes-support/swupdate/files/defconfig
 [yocto-homepage]: https://www.yoctoproject.org/
 [docs-linux-integration]: /docs/linux/integration-guide
-[docs-linux-control-plugins]:
-  /docs/linux/integration-guide#optional-opt-out-of-memfaultd-built-in-plugins
+[docs-linux-control-features]:
+  /docs/linux/integration-guide#optional-opt-out-of-memfaultd-built-in-features
 [docs-memfault-device-info]:
   /docs/linux/integration-guide#add-a-memfault-device-info-executable-to-your-build
 [docs-webapp-ota-management]:

@@ -116,7 +116,7 @@ Device configuration from memfault-device-info:
 VERSION=dev
 GIT COMMIT=unknown
 
-Plugin enabled:
+Features enabled:
   attributes
   reboot
   swupdate
@@ -130,11 +130,11 @@ Plugin enabled:
 Immediately process `memfaultd` queue.
 
 `memfaultd` stores events in a queue and only processes it at a fixed interval
-(by default 1 hour - see [`refresh_interval_seconds`][docs-refresh-interval]).
-Use `memfaultctl sync` to force `memfaultd` to immediately send all events to
+(by default 1 hour - see [`upload_interval_seconds`][docs-upload-interval]). Use
+`memfaultctl sync` to force `memfaultd` to immediately send all events to
 Memfault.
 
-[docs-refresh-interval]:
+[docs-upload-interval]:
   /docs/linux/reference-memfaultd-configuration#top-level-etcmemfaultdconf-configuration
 
 ### `trigger-coredump`

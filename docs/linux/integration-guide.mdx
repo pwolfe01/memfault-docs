@@ -20,8 +20,8 @@ This guide will cover integrating the Memfault Linux SDK into systems built with
 When you're done, you will have a basic integration setup that can talk to the
 Memfault cloud, enabling one or more of the following features:
 
-- Reporting reboot events to Memfault.
-- Reporting [Metrics][docs-linux-metrics].
+- Reporting [reboot events][docs-linux-reboot] to Memfault.
+- Reporting [metrics][docs-linux-metrics].
 - [Over-the-air (OTA) updates][docs-linux-ota].
 - [Uploading systems logs][docs-linux-logging] to Memfault.
 
@@ -43,7 +43,7 @@ Memfault cloud, enabling one or more of the following features:
   - [`3.1 dunfell`][yocto-dunfell]
 - Your project uses [`systemd`][systemd-homepage] as the init system.
 
-Optionally, as requirements of plugins:
+Optionally:
 
 - For [OTA][docs-linux-ota]:
   - An A/B partition scheme (two partitions for root filesystems, one active and
@@ -57,7 +57,7 @@ Optionally, as requirements of plugins:
     our example layer includes SWUpdate and U-Boot configurations for QEMU and
     RaspberryPis.
 - For [Custom Metrics][docs-linux-metrics]:
-  - [collectd][collectd-homepage] to collect and upload metrics.
+  - [collectd][collectd-homepage] to collect metrics.
 - For [Log Collection][docs-linux-logging]:
   - [fluent-bit][fluent-bit-homepage] to collect kernel and system logs.
 
@@ -81,12 +81,15 @@ Among its responsibilities are:
 
 - Keeping a queue of items to be uploaded to the Memfault cloud.
 - Uploading that data at a specified interval, and recovering from network
-  failures using an exponential back-off system, independent of the regular
-  refresh interval.
+  failures using an exponential back-off system, independent of the data
+  collection interval.
 - Controlling whether data is allowed to be collected (e.g. by user consent)
   from a device or not.
-- Interacting with and configuring subsystems such as SWUpdate and collectd.
-- Receiving and uploading logs collected by fluent-bit.
+- Adjusting which data is collected based on the [fleet
+  sampling][docs-fleet-sampling] configuration of this device.
+- Configuring SWUpdate dynamically to perform OTA updates.
+- Receiving data from Fluent-bit and CollectD, aggregating it in memory or on
+  disk.
 - Providing configuration access via [memfaultctl][docs-memfaultctl]
   (`memfaultctl` is a symbolic link to `memfaultd`).
 
@@ -175,8 +178,8 @@ repository][source-meta-swupdate]. Note that `meta-oe` is a dependency of
 `meta-swupdate`.
 
 And add the necessary dependencies to your image file (`swupdate` will be
-required automatically by the `memfaultd` recipe as long as `plugin_swupdate` is
-active):
+required automatically by the `memfaultd` recipe as long as the `swupdate`
+feature is active):
 
 ```
 IMAGE_INSTALL:append = " \
@@ -187,31 +190,31 @@ IMAGE_INSTALL:append = " \
 
 ## Minimal Configuration of `memfaultd`
 
-### (Optional) Opt out of `memfaultd` built-in plugins
+### (Optional) Opt out of `memfaultd` default features
 
-The `memfaultd` daemon has a plugin system. All plugins are included by default,
-so you don't need to do anything if you want them in. However, you can control
-which plugins are included at build time.
+The `memfaultd` daemon is modular and you can control which features are
+built-in to reduce code size, dependencies and resource usage. By default, all
+features are enabled.
 
-The available plugins are:
+The available features are:
 
 - `swupdate`: used for [OTA management][docs-linux-ota].
 - `collectd`: used for collection of [metrics][docs-linux-metrics].
 - `coredump`: used for collection of [coredumps][docs-linux-coredumps].
 - `logging`: used to [collect and upload][docs-linux-logging] logs.
 
-Set `PACKAGECONFIG` for the `memfaultd` package to control which plugins are
+Set `PACKAGECONFIG` for the `memfaultd` package to control which features are
 included in the `memfaultd` build. For example, you can add a
 `memfaultd.bbappend` recipe with the following contents:
 
 ```
-PACKAGECONFIG := "plugin_swupdate plugin_collectd plugin_coredump plugin_logging"
+PACKAGECONFIG := "swupdate collectd coredump logging"
 ```
 
 Alternatively, in your `local.conf` file:
 
 ```
-PACKAGECONFIG:pn_memfaultd := "plugin_swupdate plugin_collectd plugin_coredump plugin_logging"
+PACKAGECONFIG:pn_memfaultd := "swupdate collectd coredump logging"
 ```
 
 ### Add a `memfault-device-info` executable to your build {#memfault-device-info}
@@ -331,8 +334,9 @@ Requirements for this directory are:
 Your `persist_dir` will be written to for the following reasons:
 
 - Save persistent configuration options (`enable_data_collection` and
-  `enable_dev_mode`) ;
+  `enable_dev_mode`).
 - Save the internal reboot reason file when memfaultd restarts.
+- Save the Fleet Sampling configuration (only when it changes).
 
 #### Temporary storage
 
@@ -356,13 +360,14 @@ This is the recommended configuration.
 This directory will be used for:
 
 - Coredumps
+- Heartbeats (metrics)
 - Logs
 - Storing the boot id of the device across memfaultd restarts
 - Storing the Memfault reboot events queue
 
-Note that the [`collectd_plugin.interval_seconds`][docs-configuration] does not
-affect reads or writes to `tmp_dir`, unless you've configured collectd to write
-there, too. By default, collectd will store metrics in memory.
+Note that the [`collectd.interval_seconds`][docs-configuration] does not affect
+reads or writes to `tmp_dir`, unless you've configured collectd to write there,
+too. By default, collectd will store metrics in memory.
 
 You can control how much space `memfaultd` will use as temporary storage. See
 our [configuration reference][docs-configuration] for more context.
@@ -451,8 +456,9 @@ application-specific metrics from your system.
 
 ### Logging
 
-If you have enabled `plugin_logging`, `fluent-bit` will capture kernel and
-system logs and upload them to Memfault.
+If you have enabled the `logging` feature, `memfaultd` will expect network
+connections from `fluent-bit`. `fluent-bit` will capture kernel and system logs
+and upload them to Memfault.
 
 You can customize which logs are captured, filter out some lines and capture
 data from other sources (file on disk, serial port, etc). Refer to our [Linux
@@ -491,6 +497,7 @@ and use OTA.
 [docs-hardware-version-software-version]:
   /docs/platform/software-version-hardware-version
 [docs-device-id]: /docs/platform/memfault-terminology#device-id
+[docs-fleet-sampling]: /docs/platform/fleet-sampling
 [docs-linux-metrics]: /docs/linux/metrics
 [docs-linux-coredumps]: /docs/linux/coredumps
 [docs-linux-logging]: /docs/linux/logging
@@ -503,8 +510,6 @@ and use OTA.
 [docs-configuration]: /docs/linux/reference-memfaultd-configuration
 [docs-memfaultd]: /docs/linux/reference-memfaultd-configuration
 [docs-memfaultctl]: /docs/linux/reference-memfaultctl-cli
-[docs-control-memfaultd-plugins]:
-  /docs/linux/integration-guide#optional-opt-out-of-memfaultd-built-in-plugins
 [source-meta-swupdate]: https://github.com/sbabic/meta-swupdate
 [source-collectd-recipe]:
   https://github.com/openembedded/meta-openembedded/tree/master/meta-oe/recipes-extended/collectd

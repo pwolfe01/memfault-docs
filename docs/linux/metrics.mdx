@@ -8,9 +8,13 @@ import { ProjectMagicLink } from "@site/src/components/ProjectMagicLink";
 
 ## Introduction
 
-The `collectd` plugin for `memfaultd` (see [the source
-code][source-memfaultd-collectd-plugin]) configures collectd to regularly upload
-collected metrics to Memfault. These metrics:
+A key feature of the Memfault SDK is the ability to capture metrics on device,
+aggregate them in regular heartbeat messages, and upload them to the Memfault
+cloud.
+
+### Using metrics
+
+The aggregated metrics:
 
 - Are shown on the [device timeline][docs-timeline].
 - Are available for use as [Timeseries][docs-timeseries] or
@@ -22,27 +26,58 @@ See [Metrics and Attributes](/docs/platform/metrics) for an introduction to
 Memfault terminology related to metrics and to learn how the features you'll set
 up here can be accessed in the Memfault Web App.
 
+### Architecture
+
+The Memfault SDK leverages [collectd][collectd-homepage] to capture metrics from
+the system. All metrics are sent by collectd to the local HTTP server which the
+`memfaultd` daemon is running on the device.
+
+This architecture has the following advantages:
+
+- Metrics are captured by a well-known and widely used tool. A wide set of
+  plugins are available.
+- You can easily push your own metrics using one of the input plugins for
+  collectd (including StatsD, which we recommend).
+- Metrics are aggregated in memory and sent to the Memfault backend in a single
+  heartbeat message. This reduces the number of messages sent to the backend and
+  reduces the load on the device.
+- Aggregated metrics are written to disk (or to a volatile storage if [the
+  `tmp_storage` is configured to point to a `tmpfs`][docs-config-storage]), and
+  you have precise control on how much space is used by your diagnostic data.
+- Memfault [Fleet Sampling][docs-fleet-sampling] can be used to enable or
+  disable metrics captures remotely.
+- Until the user opts-in for data collection, all data is dropped and never
+  written to disk or network.
+
 ## Prerequisites
 
 ### The `memfaultd` daemon
 
 Follow the [integration guide][docs-linux-integration] to learn how to set this
-up for your device. A key function of `memfaultd` is to correctly configure and
-control collectd to upload metrics to Memfault.
+up for your device. You will need [the `collectd` feature
+enabled][docs-linux-control-features] to use `collectd` with Memfault.
 
-:::tip
+### collectd
 
-Keep [`meta-memfault-example`][source-yocto-example] open as a reference
-implementation. Your integration should look similar to it once you're done
-following the steps in this tutorial.
+collectd is a lightweight daemon that collects system and application metrics.
+It is widely used in the Linux ecosystem and has a large number of plugins
+available to collect metrics from a variety of sources.
 
-:::
+The `collectd` feature of `memfaultd` enables a collectd-compatible HTTP
+endpoint. This endpoint will receive metrics pushed by the collectd daemon at
+any frequency. `memfaultd` aggregates the metrics (in memory) into heartbeats
+and sends them to the Memfault cloud.
 
-### Dependencies
+In addition to standard metrics captured by collectd, you can capture custom
+metrics from your application using the StatsD protocol to collectd.
 
-#### collectd
+To use collectd with Memfault, we will configure collectd to send metrics to
+`memfaultd` (over HTTP on `localhost`). This is our recommended configuration
+and demonstrated in [`meta-memfault-example`][source-yocto-example].
 
-If you're using Yocto, the `meta-oe` layer includes [a recipe for
+#### collectd with Yocto
+
+For Yocto, the `meta-oe` layer includes [a recipe for
 `collectd`][source-collectd-recipe], so you may be able to just add `collectd`
 to your dependencies, e.g. by appending it to `IMAGE_INSTALL`. In our example
 project, we've opted for adding it to `MACHINE_ESSENTIAL_EXTRA_RRECOMMENDS` in
@@ -51,7 +86,7 @@ project, we've opted for adding it to `MACHINE_ESSENTIAL_EXTRA_RRECOMMENDS` in
 [source-collectd-recipe]:
   https://github.com/openembedded/meta-openembedded/tree/master/meta-oe/recipes-extended/collectd
 
-#### Optional: an application metrics client
+### Optional: an application metrics client
 
 There are different ways to track application metrics using collectd. We
 recommend using a [StatsD][statsd-homepage] client, but other mechanisms are
@@ -80,125 +115,18 @@ In our example project, we've added StatsD clients as dependencies:
 [statsd-clients]:
   https://github.com/statsd/statsd/blob/master/docs/client_implementations.md
 
-## Configuring collectd
+## Configuring memfaultd
 
-We strongly recommend familiarizing yourself with [collectd][collectd-homepage]
-and how it's configured in order to make the best use of the Memfault platform.
+### Configure the http server
 
-The `memfaultd` daemon generates two configuration files, by default in
-`/tmp/collectd-header-include.conf` and `/tmp/collectd-footer-include.conf`,
-with information about the device provided by
-[`memfault-device-info`][docs-memfault-device-info] (see the [getting-started
-guide][docs-linux-integration] for more information). Note that the paths where
-these configuration files are generated [can be configured in
-`/etc/memfaultd.conf`][docs-configuration] using the
-`collectd_plugin.header_include_output_file` and
-`collectd_plugin.footer_include_output_file` configuration keys.
+`memfaultd` exposes an HTTP server on port 8787 by default. The port must match
+the port that you will define in the collectd configuration. You can change the
+port by setting the `http_port` configuration option in `/etc/memfaultd.conf`.
 
-A minimal configuration file to configure collectd to post to Memfault looks
-like this:
+Metrics are expected to be sent to the `/v1/collectd` path (this is not
+configurable).
 
-```conf
-Include "/tmp/collectd-header-include.conf" # Or the value of collectd_plugin.header_include_output_file
-
-# Your configuration here.
-
-Include "/tmp/collectd-footer-include.conf" # Or the value of collectd_plugin.footer_include_output_file
-```
-
-It is important that the `Include` of the `memfaultd`-generated files are the
-first and last statements in your collectd configuration. This ensures each HTTP
-request that collectd's `write_http` plugin performs to the Memfault backend
-contains the full set of configured metrics and is sent out at the correct
-interval.
-
-If you inspect the generated files, you'll find that they configure the
-`write_http` plugin to talk to Memfault, and also set an `Interval` and a
-`FlushInterval`.
-
-:::note
-
-You _must not_ add a `LoadPlugin write_http` in your own config (either before
-or after `Include`ing the generated config file). One such line is included in
-the generated configuration. Subsequent `LoadPlugin` lines for the same plugin
-will have no effect.
-
-:::
-
-### Relevant `/etc/memfaultd.conf` settings
-
-The generated collectd configuration can be controlled using the `collectd`
-section of `/etc/memfaultd.conf`. See [a full configuration reference
-here][docs-configuration].
-
-#### `collectd.interval_seconds`
-
-The `collectd.interval_seconds` setting in `/etc/memfaultd.conf` controls both
-`Interval` and `FlushInterval`. This means that you should not configure either
-setting in your own configuration file.
-
-In collectd, the `Interval` setting regulates how often read plugins will
-attempt a reading by default (plugin instances may override this for their own
-metrics), and the `FlushInterval` setting for the `write_http` plugin controls
-how often collectd will flush its cache and attempt to post metrics to Memfault.
-
-:::note
-
-The `FlushInterval` parameter to `write_http` is shared among all instances of
-the plugin. That means that if you have your own, it will flush at the
-Memfault-configured `FlushInterval`, too. This is a limitation of `write_http`.
-
-:::
-
-#### `collectd.write_http_buffer_size_kib`
-
-The default value of 64KiB gives collectd plenty of space to fit a payload
-generated by our [recommended configuration](#recommended-configuration). A
-typical payload grows up to around 20KiB.
-
-You may want to fine-tune `write_http_buffer_size_kib` if you modify the
-recommended configuration. Bear in mind the interaction between this and
-`collectd.interval_seconds`: if the write buffer is full, collectd will be
-forced to flush before an interval ends.
-
-#### `collectd.non_memfaultd_chain`
-
-See [Configuring additional chains][docs-metrics-chains].
-
-### Recommended configuration
-
-See [our recommended collectd configuration in
-`meta-memfault-example`][source-recommended-collectd-conf]. This configuration
-makes use of standard plugins that enjoy special support on the Memfault
-platform. Copying this configuration over to your project will guarantee a good
-first experience.
-
-Note that as long as the generated configuration files
-`/tmp/collectd-header-include.conf` and `/tmp/collectd-footer-include.conf` are
-included, you're free to add your own directives between them in addition to the
-recommended settings.
-
-### Configuring additional chains
-
-See [collectd chains][collectd-chains] for an introduction.
-
-#### Jumping to your custom chain after the `memfaultd`-generated chain
-
-By default, the `memfaultd`-generated chain will bottom out in a `Target stop`
-directive. You can change this final directive to instruct collectd to jump to
-your own chain. To do this, set the value of `collectd.non_memfaultd_chain` in
-`/etc/memfaultd.conf` and add a chain with a matching name. See [a full
-configuration reference here][docs-configuration].
-
-#### On setting `PostCacheChain`
-
-The value of the `PostCacheChain` is set by the `memfaultd`-generated
-configuration. That means it's the first node of the `PostCacheChain`. If you
-change its value to something else, you need to make sure that your chains
-bottom out in a call to the `memfaultd`-generated chain. Please inspect
-`/tmp/collectd.conf` to see its identifier.
-
-## Set `enable_data_collection`
+### Enable metrics collection
 
 By default, `enable_data_collection` is `false` (see the [default
 configuration][source-builtin-conf]). This is to enable asking end users for
@@ -222,6 +150,82 @@ those commands if called with a value different from the current configuration.
 
 Take a look at the [`/etc/memfaultd.conf` reference][docs-configuration] for
 more information.
+
+### Configure the heartbeat interval
+
+All metrics pushed by collectd are aggregated in memory. A new heartbeat will be
+generated at a regular interval. The default value is 1 hour. You can change the
+interval by setting the `heartbeat_interval_seconds` configuration option in
+`/etc/memfaultd.conf`.
+
+A heartbeat is also generated when you shutdown or restart `memfaultd` and every
+time the `memfaultctl sync` command is used.
+
+:::note Note
+
+We recommend using the default value of 1 hour for heartbeat aggregation.
+Setting `heartbeat_interval_seconds` to a low value will result in more frequent
+heartbeats that will eventually be rate-limited by Memfault's backend.
+
+Contact us if you need to adjust this value.
+
+:::
+
+## Configuring collectd
+
+We strongly recommend familiarizing yourself with [collectd][collectd-homepage]
+and how it's configured in order to make the best use of the Memfault platform.
+
+A minimal configuration file to configure collectd to post to Memfault looks
+like this:
+
+```conf
+<LoadPlugin write_http>
+  FlushInterval 10
+</LoadPlugin>
+<Plugin write_http>
+  <Node "memfaultd">
+    URL "http://127.0.0.1:8787/v1/collectd"
+    Format "JSON"
+    Metrics true
+    Notifications false
+    StoreRates true
+    BufferSize 65536
+    Timeout 10000
+  </Node>
+</Plugin>
+```
+
+This file configures the `write_http` plugin to send data to the `memfaultd`
+daemon on localhost. By default the port 8787 is used. We also set a
+`FlushInterval` of 10 seconds.
+
+:::note Note
+
+The `FlushInterval` is the interval at which collectd will send data to
+`memfaultd`. Because `memfaultd` will re-aggregate the data in memory, a faster
+frequency will **not** result in more points visible in the Memfault backend. We
+recommend anywhere between 10 and 60 seconds.
+
+Setting this interval to a value that is too high will increase the time error
+on the measurement (heartbeats are time-stamped when they are generated but the
+data may be much older if the `FlushInterval` is too high). With a
+`FlushInterval` greater than the heartbeat interval, you would have heartbeats
+without data points.
+
+:::note
+
+Note that this minimal example does not capture any data. You will need to
+activate some CollectD plugins to capture useful data. This will be covered in
+the next section.
+
+### Recommended configuration
+
+See [our recommended collectd configuration in
+`meta-memfault-example`][source-recommended-collectd-conf]. This configuration
+makes use of standard plugins that enjoy special support on the Memfault
+platform. Copying this configuration over to your project will guarantee a good
+first experience.
 
 ## Application metrics
 
@@ -306,9 +310,9 @@ Refer to [`memfaultctl write-attributes` documentation][docs-write-attributes].
 ## Testing your integration
 
 During the development phase, we recommend setting a low value (e.g. 60 seconds)
-for the `collectd.interval_seconds` setting in `/etc/memfaultd.conf`. Take a
-look at the [`/etc/memfaultd.conf` reference][docs-configuration] for more
-information.
+for the `heartbeat_interval_seconds` and `upload_interval_seconds` settings in
+`/etc/memfaultd.conf`. Take a look at the [`/etc/memfaultd.conf`
+reference][docs-configuration] for more information.
 
 For changes in `/etc/memfaultd.conf` to take effect, you'll need to restart the
 `memfaultd` daemon:
@@ -316,6 +320,10 @@ For changes in `/etc/memfaultd.conf` to take effect, you'll need to restart the
 ```sh
 $ systemctl restart memfaultd
 ```
+
+Finally, we recommend [enabling developer mode][docs-server-developer-mode] for
+this device in the Memfault backend to lift any rate limiting and allow you to
+see your data in the Memfault Web App as soon as possible.
 
 The following section should help you figure out where you may expect data to be
 accessible in the Memfault Web Application.
@@ -352,7 +360,6 @@ accessible in the Memfault Web Application.
   https://github.com/memfault/memfault-linux-sdk/blob/-/meta-memfault-example/recipes-memfault/statsd-sampleapp-python
 [collectd-homepage]: https://collectd.org/
 [collectd-write-http]: https://collectd.org/wiki/index.php/Plugin:Write_HTTP
-[collectd-chains]: https://collectd.org/wiki/index.php/Chains
 [source-yocto-example]:
   https://github.com/memfault/memfault-linux-sdk/blob/-/meta-memfault-example
 [source-meta-memfault]:
@@ -360,19 +367,21 @@ accessible in the Memfault Web Application.
 [source-memfaultd]:
   https://github.com/memfault/memfault-linux-sdk/blob/-/meta-memfault/recipes-memfault/memfaultd/files/memfaultd
 [source-recommended-collectd-conf]:
-  https://github.com/memfault/memfault-linux-sdk/blob/-/meta-memfault-example/recipes-extended/collectd/files/collectd.conf
+  https://github.com/memfault/memfault-linux-sdk/blob/-/meta-memfault/recipes-extended/collectd/files/collectd.conf
 [source-layer-conf]:
   https://github.com/memfault/memfault-linux-sdk/blob/-/meta-memfault/layer.conf
 [source-memfaultd-collectd-plugin]:
   https://github.com/memfault/memfault-linux-sdk/blob/-/meta-memfault/recipes-memfault/memfaultd/files/memfaultd/plugins/collectd.c
 [source-builtin-conf]:
   https://github.com/memfault/memfault-linux-sdk/blob/-/meta-memfault/recipes-memfault/memfaultd/files/memfaultd/builtin.conf
+[docs-fleet-sampling]: /docs/platform/fleet-sampling
 [docs-linux-integration]: /docs/linux/integration-guide
-[docs-linux-control-plugins]:
-  /docs/linux/integration-guide#optional-opt-out-of-memfaultd-built-in-plugins
+[docs-linux-control-features]:
+  /docs/linux/integration-guide#optional-opt-out-of-memfaultd-built-in-features
 [docs-memfault-device-info]:
   /docs/linux/integration-guide#add-a-memfault-device-info-executable-to-your-build
 [docs-configuration]: /docs/linux/reference-memfaultd-configuration
+[docs-config-storage]: /docs/linux/integration-guide#configure-memfaultd-storage
 [docs-metrics]: /docs/platform/metrics
 [docs-timeseries]: /docs/platform/metrics#timeseries
 [docs-attributes]: /docs/platform/metrics#attributes
@@ -380,3 +389,5 @@ accessible in the Memfault Web Application.
 [docs-metric-charts]: /docs/platform/charts#metric-charts
 [docs-alerts]: /docs/platform/alerts
 [docs-metrics-chains]: /docs/linux/metrics#configuring-other-chains
+[docs-server-developer-mode]:
+  /docs/platform/rate-limiting#server-side-developer-mode
