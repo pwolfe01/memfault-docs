@@ -34,21 +34,9 @@ Client.
 The OTA Update Client will periodically check for updates. By default, this
 happens every 12 hours. When an update is found, a notification is displayed.
 
-:::info
-
-This regular, periodic check will only happen when:
-
-- Storage is not low (using
-  [this WorkManager API](<https://developer.android.com/reference/androidx/work/Constraints.Builder#setRequiresStorageNotLow(kotlin.Boolean)>)).
-- Battery is not low (using
-  [this WorkManager API](<https://developer.android.com/reference/androidx/work/Constraints.Builder#setRequiresBatteryNotLow(kotlin.Boolean)>)).
-- An
-  [unmetered network connection](https://developer.android.com/reference/androidx/work/NetworkType#UNMETERED)
-  (e.g. wifi) is available. This can be configured to enable metered connections
-  in the dashboard: **Settings** / **Data Sources** / **Allow OTA downloads on
-  Metered Networks**
-
-:::
+The default behaviour is a fully user-in-the-loop update process. To download or
+install updates automatically without user intervention,
+[see below](#applying-ota-updates-in-the-background).
 
 ![](/img/docs/android/ota-notification.png)
 
@@ -116,7 +104,7 @@ project.
 The `bort-ota-lib` library project contains the core OTA logic, and is **not**
 intended to be customized.
 
-The OTA Update Client required the main Bort application to be installed and
+The OTA Update Client requires the main Bort application to be installed and
 running, in order to function correctly.
 
 ## Enable OTA Update Client
@@ -148,17 +136,59 @@ By default, the OTA Update Client will create a notification (see above) when an
 update is available - which requires user interaction before the update is
 installed.
 
-From version 4.2.0, this behaviour can be changed to automatically apply updates
+From version 4.2.0, this behavior can be changed to automatically apply updates
 in the background, by setting the `OTA_AUTO_INSTALL` flag in `bort.properties`:
 
 ```
 OTA_AUTO_INSTALL=true
 ```
 
-Additionally, if you need to customize the logic around when an OTA update
-should be automatically applied, then this can be defined in
-`AutoInstallRules.kt` by adding any custom rules to the
-`custom_canAutoInstallOtaUpdateNow` method.
+From version 4.8.0, additional customization options are available to configure
+exactly when an update will be downloaded and installed in the background.
+
+Bort's periodic check for new updates was changed in 4.8.0 to remove
+storage/battery/unmetered network constraints. This means that the constraints
+to the download/install steps can be customized using the available OTA update
+metadata.
+
+#### Configuring background download and install behavior.
+
+If `OTA_AUTO_INSTALL` flag is `true`, once an update has been found then Bort
+will use the configuration found in
+[AutoInstallRules.kt](https://github.com/memfault/bort/blob/0a5bd29373119f34a29602b9a982a2c3f3fcf347/MemfaultPackages/bort-ota/src/main/java/com/memfault/bort/ota/AutoInstallRules.kt#L15)
+to decide whether to download the update in the background (see
+`canAutoDownloadOtaUpdateNow` and `downloadRules`), then once an update has been
+downloaded, whether to install the update in the background (see
+`canAutoInstallOtaUpdateNow` and `installRules`).
+
+To customise this logic, make changes to `AutoInstallRules.kt` before you
+compile the Bort OTA app.
+
+Bort will schedule `JobScheduler` jobs for download/install based on the
+constraints defined in `downloadRules`/`installrules`. When these jobs run (i.e.
+when the constraints have been satisfied) the custom logic in
+`canAutoDownloadOtaUpdateNow`/`canAutoInstallOtaUpdateNow` respectively will be
+executed - the download or install will only take place when `true` is returned.
+
+Note: `overrideNetworkConstraint` is null by default - this means that the
+dashboard configuration (**Settings** / **Data Sources** / **Allow OTA downloads
+on Metered Networks**) will take effect. Setting this to an explicit
+`NetworkType` will override the dashboard configuration.
+
+An `OTA` object is passed to both of these methods - this includes metadata
+describing the OTA release which is available for download. This can be used in
+the custom logic to determine e.g. the urgency of installing an update in the
+background:
+
+| Property           | Description                                                                                                                |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| `url`              | The URL which Bort will use to download the update (provided for information only).                                        |
+| `version`          | The new version.                                                                                                           |
+| `releaseNotes`     | Release notes, as added with the CLI or in the dashboard.                                                                  |
+| `artifactMetadata` | Memfault-internal metadata describing the OTA artifact.                                                                    |
+| `releaseMetadata`  | Contains any custom metadata added when uploading the artifact using the Memfault CLI using the `--extra-metadata` option. |
+| `isDelta`          | Is the update a delta/incremental update?                                                                                  |
+| `size`             | The size of the update image (bytes).                                                                                      |
 
 ### String translations
 
