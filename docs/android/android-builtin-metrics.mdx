@@ -30,7 +30,8 @@ Since Bort 4.5.0, battery metrics on timeline are displayed using
 (note: this is behind a feature flag which is being rolled out progressively to
 devices running 4.5.0 or higher).
 
-Several new metrics were added to timeline as part of this change:
+Several new metrics were added to timeline as part of this change - these are
+only available when collecting via HRT:
 
 - **Wifi On**
 - **User** (current active user on multi-user devices)
@@ -106,6 +107,37 @@ the
 
 These metrics would be good candidates for Timeseries metrics, to monitor fleet
 performance over time and find outlier devices.
+
+### Battery Summary Metrics
+
+**Supported Since Bort 4.8.0**
+
+Bort 4.8.0 supports collecting new types of battery metrics, which show a
+summary of battery usage during the collection period:
+
+![](/img/docs/android/metrics-battery-usage.png)
+
+- `screen_off_battery_drain_%/hour`: battery drain rate while the screen was
+  off - useful for isolating battery drain rate from screen usage (0-100% per
+  hour).
+- `screen_on_battery_drain_%/hour`: battery drain rate while the screen was on
+  (0-100% per hour).
+- `estimated_battery_capacity_mah`: battery capacity reported by Android.
+
+The above metrics are available for use as timeseries metrics.
+
+Additionally, per-component battery usage is displayed on timeline. The usage
+(in % per hour) for component app which used `>= 0.01%` is shown as follows:
+
+![](/img/docs/android/metrics-battery-per-component.png)
+
+- This is shown in the `Battery Usage %/hour` swimlane as shown in the
+  screenshot, with separate entries for each component. This includes both
+  Android OS components (e.g. `cell`, `idle`, `android`, `screen`, `bluetooth`,
+  `gnss`) and applications (e.g. `com.google.android.youtube`,
+  `com.android.vending`, `com.whatsapp`).
+- These per-component metrics are only displayed on timeline - they are not
+  available as timeseries metrics.
 
 ### Device Temperatures
 
