@@ -1,0 +1,397 @@
+---
+id: generic-ota
+title: Memfault OTA for any Linux device
+sidebar_label: Generic OTA
+---
+
+This guide will walk you through using the Memfault OTA API to update any Linux
+system.
+
+If you are using a Yocto-based Linux distribution with SWUpdate, we recommend
+using the [Memfault SWUpdate integration](/docs/linux/ota).
+
+## Introduction
+
+Memfault provides a simple OTA API that can be used to update any Linux system.
+The API is designed to be simple to integrate and to work with any existing
+update mechanism.
+
+The API is based on a simple HTTP request to the Memfault cloud. The request
+contains the current version of the device and the device type. The response
+contains the latest version of the device and an URL to download the update
+from.
+
+### Concepts
+
+![Architecture diagram of generic OTA updates](/img/docs/linux/generic-ota-updates.png)
+
+<!-- Source: https://www.figma.com/file/GQIimU8iOtCrxGrdE6RxL3/Memfault-Docs-%2F-SDK-Architecture?type=design&node-id=0-1&mode=design&t=pe75NGDszEm3otYP-0 -->
+
+All OTA solutions will involve the same key components:
+
+- **A build system prepares the Update Payload.**
+
+  This can be a full-system image in tarball format, a raw ext4 image, or some
+  more advanced format (e.g. delta updates). In most cases, this payload will be
+  signed.
+
+  This process should be automated and integrated into your CI/CD pipeline.
+
+- **A server distributes the Update Payload.**
+
+  The OTA server should support distributing different payloads to different
+  devices (e.g. different hardware versions, different software versions for
+  different groups, etc). To scale well, this server also needs to use a Content
+  Delivery Network which will guarantee that updates can be downloaded as fast
+  as possible from devices all around the world, and keep the total bandwidth
+  cost low.
+
+  This is one of Memfault's core offerings: we host the Update Payloads, give
+  you precise control of who-gets-what, and use a CDN to distribute updates.
+
+- **An agent on the device will connect to the server and regularly poll for
+  updates.**
+
+  When an update is available, the agent will notify an update installer who
+  will verify the update and install it.
+
+- **The update installer writes the update to disk, notifies the bootloader that
+  an update has been installed and reboots into the update.**
+
+- **After rebooting, the device verifies it's operational and connected, and
+  notifies the bootloader to stay on this update.**
+
+Some update systems, like SWUpdate and RAUC, will combine the agent and the
+update installer into a single binary. They will communicate to the server using
+the hawkbit protocol. This is fully supported by Memfault and documented in our
+[OTA with SWUpdate guide](/docs/linux/ota). Using a separate agent to poll for
+updates provides more control over when they are installed.
+
+For other systems (like a home-built update system for example; or the Mender
+open-source client), you can focus on building your installer and follow this
+guide to integrate your solution with Memfault OTA.
+
+The following table illustrates how some common OTA solutions implement each
+common component . All of these cases use Memfault OTA as the OTA server and a
+custom script acts as the agent.
+
+| OTA Solution | Update Payload Name | Build System                                                                                              | Installer                                                                                                               | Confirm                 |
+| ------------ | ------------------- | --------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | ----------------------- |
+| SWUpdate     |                     | [`bitbake swupdate-image`](https://sbabic.github.io/swupdate/building-with-yocto.html#the-swupdate-class) | `swupdate <image URL>`                                                                                                  | (not required)          |
+| RAUC         | Bundle              | [RAUC Bundle class](https://github.com/rauc/meta-rauc/blob/master/classes-recipe/bundle.bbclass)          | `rauc install <image file>`                                                                                             | `rauc status mark-good` |
+| Mender       | Artifact            | [Create an artifact](https://docs.mender.io/artifact-creation/create-an-artifact)                         | [`mender install <URL>`](https://docs.mender.io/artifact-creation/standalone-deployment#deploy-an-artifact-to-a-device) | `mender commit`         |
+
+:::tip
+
+For a more in-depth look at all the parts that need to fit together to make OTA
+updates work, check out our post,
+[Practical Introduction to OTA for Embedded Linux](https://interrupt.memfault.com/blog/ota-for-embedded-linux-devices)
+and the associated [webinar](https://hubs.la/Q01M97730).
+
+:::
+
+### Prerequisites
+
+To follow this guide, you will need:
+
+- A Memfault account. [Sign up here](https://app.memfault.com/) if you don't
+  have one already
+- A Linux device with an internet connection
+- A way to generate an Update Payload
+- A command to install the Update Payload
+- (Optional) A way to confirm that the update was successfully installed
+
+## Memfault OTA API
+
+The Memfault OTA API is a simple HTTP API that can be used to check for updates.
+
+It is available on `https://device.memfault.com/api/v0/releases/latest/`.
+
+The API takes a few arguments:
+
+- `device_serial` - This is used for determining the cohort a Device is in.
+- `hardware_version` - OTA payloads are specific to each hardware_version, so
+  this is a required parameter.
+- `software_type` - The software component on the device responsible for
+  performing OTA updates. For most Linux projects this will be `main`.
+- `current_version` (optional) - The current Software Version of the Software
+  Type that performs OTA updates. This is used to determine if there is a newer
+  Software Version available to be installed. If omitted, the latest version is
+  returned for the device.
+
+Example:
+
+```
+$ curl "https://device.memfault.com/api/v0/releases/latest?device_serial=DEMOSERIAL&hardware_version=evt1&software_type=main&current_version=0.0.1" \
+  --header "Memfault-Project-Key: ${YOUR_PROJECT_KEY}"
+```
+
+If there is no new version available, the API will return a `204 No Content`
+response.
+
+If there is a new version, the API will return `200` with a JSON payload.
+
+```
+{
+  "extra_info": null,
+  "is_delta": false,
+  "created_date": "2023-06-01T02:13:18.881435+00:00",
+  "is_forced": null,
+  "revision": "",
+  "min_version": "",
+  "reason": "latest",
+  "version": "0.42.0",
+  "artifacts": [
+    {
+      "extra_info": null,
+      "sha256": "60e3c68ea2056aa2b587a3e4d621f373926a4e5471330658dc6f285a53476b03",
+      "created_date": "2023-06-01T02:35:02.614996+00:00",
+      "build_id": "",
+      "file_size": 258048,
+      "url": "https://ota-cdn.memfault.com/3327/6587/7718856587?token=kM8rUk8MfJJ2kJmBJyJj1jg7XMeFsqbB90qRSAYT3_U&expires=1689796800",
+      "type": "firmware",
+      "hardware_version": "qemuarm64",
+      "md5": "551b386859663efe4935cd1fd955342e",
+      "sha1": "75dcb80f5afde12ce0125c3fe0d7d7d733a8ed5b",
+      "filename": "update-0.42.0.swu",
+      "id": 14841
+    }
+  ],
+  "must_pass_through": false,
+  "display_name": "",
+  "id": 11771,
+  "notes": ""
+}
+```
+
+:::tip
+
+If all you need is the download URL, add `/url` to the API route and it will
+return only the download URL (or nothing for a `204` response).
+
+:::
+
+## Example OTA Agent
+
+The OTA agent is responsible for polling the Memfault cloud for updates and
+installing them.
+
+### Polling for updates
+
+The following example shell script polls the server and installs the update if
+one is available.
+
+You will need to update `update-installer` with the command that installs the
+update payload.
+
+`/usr/bin/memfault-ota`
+
+```
+#!/bin/sh
+DATA_DIR=$(cat /etc/memfaultd.conf | jq -r '.data_dir')
+PROJECT_KEY=$(cat /etc/memfaultd.conf | jq -r '.project_key')
+SOFTWARE_TYPE=$(cat /etc/memfaultd.conf | jq -r '.software_type')
+SOFTWARE_VERSION=$(cat /etc/memfaultd.conf | jq -r '.software_version')
+eval "$(memfault-device-info)"
+
+url=$(curl -s --get \
+    --data-urlencode "hardware_version=${MEMFAULT_HARDWARE_VERSION}" \
+    --data-urlencode "software_type=${SOFTWARE_TYPE}" \
+    --data-urlencode "current_version=${SOFTWARE_VERSION}" \
+    --data-urlencode "device_serial=${MEMFAULT_DEVICE_ID}" \
+    --header "Memfault-Project-Key: ${PROJECT_KEY}" \
+    "https://api.memfault.com/api/v0/releases/latest/url")
+
+if [ -n "$url" ]; then
+    # The following line will need to be updated for the specific update installer
+    # you are using.
+    update-installer $url
+    if [ $? -eq 0 ]; then
+      memfaultctl reboot --reason 3
+    else
+        logger -p user.err "OTA install failed"
+    fi
+fi
+```
+
+A systemd service and timer can be used to run the script periodically:
+
+`memfault-ota.service`
+
+```
+[Unit]
+Description=Memfault OTA Service
+Requires=network.target
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh /usr/bin/memfault-ota
+
+[Install]
+WantedBy=multi-user.target
+```
+
+`memfault-ota.timer`
+
+```
+[Unit]
+Description=Launch %i service every 6 hours
+
+[Timer]
+OnBootSec=3min
+OnUnitInactiveSec=6h
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+```
+
+### Confirming updates
+
+If you also need to execute some command after the update installs and the
+device reboots, use something like the following script. It runs on boot and
+tries to contact the OTA server to confirm that the new firmware image has
+working connectivity.
+
+You will need to update the exact commands used to confirm or rollback the
+update.
+
+`memfault-post-ota.service`
+
+```
+[Unit]
+Description=Memfault Post OTA Service
+Requires=network.target
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh /usr/bin/memfault-post-ota
+
+[Install]
+WantedBy=multi-user.target
+```
+
+`/usr/bin/memfault-post-ota`
+
+```
+#!/bin/sh
+DATA_DIR=$(cat /etc/memfaultd.conf | jq -r '.data_dir')
+PROJECT_KEY=$(cat /etc/memfaultd.conf | jq -r '.project_key')
+SOFTWARE_TYPE=$(cat /etc/memfaultd.conf | jq -r '.software_type')
+SOFTWARE_VERSION=$(cat /etc/memfaultd.conf | jq -r '.software_version')
+eval "$(memfault-device-info)"
+
+checkin () {
+    status_code=$(curl -o /dev/null -I -L -s -w "%{http_code}" --get \
+    --data-urlencode "hardware_version=${MEMFAULT_HARDWARE_VERSION}" \
+    --data-urlencode "software_type=${SOFTWARE_TYPE}" \
+    --data-urlencode "current_version=${SOFTWARE_VERSION}" \
+    --data-urlencode "device_serial=${MEMFAULT_DEVICE_ID}" \
+    --header "Memfault-Project-Key: ${PROJECT_KEY}" \
+    "https://api.memfault.com/api/v0/releases/latest/url")
+
+    if [[ "$status_code" == "200" || "$status_code" == "204" ]]; then
+        # Update this for your specific OTA platform
+        commit-update
+        return 0
+    fi
+    return 1
+}
+
+until [ $RETRY_COUNT -eq 10 ] || checkin; do
+    ((RETRY_COUNT++))
+    sleep 10
+done
+[ $RETRY_COUNT -lt 10 ] && exit 0
+
+# We have not been able to confirm connectivity with OTA servers - Rollback update
+commit-rollback
+
+# Firmware Update Error
+memfaultctl reboot --reason 32777
+```
+
+### Controlling when updates are installed
+
+To control when updates are installed you can add checks in the script above
+that will immediately return from the update script if the device is not in a
+state where we would want to reboot.
+
+You could also choose to install the update but not reboot until a later time.
+
+The possibilities are endless and depend on your specific use-case. We are here
+to help guide you through this process.
+
+## Important Considerations
+
+### The Thundering Herd issue
+
+Care should be taken to make sure that all the devices will not poll the server
+at the same time. This is especially important with large fleet of devices where
+thousands of devices may all connect at the same time and overwhelm the server.
+
+:::note
+
+The systemd example above runs 3 minutes after boot and then every 6 hours so it
+will not have this issue as long as the devices do not all boot at the exact
+same time.
+
+:::
+
+Common causes of this issue are:
+
+- All devices are configured to poll the server at a fixed time (for example
+  with a CRON job that runs every hour).
+
+  Solution:
+
+  - Avoid using CRON to run the agent on device
+  - Randomize the polling time on each device
+  - Add a long-sleep at the beginning of the CRON job
+
+- All devices are configured to poll the server on boot and they are all
+  restarted at the same time.
+
+  Solution:
+
+  - Wait a random amount of time before polling the server on boot
+  - Avoid restarting all your devices at the exact same time
+
+### Polling Rate
+
+We generally account for a maximum of 6 device checkins per day per device.
+
+For devices in [developer mode][developer-mode] we will allow an unlimited
+number of checkins.
+
+For other devices, they may run into rate-limiting issues if they check in more
+frequently and will receive a status code `429 Too Many Requests`. Please
+contact us if your use-case requires a higher limit.
+
+### Security
+
+We have kept security considerations out of the scope of this document because
+security is generally implemented in the update installer.
+
+:::caution
+
+It's extremely important to sign the update payload, and to verify the signature
+before installing it. If the update is not signed, an attacker with physical
+access to the device, or just the ability to alter the network around the
+device, could trick the device into downloading from a malicious server and
+install an update which would give the attacker complete control on the device.
+
+:::
+
+All commercial and open-source solutions support signing updates and will
+provide specific documentation on how to do it.
+
+For reference:
+
+- [SWUpdate - Signed Images](https://sbabic.github.io/swupdate/signed_images.html)
+- [RAUC - Security documentation](https://rauc.readthedocs.io/en/latest/advanced.html#security)
+- [Mender - Sign & Verify Guide](https://docs.mender.io/artifact-creation/sign-and-verify)
+
+[developer-mode]: /docs/platform/rate-limiting/#server-side-developer-mode

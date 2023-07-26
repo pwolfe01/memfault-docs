@@ -179,6 +179,7 @@ module.exports = {
                         "linux/coredumps",
                         "linux/reboot-reason-tracking",
                         "linux/logging",
+                        "linux/generic-ota",
                     ],
                 },
                 {
