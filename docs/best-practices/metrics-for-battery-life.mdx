@@ -310,7 +310,7 @@ static void prv_metrics_heartbeat_record_battery_info(void) {
 
     // Also record the current battery charge level
     memfault_metrics_heartbeat_set_signed(
-        MEMFAULT_METRICS_KEY_DEFINE(Battery_ChargeLevel),
+        MEMFAULT_METRICS_KEY(Battery_ChargeLevel),
         battery_charge_level
     );
 }
