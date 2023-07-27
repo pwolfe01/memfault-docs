@@ -216,21 +216,20 @@ to "Accept only values within range", Memfault will automatically filter out the
   <TabItem value="latest">
 
 ```c
+#include "memfault/components.h"
+
 // Stores the battery charge level from the start of the heartbeat interval
 static int32_t s_battery_charge_level_previous;
 
 // Tracks whether a charger was connected during the heartbeat interval
 static bool s_battery_charger_event_during_interval;
 
-// Called at the start of a heartbeat interval
-static void prv_device_metrics_start_heartbeat() {
-    // Sets the battery percentage at the start of the interval
-    s_battery_charge_level_previous = battery_get_current_pct();
-
+// Called on a charger connect/disconnect event
+static void battery_charger_connected_event(void) {
     // Determine whether a charger is connected at this exact moment.
     // If the charger is connected during the hour, this should be
     // updated by the battery/charging module too.
-    s_battery_charger_event_during_interval = battery_get_charger_connected();
+    s_battery_charger_event_during_interval |= battery_get_charger_connected();
 }
 
 // Calculate and record the drop in battery charge over the heartbeat interval
@@ -239,24 +238,31 @@ static void prv_metrics_heartbeat_record_battery_info(void) {
     const int32_t battery_charge_level = battery_charge_level_get();
 
     // Subtract current charge level from previous charge level to get
-    // a drop in battery charge level normalized between 0 and 10,000
-    const int32_t battery_charge_drop = battery_charge_level - s_battery_charge_level_previous;
+    // a drop in battery charge level normalized between 0 and 10,000.
+    //
+    // This will be negative if the battery charge level increased, or on the
+    // first recording, where the previous charge level is 0.
+    const int32_t battery_charge_drop =
+        s_battery_charge_level_previous - battery_charge_level;
+    // Only record the battery drop value if a charger was not connected during
+    // the interval and the computed drop is positive
+    const bool report_battery_drop =
+        (!s_battery_charger_event_during_interval && battery_charge_drop >= 0);
 
-    const bool report_battery_drop = (!s_battery_charger_event_during_interval && battery_charge_drop >= 0);
+    // Store the current charge level for the next heartbeat interval
+    s_battery_charge_level_previous = battery_charge_level;
+    // Reset the charger connected tracking for the next heartbeat interval
+    s_battery_charger_event_during_interval = battery_get_charger_connected();
 
     if (report_battery_drop) {
         memfault_metrics_heartbeat_set_signed(
-            MEMFAULT_METRICS_KEY_DEFINE(Battery_ChargeLevelDrop),
-            battery_charge_drop
-        );
+            MEMFAULT_METRICS_KEY(Battery_ChargeLevelDrop), battery_charge_drop);
     }
 
     // Also record the current battery charge level
     if (battery_charge_level > 0) {
-      memfault_metrics_heartbeat_set_signed(
-          MEMFAULT_METRICS_KEY_DEFINE(Battery_ChargeLevel),
-          battery_charge_level
-      );
+        memfault_metrics_heartbeat_set_signed(
+            MEMFAULT_METRICS_KEY(Battery_ChargeLevel), battery_charge_level);
     }
 }
 ```
@@ -266,21 +272,20 @@ static void prv_metrics_heartbeat_record_battery_info(void) {
   <TabItem value="prior">
 
 ```c
+#include "memfault/components.h"
+
 // Stores the battery charge level from the start of the heartbeat interval
 static int32_t s_battery_charge_level_previous;
 
 // Tracks whether a charger was connected during the heartbeat interval
 static bool s_battery_charger_event_during_interval;
 
-// Called at the start of a heartbeat interval
-static void prv_device_metrics_start_heartbeat() {
-    // Sets the battery percentage at the start of the interval
-    s_battery_charge_level_previous = battery_get_current_pct();
-
+// Called on a charger connect/disconnect event
+static void battery_charger_connected_event(void) {
     // Determine whether a charger is connected at this exact moment.
     // If the charger is connected during the hour, this should be
     // updated by the battery/charging module too.
-    s_battery_charger_event_during_interval = battery_get_charger_connected();
+    s_battery_charger_event_during_interval |= battery_get_charger_connected();
 }
 
 // Calculate and record the drop in battery charge over the heartbeat interval
@@ -289,30 +294,40 @@ static void prv_metrics_heartbeat_record_battery_info(void) {
     const int32_t battery_charge_level = battery_charge_level_get();
 
     // Subtract current charge level from previous charge level to get
-    // a drop in battery charge level normalized between 0 and 10,000
-    const int32_t battery_charge_drop = battery_charge_level - s_battery_charge_level_previous;
+    // a drop in battery charge level normalized between 0 and 10,000.
+    //
+    // This will be negative if the battery charge level increased, or on the
+    // first recording, where the previous charge level is 0.
+    const int32_t battery_charge_drop =
+        s_battery_charge_level_previous - battery_charge_level;
+    // Only record the battery drop value if a charger was not connected during
+    // the interval and the computed drop is positive
+    const bool report_battery_drop =
+        (!s_battery_charger_event_during_interval && battery_charge_drop >= 0);
 
-    const bool report_battery_drop = (!s_battery_charger_event_during_interval && battery_charge_drop >= 0);
+    // Store the current charge level for the next heartbeat interval
+    s_battery_charge_level_previous = battery_charge_level;
+    // Reset the charger connected tracking for the next heartbeat interval
+    s_battery_charger_event_during_interval = battery_get_charger_connected();
 
     if (report_battery_drop) {
         memfault_metrics_heartbeat_set_signed(
-            MEMFAULT_METRICS_KEY_DEFINE(Battery_ChargeLevelDrop),
-            battery_charge_drop
-        );
+            MEMFAULT_METRICS_KEY(Battery_ChargeLevelDrop), battery_charge_drop);
     } else {
-        // Don't report this metric during hours with charging events
-        // Make sure to set up the range & ingress filtering to ignore -1 in the Memfault service
-        memfault_metrics_heartbeat_set_signed(
-            MEMFAULT_METRICS_KEY_DEFINE(Battery_ChargeLevelDrop),
-            -1
-        );
+          // Don't report this metric during hours with charging events
+          // Make sure to set up the range & ingress filtering to ignore -1 in
+          // the Memfault service
+          memfault_metrics_heartbeat_set_signed(
+              MEMFAULT_METRICS_KEY(Battery_ChargeLevelDrop),
+              -1
+          );
     }
 
     // Also record the current battery charge level
-    memfault_metrics_heartbeat_set_signed(
-        MEMFAULT_METRICS_KEY_DEFINE(Battery_ChargeLevel),
-        battery_charge_level
-    );
+    if (battery_charge_level > 0) {
+        memfault_metrics_heartbeat_set_signed(
+            MEMFAULT_METRICS_KEY(Battery_ChargeLevel), battery_charge_level);
+    }
 }
 ```
 
