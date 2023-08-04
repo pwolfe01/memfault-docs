@@ -126,9 +126,10 @@ to see how the rules below are applied to OTA.
 #### Ordering
 
 We recommend using a [SemVer](https://semver.org/) for your Software Versions,
-[see details here](#recommended-versioning-scheme). If you do not use SemVer, we
-fallback to using natural sort, as implemented by
-[natsort](https://pypi.org/project/natsort/) to resolve ordering.
+[see details here](#recommended-versioning-scheme). We use
+[natsort](https://pypi.org/project/natsort/) to resolve version order. If you
+require more strict ordering with SemVer, please contact us at
+<support@memfault.com>.
 
 Memfault uses a slight tweak on top of `natsort` to support `rc` or `dev`
 versioning schemes. This is achieved by
