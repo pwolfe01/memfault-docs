@@ -1,0 +1,134 @@
+---
+title: July 2023
+---
+
+## **Bulk Issue Merging improvements**
+
+Users can now merge multiple issues together with a few clicks, eliminating the
+previously repetitive process of merging each issue independently. This
+addresses the scenarios where Memfault’s de-duplication algorithm may not group
+related issues due to unaccounted for variables within the issue signature
+making each appear as an independent issue.
+
+![2023-07-31-Bulk-Issue-Merge.png](/img/blog/2023-07-31-Bulk-Issue-Merge.png)
+
+Users can now use all of the filtering capabilities within the issues page to
+narrow down to a specific issue set and either bulk select or individually
+select a set of issues they believe should be merged into one issue.
+
+## Android SDK **4.8.0: More OTA control, more metrics and more issue tracking**
+
+The most recent
+[Android SDK 4.8.0](https://github.com/memfault/bort/blob/master/CHANGELOG.md#v480---july-17-2023)
+introduces a number of new features for Android customers. Android customers now
+get powerful additional controls for the OTA update process, more granular
+battery usage metrics and tracking of SELinux violations.
+
+The OTA improvements allow users to control download and install behavior
+independently and dependent on additional payload specific metadata and/or
+current device condition. For example, you can ensure that devices will
+prioritize updates a user has tagged as “critical” for download and will only
+install an update if certain battery conditions are met. You can read more about
+the specific configurations in Memfault’s documentation on
+[configuring download and install](/docs/android/android-ota-update-client#configuring-background-download-and-install-behavior)
+for OTA updates.
+
+The changes to battery metrics allow users to view the battery usage per app,
+distinguish usage in screen-on or screen-off scenarios, and see battery
+capacity, all on the device timeline view. This gives much more granular
+visibility into battery performance and further enhance users’ ability to root
+cause issues. You can read more about this in
+[Memfault’s Android Battery Summary Metrics](/docs/android/android-builtin-metrics#battery-summary-metrics)
+documentation.
+
+![2023-07-31-Android-SDK](/img/blog/2023-07-31-Android-SDK.png)
+
+Finally, we added support for tracking
+[SELinux violations](https://source.android.com/docs/security/features/selinux)
+via Memfault. Tracking these issues will now be possible with all of the same
+functionality as the other pre-existing Android issue types.
+
+<!-- truncate -->
+
+## General
+
+- Added: Ability to [merge Issues in bulk](/docs/platform/issue-management/)
+- Added: The [CDR](/docs/platform/inspecting-a-device/#custom-data-recordings)
+  tooltip now displays the
+  [MIME type](/docs/platform/inspecting-a-device/#cdr-mime-types)
+- Improved: [Logs tab](/docs/platform/trace-details/#logs) search filters now
+  persist when navigating between log files
+- Improved: Various UI glitches and improvements (more responsive device search
+  page controls, standardize form input label placement, bug fix for pagination
+  on issues and devices pages, exclude merged issues from issue searches,
+  improve
+  [editing device sets](/docs/platform/projects-and-fleets/#editingdeleting-a-device-set)
+  modal)
+- Fixed: Navigating from [weekly drilldown](/docs/platform/charts#drilldown) on
+  the Reboots chart to Device Search correctly sets the time range to a week
+- Fixed: Missing data visualization when min/mean/max values were all the same
+  value on [metrics charts](/docs/platform/charts#metric-charts)
+- Changed: [Custom metrics](/docs/platform/metrics/) are no longer
+  [marked as attributes by default](/docs/platform/metrics/#defining-an-attribute)
+
+## MCU
+
+- Improved: Handle new audio log format changes for qcomm to update to ADK
+  1.2.16.21
+- Improved: Documentation for
+  [MCU Software Watchdog Instrumentation](/docs/mcu/watchdogs/#software-watchdog)
+- SDK version
+  [1.1.2](https://github.com/memfault/memfault-firmware-sdk/blob/master/CHANGES.md#changes-between-memfault-sdk-111-and-112---july-11-2023)
+  was released. Some highlights:
+  - Improved: Compatibility
+    in [reboot reason tracking](https://github.com/memfault/memfault-firmware-sdk/blob/master/ports/emlib/rmu_reboot_tracking.c) and [watchdog implementation](https://github.com/memfault/memfault-firmware-sdk/blob/master/ports/emlib/wdog_software_watchdog.c) on
+    Silicon Labs Series 2 MCUs
+  - Fixed: A Zephyr build error when `CONFIG_MEMFAULT_LOGGING=n`,
+    see [#56](https://github.com/memfault/memfault-firmware-sdk/issues/56).
+    Thanks to [@JordanYates](https://github.com/jordanyates) for reporting this
+    issue!
+  - Fixed: A potential Zephyr bug in the Memfault Log Backend
+    when `CONFIG_LOG_MODE_IMMEDIATE=y` when flushing of fault logs during a
+    crash
+
+## Android
+
+- Added: Documentation for
+  [Client-Side Rate Limiting for Android](/docs/android/android-rate-limiting/)
+- Improved: [Device timeline view](/docs/android/android-builtin-metrics) with
+  the following changes: grouping temperature, per-app battery usage, screen
+  on/off battery drain, storage and temperature metrics in their respective
+  swimlanes, enabling min/max settings for multiswimlanes, hardcoding min/max
+  values for standard metrics
+- Fixed: Timeouts when changing SDK settings of large fleets
+- SDK version
+  [4.8.0](https://github.com/memfault/bort/blob/master/CHANGELOG.md#v480---july-17-2023)
+  was released. Some highlights:
+  - Added: HRT battery metrics (e.g. summary of per-app battery usage)
+  - Added: Support for capturing SELinux violations
+    [without bugreports](/docs/android/android-bort#collection-types---bug-reports-and-caliper)
+  - Improved:
+    [OTA download/install constraint customization](/docs/android/android-ota-update-client/#customizing-the-ota-update-client)
+
+## Linux
+
+- Added: Documentation for
+  [Generic OTA on any Linux Device](/docs/linux/generic-ota)
+- Improved: Documentation on
+  [how to obtain the ORG_AUTH_TOKEN for Linux Coredumps](/docs/linux/coredumps/#upload-debugging-symbols)
+- SDK version
+  [1.5.0](https://github.com/memfault/memfault-linux-sdk/blob/kirkstone/CHANGELOG.md#150---2023-07-18)
+  was released. Some highlights:
+  - Added: SDK support for [Fleet Sampling](/docs/platform/fleet-sampling/)
+  - Added: `memfaultd` now exposes a local http endpoint to receive metrics and
+    will upload them as MAR files
+  - Improved: Data transfers to use the MAR (Memfault Archive) format, including
+    heartbeats messages which were previously uploaded directly by collectd to
+    the cloud
+
+## CLI
+
+- CLI version [1.0.2](https://pypi.org/project/memfault-cli/1.0.2/) was
+  released. Some highlights:
+  - Fixed: Bug where `upload-yocto-symbols` would fail when some files in the
+    tarballs provided did not have the read permission set.
