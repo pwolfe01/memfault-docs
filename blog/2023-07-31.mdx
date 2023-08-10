@@ -80,16 +80,16 @@ functionality as the other pre-existing Android issue types.
 - SDK version
   [1.1.2](https://github.com/memfault/memfault-firmware-sdk/blob/master/CHANGES.md#changes-between-memfault-sdk-111-and-112---july-11-2023)
   was released. Some highlights:
-  - Improved: Compatibility
-    in [reboot reason tracking](https://github.com/memfault/memfault-firmware-sdk/blob/master/ports/emlib/rmu_reboot_tracking.c) and [watchdog implementation](https://github.com/memfault/memfault-firmware-sdk/blob/master/ports/emlib/wdog_software_watchdog.c) on
-    Silicon Labs Series 2 MCUs
-  - Fixed: A Zephyr build error when `CONFIG_MEMFAULT_LOGGING=n`,
-    see [#56](https://github.com/memfault/memfault-firmware-sdk/issues/56).
-    Thanks to [@JordanYates](https://github.com/jordanyates) for reporting this
-    issue!
-  - Fixed: A potential Zephyr bug in the Memfault Log Backend
-    when `CONFIG_LOG_MODE_IMMEDIATE=y` when flushing of fault logs during a
-    crash
+  - Improved: Compatibility in
+    [reboot reason tracking](https://github.com/memfault/memfault-firmware-sdk/blob/master/ports/emlib/rmu_reboot_tracking.c)
+    and
+    [watchdog implementation](https://github.com/memfault/memfault-firmware-sdk/blob/master/ports/emlib/wdog_software_watchdog.c)
+    on Silicon Labs Series 2 MCUs
+  - Fixed: A Zephyr build error when `CONFIG_MEMFAULT_LOGGING=n`, see
+    [#56](https://github.com/memfault/memfault-firmware-sdk/issues/56). Thanks
+    to [@JordanYates](https://github.com/jordanyates) for reporting this issue!
+  - Fixed: A potential Zephyr bug in the Memfault Log Backend when
+    `CONFIG_LOG_MODE_IMMEDIATE=y` when flushing of fault logs during a crash
 
 ## Android
 
@@ -103,12 +103,22 @@ functionality as the other pre-existing Android issue types.
 - Fixed: Timeouts when changing SDK settings of large fleets
 - SDK version
   [4.8.0](https://github.com/memfault/bort/blob/master/CHANGELOG.md#v480---july-17-2023)
-  was released. Some highlights:
+  and
+  [4.8.1](https://github.com/memfault/bort/blob/master/CHANGELOG.md#v481---july-26-2023)
+  were released. Some highlights:
   - Added: HRT battery metrics (e.g. summary of per-app battery usage)
   - Added: Support for capturing SELinux violations
-    [without bugreports](/docs/android/android-bort#collection-types---bug-reports-and-caliper)
+    [without bugreports](https://docs.memfault.com/docs/android/android-bort#collection-types---bug-reports-and-caliper)
   - Improved:
-    [OTA download/install constraint customization](/docs/android/android-ota-update-client/#customizing-the-ota-update-client)
+    [OTA download/install constraint customization](https://docs.memfault.com/docs/android/android-ota-update-client/#customizing-the-ota-update-client)
+  - Improved: OTA app will now try to stay running (using a `JobScheduler` job,
+    and optionally a foreground service) while downloading
+    [A/B updates](https://source.android.com/docs/core/ota/ab#life-of-an-a-b-update).
+  - Improved: OTA app will now recover if killed while `UpdateEngine` is
+    downloading an
+    [A/B update](https://source.android.com/docs/core/ota/ab#life-of-an-a-b-update)
+    (using a periodic job which runs every 15 minutes).
+  - Made `libmflt-structuredlog` a Soong module.
 
 ## Linux
 
@@ -120,7 +130,7 @@ functionality as the other pre-existing Android issue types.
   [1.5.0](https://github.com/memfault/memfault-linux-sdk/blob/kirkstone/CHANGELOG.md#150---2023-07-18)
   was released. Some highlights:
   - Added: SDK support for [Fleet Sampling](/docs/platform/fleet-sampling/)
-  - Added: `memfaultd` now exposes a local http endpoint to receive metrics and
+  - Added: `memfaultd` now exposes a local http endpoint to receive metrics and
     will upload them as MAR files
   - Improved: Data transfers to use the MAR (Memfault Archive) format, including
     heartbeats messages which were previously uploaded directly by collectd to
@@ -130,5 +140,5 @@ functionality as the other pre-existing Android issue types.
 
 - CLI version [1.0.2](https://pypi.org/project/memfault-cli/1.0.2/) was
   released. Some highlights:
-  - Fixed: Bug where `upload-yocto-symbols` would fail when some files in the
+  - Fixed: Bug where `upload-yocto-symbols` would fail when some files in the
     tarballs provided did not have the read permission set.
