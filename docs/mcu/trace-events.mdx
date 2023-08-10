@@ -63,7 +63,7 @@ Note that it is perfectly fine to use the same reason in different places if
 that makes sense in the context of your code. Because the program counter and
 return address are captured in the trace event, you will be able to see the 2
 topmost frames (function name, source file and line) in Memfault's Issue UI and
-distinguish between the two.
+distinguish between the different call sites.
 
 For test purposes, you can add a CLI command that logs trace events using
 different methods:
@@ -77,8 +77,8 @@ void test_trace_event_cli_cmd(void) {
     // 1. basic trace event- call site information and Trace Event Reason code
     MEMFAULT_TRACE_EVENT(test);
 
-    // 2. trace event with status code (i.e error code returned from stack),
-    // providing additional context to the Trace Event
+    // 2. trace event with a status code (i.e error code returned from stack)
+    // to manually group events.
     MEMFAULT_TRACE_EVENT_WITH_STATUS(test, 0xdeadbeef);
 
     // 3. trace event with a log of arbitrary data
@@ -106,26 +106,34 @@ For details on the trace event macros, see the
 
 ### Trace Event Variants
 
-As shown above, there are a few different types of Trace Events available.
+As shown above, there are 3 different types of Trace Events available.
 
-1. `MEMFAULT_TRACE_EVENT()` - a simple trace event, applying the Custom Trace
+1. `MEMFAULT_TRACE_EVENT(reason)` - a trace event with just a custom Trace
    Reason
-2. `MEMFAULT_TRACE_EVENT_WITH_STATUS()` - a trace event including an arbitrary
-   user data value
-3. `MEMFAULT_TRACE_EVENT_WITH_LOG()` - a trace event including a `printf`-like
-   string (the formatter will use [Compact Logs](/docs/mcu/compact-logs) if
-   enabled and supported on the platform).
+2. `MEMFAULT_TRACE_EVENT_WITH_STATUS(reason, status_code)` - a trace event with
+   a custom Trace Reason and arbitrary user data value
+3. `MEMFAULT_TRACE_EVENT_WITH_LOG(reason, format, args)` - a trace event with a
+   `printf`-like format for the log string. The formatter will use
+   [Compact Logs](/docs/mcu/compact-logs) if enabled and supported on the
+   platform).
 
-Trace Events, like Coredumps, are de-duplicated to assign multiple Trace Events
-to the same Issue. The de-duplication works as follows:
+Trace Events, like Coredumps, are grouped together so that similar Trace Events
+are associated with the same Issue.
 
-- Trace Events with the same Reason (and same Status code or no Status code) and
-  same call frame (function where the Trace is called) will be de-duplicated
-- Trace Events with the same Reason, Status code, and call frame, but different
-  log message, will be de-duplicated. The log message is available from the
-  individual Trace view.
-- Trace Events with the same Reason and a different Status code will **not** be
-  de-duplicated
+- `MEMFAULT_TRACE_EVENT` events with the same Reason and backtrace will be
+  grouped together.
+- `MEMFAULT_TRACE_EVENT_WITH_STATUS` events with the same Reason, the same
+  Status code, and the same backtrace are grouped together.
+- `MEMFAULT_TRACE_EVENT_WITH_LOG` with the same Reason and backtrace will be
+  grouped together. The log is **not** used for grouping. `MEMFAULT_TRACE_EVENT`
+  and `MEMFAULT_TRACE_EVENT_WITH_LOG` events may be grouped together if their
+  reason and backtrace are the same, regardless of the log.
+
+It is recommended to use `MEMFAULT_TRACE_EVENT_WITH_STATUS()` to explicitly
+group events (with the same Reason and backtrace) together if every different
+status code represents a different issue. Otherwise prefer
+`MEMFAULT_TRACE_EVENT_WITH_LOG()` if the only desire is to add more information
+to the trace event.
 
 ### Recording Trace Events from Interrupts
 
