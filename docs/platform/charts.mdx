@@ -77,6 +77,7 @@ upload data for a given metric before a chart for that metric can be created.
 | Mean         | Arithmetic mean of all readings.               |
 | Max          | The highest reading received.                  |
 | Min/Mean/Max | All of the above combined into a single chart. |
+| Percentiles  | Distribution of values.                        |
 | Count        | Number of times a value was received.          |
 | Sum          | Sum of all readings.                           |
 
@@ -90,6 +91,7 @@ For more information about adding metrics to your devices:
 - Bare Metal/RTOS: see the [Metrics Guide](https://mflt.io/embedded-metrics)
 - Android: update to the 3.0+ version of the
   [Bort SDK](https://mflt.io/android-bort-sdk)
+- Linux: see the [Metrics Guide](/docs/linux/metrics)
 
 ### Metric Charts by Cohort or Software Version
 
@@ -101,8 +103,9 @@ chart, you gain the ability to examine a specific metric for a particular
 population across all time, providing a comprehensive view that uncovers
 valuable insights into long-term trends and patterns.
 
-Please note that this particular type of chart supports only the Min/Mean/Max
-aggregation method.
+Please note that this particular type of chart only supports the Min/Mean/Max,
+and percentiles aggregation methods. The percentiles chart is limited to 3
+months of data.
 
 To create a Metric Chart by Population, select **Rollup -> By Cohort or Software
 Version** while creating the chart.
