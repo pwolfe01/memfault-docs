@@ -13,7 +13,7 @@ Traces are logically grouped into an Issue, based on the signature of the Trace.
 In other words, a Trace is a single occurrence of a problem and an Issue is a
 group of Traces manifesting the same problem.
 
-### De-Duplication of Traces into Issues
+### Grouping Traces into Issues
 
 A Trace's signature is a SHA256 hash of various pieces of information generated
 by the device at the time the Trace was captured. These pieces of information
@@ -21,11 +21,11 @@ include, but are not limited to, the error code, active thread, the backtrace of
 the active thread, the software type running, and other attributes provided at
 the time of the Trace.
 
-The process in which Memfault groups Traces into Issues is constantly being
-improved over time. During such updates to our algorithms, new Issues might be
-created that seem similar to old ones but now appear as multiple Issues. In
-these instances, you can make the decision to merge the issues so that future
-Traces will be grouped into only a single parent Issue.
+Memfault's Trace processing is constantly being improved and updated over time.
+After an update to our trace signature algorithms, new Issues might be created
+that seem similar to old ones but now appear as multiple Issues. In these
+instances, you can make the decision to merge the issues so that future Traces
+will be grouped into only a single parent Issue.
 
 A similar occurrence can take place in a customer's code base. Let's take the
 example below, which shows two backtraces, A and B.
@@ -47,7 +47,7 @@ Backtrace B
 
 If a backtrace for a Trace changed from A to B between two releases, two Issues
 would likely be created. This is because the backtraces changed, and Memfault
-can not be 100% sure they are the same bug. The best practice is to merge the
+cannot be 100% sure they are the same bug. The best practice is to merge the
 Issues in this scenario.
 
 ## Issue States
@@ -55,15 +55,24 @@ Issues in this scenario.
 There are four states an Issue can be in: Unresolved, Resolved, Merged, and
 Muted.
 
-All Issues are Unresolved by default.
+All Issues are Unresolved by default when created.
 
 A Resolved Issue is intended for Issues that are believed to be fixed. Memfault
 will automatically alert you of a regression if this Issue is seen on a later
 software version. See more below.
 
-A Muted Issue is intended for Issues that are not intended to be fixed or are
-known and accepted behavior. Once an Issue is Muted, it will not reopen to
-Unresolved unless the Issue State is manually changed.
+A Merged Issue has been merged into another Issue (the "parent"), and its Traces
+have been moved to the parent Issue. The Merged Issue's detail page provides
+very limited information and displays a link to the parent Issue's detail page,
+where more information is consolidated. An Issue's "child" Issues can be viewed
+in the Merged tab of the Issue detail page. Any new Traces that would have been
+grouped under a Merged Issue will instead be grouped under its parent Issue. A
+Merged Issue can also be un-merged manually, which: restores its detail page,
+moves back its original Traces, and groups relevant new Traces under it.
+
+A Muted Issue is not intended to be fixed or represents known and accepted
+behavior. Once an Issue is Muted, it will not reopen to Unresolved unless the
+Issue State is manually changed.
 
 Once an issue has been Resolved or Muted, it will no longer appear in the
 default Issue list filter named **Unresolved**. To see a list of unresolved and
@@ -93,6 +102,23 @@ resolved, and a red outline if the issue has been muted.
     alt="/img/docs/platform/issue-mgmt-resolving-ui.gif"
   />
 </p>
+
+## Bulk Issue Merge
+
+In addition to the Merge button on the Issue detail page, Issues can also be
+merged in bulk from the Issue list page. After adding a filter for software
+type, the Bulk Actions dropdown will be enabled, with a preview count of the
+number of selected Issues. From there, you can select the Bulk Merge action to
+merge the selected Issues together. The oldest selected Issue will become the
+parent of all the others.
+
+Issues can be selected for Bulk Merge in multiple ways:
+
+- Execute an Issue search using the filter panel on the Issue list page
+- Select individual Issues using the checkboxes in the Issue list table
+
+Note: a software type filter _MUST_ be applied in order to use Bulk Merge. Bulk
+actions across different software types are currently not supported.
 
 ## Automatic Issue reopening upon regression
 
