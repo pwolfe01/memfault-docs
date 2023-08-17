@@ -24,12 +24,62 @@ For standard single-image MCU OTA, please see the guide at
 
 ## Background
 
-## General Considerations
+Memfault's OTA solution is designed to be flexible enough to support a wide
+range of use cases, from simple single-image OTA to complex multi-component OTA.
+
+OTA configuration depends heavily on the device's OTA requirements. For example,
+a device with a single MCU and a single image will have different requirements
+than a device with multiple MCUs and multiple images, and a device that requires
+delta upgrades will have different requirements as well.
+
+The following topics cover some of the more advanced OTA use cases that Memfault
+supports.
+
+## OTA & Device Version Specifiers
+
+:::note
+
+More information on Memfault versioning can be found at
+[Software Versioning](/docs/platform/software-version-hardware-version).
+
+:::
+
+Here are Memfault's recommendations around versioning:
+
+- Device `software_version` identifiers should use
+  [SemVer 2.0](https://semver.org) versioning when possible
+- Reported `software_version` should _exactly_ match the OTA Release Version
+  name
+
+Note that SemVer 2.0 "build metadata" (`1.0.0+abcd`) is not supported by
+default, but needs to be opted into by contacting Memfault Support at
+support@memfault.com .
+
+For tying Source Control versions to OTA Releases, Memfault recommends using the
+following strategies:
+
+- **Recommended:** use a tag in your Source Control system that matches the OTA
+  Release Version name (eg `git tag -a -m=1.0.0`)
+- upload the Source Control commit hash as the OTA Release `revision` field (eg
+  `git rev-parse HEAD`), either from the Web UI or the Memfault CLI.
+
+<p align="center">
+  <img
+    src="/img/docs/mcu/source-control-version-ota.png"
+    border="1"
+    alt="/img/docs/mcu/source-control-version-ota.png"
+  />
+</p>
+
+## Downgrading & Backwards Compatibilty
+
+<!--
+  - migrating on-device configs/file systems
+  -->
 
 <!--
   - recommend if at all possible to do single monolithic images
   - forwards/backwards compatibility in multi-component systems
-  - migrating on-device configs/file systems
  -->
 
 ## Hardware Version Specific Payloads
@@ -55,9 +105,30 @@ sequenceDiagram
   Memfault->>+B: 200 OK, payload=hw2.bin
 ```
 
-The payloads are attached to the release
+The payloads are uploaded to Memfault with the matching `hardware_version`
+specifier, either via the Web UI or the Memfault CLI:
 
-## Strategies for Multi-Component OTA
+<p align="center">
+  <img
+    src="/img/docs/mcu/hardware-version-ota.png"
+    border="1"
+    alt="/img/docs/mcu/hardware-version-ota.png"
+  />
+</p>
+
+```bash
+# Example uploading an OTA payload for the "mp" hardware version
+$ memfault --org-token $ORG_TOKEN \
+           --org acme-inc --project smart-sink \
+           upload-ota-payload \
+           --hardware-version mp \
+           --software-type app-fw \
+           --software-version 1.0.1 \
+           --revision 89335ffade90ff7697e2ce5238bd4c68978b6d6e \
+           build/stm32-fw.bin
+```
+
+## Multi-Component OTA
 
 <!--
 - attributes for subcomponent sw versions
@@ -75,6 +146,55 @@ The payloads are attached to the release
 
 <!-- requires multiple project keys on the requesting client -->
 
-## Strategies for Fallback OTA
+## Fallback OTA
 
 <!-- separate project for "factory fresh" image deployments? -->
+
+## Delta Firmware Updates
+
+In the context of MCU devices, Delta Firmware Updates can be pre-computed before
+uploading to Memfault.
+
+This enables specific OTA paths, for example a Delta Release that upgrades from
+`1.0.0` to `1.0.1`:
+
+```mermaid
+sequenceDiagram
+  participant A as Device
+  participant Memfault
+
+  A->>+Memfault: GET /releases/latest?current_version=1.0.0
+  Memfault->>+A: 200 OK, payload=1.0.0-1.0.1.delta
+
+  A->>+A: Install 1.0.0-1.0.1.delta
+```
+
+See more documentation on Delta Release in the
+[Platform OTA manual](/docs/platform/ota/#delta-releases)
+
+Memfault recommends that the device support both Delta and Full OTA, in the case
+where a Delta payload is not practical.
+
+Due the nature of pre-computed Delta payloads, each release can generate `n`
+Delta Releases:
+
+| Release Version | Delta Releases                              |
+| --------------- | ------------------------------------------- |
+| 1.0.0           | 1.0.0-1.0.1                                 |
+| 1.0.1           | 1.0.0-1.0.2<br/>1.0.1-1.0.2                 |
+| 1.0.2           | 1.0.0-1.0.3<br/>1.0.1-1.0.3<br/>1.0.2-1.0.3 |
+| ...             | ...                                         |
+
+If it's necessary (or desirable) to limit the number of Delta Releases, you can
+use Memfault's data on the number of devices on each release to determine which
+Delta update paths should be generated:
+
+<p align="center">
+  <img
+    src="/img/docs/mcu/cohort-version-distribution.png"
+    border="1"
+    alt="/img/docs/mcu/cohort-version-distribution.png"
+  />
+</p>
+For example, only generate Delta Releases for the 5 releases with the most devices,
+and apply a Full Release for all devices on less popular releases.
