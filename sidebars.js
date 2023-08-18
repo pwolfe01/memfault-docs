@@ -216,6 +216,7 @@ module.exports = {
                 "best-practices/metrics-for-battery-life",
                 "best-practices/fleet-reliability-metrics-crash-free-hours",
                 "best-practices/low-bandwidth-devices",
+                "best-practices/android-battery-debugging",
             ],
         },
         {
