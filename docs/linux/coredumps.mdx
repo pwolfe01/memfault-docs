@@ -239,8 +239,9 @@ administrator.
 The format of your `--dbg-image` may differ from that of your `--image`.
 Supported formats are `.tar`, `.tar.bz2`, `.tar.gz` and `.tar.xz`.
 
-It's recommended that you source the Yocto build environment script using
-`source oe-init-build-env` before running `upload-yocto-symbols`.
+`memfault` requires `bitbake` to upload the symbols. It's recommended that you
+source the Yocto build environment script using `source oe-init-build-env`
+before running `upload-yocto-symbols`.
 
 ### Manual upload
 
