@@ -243,12 +243,23 @@ Supported formats are `.tar`, `.tar.bz2`, `.tar.gz` and `.tar.xz`.
 source the Yocto build environment script using `source oe-init-build-env`
 before running `upload-yocto-symbols`.
 
+:::tip
+
+Read docs on [CI and authentication][docs-ci-auth] in order to obtain
+credentials that you can use in your build environment or in continuous
+integration.
+
+:::
+
 ### Manual upload
 
 If you're not using Yocto, you can manually upload symbols using our [REST
 API][api-docs-upload-symbols].
 
 <p>
+
+:::note
+
   Another option is to upload the symbol files individually using the Memfault
   Web Application. Open <b>Software -> Symbol Files</b> and click on{" "}
   <b>Upload Symbol File</b>, or simply{" "}
@@ -261,15 +272,11 @@ API][api-docs-upload-symbols].
   Yocto-generated debug image (for example in <code>.tar.bz2</code>
   format) contains stripped binaries and (separately) debug binaries. To upload them
   to Memfault, you'll need to use the Memfault CLI as shown above.
-</p>
-
-:::tip
-
-Read docs on [CI and authentication][docs-ci-auth] in order to obtain
-credentials that you can use in your build environment or in continuous
-integration.
 
 :::
+
+</p>
+
 
 ## Set `enable_data_collection`
 
