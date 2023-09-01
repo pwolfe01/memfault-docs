@@ -4,6 +4,9 @@ title: RTOS Threads Analysis
 sidebar_label: RTOS Analysis
 ---
 
+import ProjectAwareTabs from "@site/src/components/ProjectAwareTabs";
+import TabItem from "@theme/TabItem";
+
 Memfault automatically detects what RTOS your system is running. For uploaded
 coredumps, it will attempt to extract backtraces for all threads in the system
 and optionally determine what state each thread is in and the stack usage high
@@ -56,6 +59,122 @@ and relevant linker flags.
 To enable stack usage high water marking, the `configCHECK_FOR_STACK_OVERFLOW`
 configuration option must be enabled and the _full_ stacks for each thread must
 be captured as well.
+
+### How to Capture the Required Variables
+
+The
+[`memfault_freertos_ram_regions.c`](https://github.com/memfault/memfault-firmware-sdk/blob/master/ports/freertos/src/memfault_freertos_ram_regions.c)
+file contains details on selectively capturing the required variables.
+
+:::note
+
+Note that this is only necessary if all of RAM is not captured as part of the
+coredump (i.e. when coredump storage and bandwidth is limited).
+
+:::
+
+The strategy has 2 parts:
+
+1. update linker script to enclose the needed variables in a known region
+2. update `memfault_platform_coredump_get_regions()` to include that region's
+   data in a coredump region
+
+See example implementations below.
+
+<ProjectAwareTabs
+  defaultValue="GCC"
+  queryString="freertos-ram-regions"
+>
+  <TabItem value="GCC">
+
+Update the linker script (typically a file that ends with the `.ld` extension)
+to enclose the necessary `.bss` symbols with some exported symbols:
+
+```linker-script
+.bss (NOLOAD) :
+{
+    _sbss = . ;
+    __bss_start__ = _sbss;
+    __memfault_capture_bss_start = .;
+    /* Place all objects from the FreeRTOS timers and tasks modules here.
+       Note that some build systems will use 'timers.o' as the object
+       file name, and some may use variations of 'timers.c.o' or
+       'timers.obj' etc. This pattern should capture all of them. */
+     *tasks*.o*(.bss COMMON .bss*)
+     *timers*.o*(.bss COMMON .bss*)
+    __memfault_capture_bss_end = .;
+```
+
+And then update `memfault_platform_coredump_get_regions()` to include those
+variables:
+
+```c
+const sMfltCoredumpRegion *memfault_platform_coredump_get_regions(
+    const sCoredumpCrashInfo *crash_info, size_t *num_regions) {
+  int region_idx = 0;
+
+  // any higher priority regions would go here, i.e. active stack
+
+  // collect the FreeRTOS timer and task variables required for RTOS decode
+  extern uint32_t __memfault_capture_bss_start;
+  extern uint32_t __memfault_capture_bss_end;
+  const size_t memfault_region_size = (uint32_t)&__memfault_capture_bss_end -
+      (uint32_t)&__memfault_capture_bss_start;
+
+  s_coredump_regions[region_idx] = MEMFAULT_COREDUMP_MEMORY_REGION_INIT(
+    &__memfault_capture_bss_start, memfault_region_size);
+  region_idx++;
+
+  // remaining regions would go here. typically the
+  // 'memfault_freertos_get_task_regions()' helper would be used to capture the
+  // task data.
+  region_idx += memfault_freertos_get_task_regions(&s_coredump_regions[region_idx],
+      MEMFAULT_ARRAY_SIZE(s_coredump_regions) - region_idx);
+  // remaining regions
+```
+
+  </TabItem>
+
+  <TabItem value="IAR">
+
+Update the linker script (typically a file with a `.icf` extension) to include
+this line:
+
+```linker-script
+define block memfault_freertos { section .bss* object *tasks*.o*, section .bss* object *timers*.o* };
+```
+
+And then update `memfault_platform_coredump_get_regions()` to include that
+block:
+
+```c
+// In the source file where memfault_platform_coredump_get_regions is defined add the following snippet
+// Be sure to include additional sMfltCoredumpRegion entries in your regions array for the FreeRTOS regions
+// created by the linker script and helper function
+const sMfltCoredumpRegion *memfault_platform_coredump_get_regions(
+    const sCoredumpCrashInfo *crash_info, size_t *num_regions) {
+  int region_idx = 0;
+
+  // any higher priority regions would go here, i.e. active stack
+
+  // collect the block defined in the linker script
+  const void *memfault_freertos_region_start = __section_start("memfault_freertos");
+  const size_t memfault_freertos_region_size = __section_size("memfault_freertos");
+  s_coredump_regions[region_idx] = MEMFAULT_COREDUMP_MEMORY_REGION_INIT(
+     memfault_freertos_region_start, memfault_freertos_region_size);
+  region_idx++;
+
+  // remaining regions would go here. typically the
+  // 'memfault_freertos_get_task_regions()' helper would be used to capture the
+  // task data.
+  region_idx += memfault_freertos_get_task_regions(&s_coredump_regions[region_idx],
+      MEMFAULT_ARRAY_SIZE(s_coredump_regions) - region_idx);
+  // remaining regions
+```
+
+  </TabItem>
+
+</ProjectAwareTabs>
 
 ## Zephyr
 
