@@ -130,6 +130,12 @@ function Home() {
                                     </a>
                                 </li>
                                 <li>
+                                    <a href="https://github.com/memfault/memfault-linux-sdk">
+                                        <FiCode />
+                                        Linux SDK
+                                    </a>
+                                </li>
+                                <li>
                                     <a href="https://developer.nordicsemi.com/nRF_Connect_SDK/doc/2.2.0/nrf/samples/nrf9160/memfault/README.html">
                                         <FiCode />
                                         Memfault Module in the nRF Connect SDK

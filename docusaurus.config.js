@@ -116,6 +116,10 @@ module.exports = {
                             label: "Android Bort SDK",
                             href: "https://github.com/memfault/bort",
                         },
+                        {
+                            label: "Linux SDK",
+                            href: "https://github.com/memfault/memfault-linux-sdk",
+                        },
                     ],
                 },
 
