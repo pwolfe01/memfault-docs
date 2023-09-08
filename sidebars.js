@@ -51,15 +51,6 @@ module.exports = {
                 "platform/sso",
                 "platform/jira-integration",
                 /* "platform/bulk-device-upload", */
-                {
-                    label: "Reference",
-                    type: "category",
-                    link: {
-                        type: "doc",
-                        id: "platform/reference-reboot-reason-ids",
-                    },
-                    items: ["platform/reference-reboot-reason-ids"],
-                },
             ],
         },
         {
@@ -230,6 +221,14 @@ module.exports = {
                 "troubleshooting/uploading-symbol-file-is-invalid",
                 "troubleshooting/data-transfer-troubleshooting",
             ],
+        },
+        {
+            label: "Reference",
+            type: "category",
+            link: {
+                type: "generated-index",
+            },
+            items: ["reference/reference-reboot-reason-ids"],
         },
     ],
 };
