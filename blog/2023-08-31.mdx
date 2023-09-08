@@ -1,0 +1,141 @@
+---
+title: August 2023
+---
+
+## **New Data Aggregation for Metric Charts: Percentiles**
+
+Metric Charts now have a new data aggregation available for both chart rollup
+options (by Cohort or Software version, and Over Time). This aggregation is
+called “Percentiles” and will display the data set broken into the 1st, 5th,
+50th, 95th and 99th percentiles. Displaying the metric data as percentiles makes
+it easier to understand the prevalence of behaviors (tracked as metrics) across
+your fleet.
+
+![2023-08-31-Percentiles-Aggregation-Metric-Chart.png](/img/blog/2023-08-31-Percentiles-Aggregation-Metric-Chart.png)
+
+As an example, if you are seeing significant spikes in battery discharge rates
+for a specific software version you can use percentile aggregation to get a
+clearer picture of the scale of this problem. Are these undesirable metric
+readings I am receiving contained to a small set of samples or is this a wide
+scale problem? Conversely, this aggregation should also make it easier to
+understand what “normal” actually looks like across your fleet.
+
+This new aggregation is the default view when creating any new metric chart. You
+can read more about this new data aggregation in our
+[Metric Charts documentation](/docs/platform/charts/#metric-charts).
+
+## Best Practices Guide for Android Battery Debugging
+
+Our Developer Experience team have released a new guide designed to help users
+get the most from Memfault when identifying and debugging battery issue on
+Android devices. This guide provides detail on:
+
+- What data the Android SDK can collect
+- Using metric charts for tracking battery health/performance
+- Setting fleet and device alerts
+- Identifying problem devices
+- Debugging individual devices using Device Timeline
+
+![2023-08-31-Android-Battery-Debugging.png](/img/blog/2023-08-31-Android-Battery-Debugging.png)
+
+The guide takes into account the recently released set of updates to our
+[Android SDK with version 4.8.0](/changelog/#android-sdk-480-more-ota-control-more-metrics-and-more-issue-tracking)
+which included the addition of new battery usage metrics such as per app battery
+usage.
+
+You can read the full guide in the
+[Memfault Best Practices for Android Battery Debugging](/docs/best-practices/android-battery-debugging).
+
+<!-- truncate -->
+
+## General
+
+- Added: New
+  [percentile aggregation option for metric charts](https://app.memfault.com/organizations/-/projects/-/metrics?newMetricChart)
+  ([documentation](/docs/platform/charts#metric-charts))
+- Added: Support for IPv6 on
+  [all Memfault hosted services](https://support.memfault.com/hc/en-us/articles/6524119939357-What-are-the-IP-addresses-URL-domains-ports-and-protocols-required-by-Memfault-)
+  except the marketing site on [memfault.com](http://memfault.com) and uploads
+  to Memfault S3 buckets
+- Added: Support for processing and creating issues from .xed/.xcd files that
+  contain "Mini Coredump" events from the Qualcomm AppsP0 subsystem
+- Added: Copy button in the stack trace threads view to copy function names to
+  the user’s clipboard
+- Added: Documentation on
+  [how to merge issues in bulk](/docs/platform/issue-management/#bulk-issue-merge)
+- Added: Support for IAR + C++ symbol files
+- Added: Optional mode for trace analysis with Qualcomm chipsets to allow the
+  OOM Classifier to fall back to the next largest known allocation site and add
+  an analysis note if the call-site for the largest allocation is unknown
+- Improved: Various UI glitches and improvements (dynamic font sizing for
+  metrics legend items in the timeline tab, better label for selecting all data
+  in a table, prevent async device search errors on page load, change label to
+  `Frame Type` in the stacktrace view, better no data state for charts, more
+  consistent formatting in the memory regions panel, adding a count badge to the
+  Merged Issues tab name, better error message for SSO login failures)
+- Improved: Documentation on
+  [how to deduplicate events with](/docs/mcu/trace-events/#adding-trace-events)
+  &nbsp;`MEMFAULT_TRACE_EVENT_*` macros and clarified that `string_key` for
+  metrics [is case-insensitive](/docs/platform/metrics/#from-the-memfault-app)
+- Improved: Performance for searching across large symbol files for
+  [Globals & Statics](/docs/platform/trace-details/#global--static-variables)
+- Improved: The dashboard reboots chart now keeps stable color order for reboot
+  reasons across daily & weekly breakdowns
+- Fixed: If a device does not send a `captured_date`, we set it to the
+  `received_date` instead of a timestamp later in our system processing
+- Fixed: Enable the hex viewer to load very large sections in the browser
+  without crashing, working around an HTML specification limit for element size
+- Fixed: Software version inputs now allow slashes in the text field
+- Changed: The device page now defaults to
+  [the timeline view](/docs/platform/introduction/#metrics) for all device
+  types. The MCU metrics tab is now removed
+
+## MCU
+
+- Added: Documentation on
+  [how to capture the required RTOS thread state variables](/docs/mcu/rtos-analysis/#how-to-capture-the-required-variables)
+  for analysis
+- SDK versions
+  [1.1.3](https://github.com/memfault/memfault-firmware-sdk/blob/master/CHANGES.md#changes-between-memfault-sdk-112-and-113---aug-8-2023)
+  &
+  [1.2.0](https://github.com/memfault/memfault-firmware-sdk/blob/master/CHANGES.md#changes-between-memfault-sdk-113-and-120---aug-30-2023)
+  were released. Some highlights:
+  - Added:
+    [an optional mode for Zephyr](https://github.com/memfault/memfault-firmware-sdk/blob/master/ports/zephyr/include/memfault/ports/zephyr/http.h)
+    to create and open the HTTP socket in separate function calls, if the user
+    needs to set additional socket options before connecting.
+    Fixes [#52](https://github.com/memfault/memfault-firmware-sdk/issues/52) -
+    thanks to [@anicare-tero](https://github.com/anicare-tero) for posting this
+    🎉
+  - Added: A demo CLI component for the Silicon Labs emblib port. Check out
+    our [Simplicity Studio example app](https://github.com/memfault/simplicity-studio-example) for
+    usage
+  - Improved: Support using a different identifier for the GNU build id symbol.
+    Use the `MEMFAULT_GNU_BUILD_ID_SYMBOL` defined
+    in `memfault_platform_config.h` to override the default. Thanks to
+    [@JordanYates](https://github.com/JordanYates) for posting this change
+    in [#60](https://github.com/memfault/memfault-firmware-sdk/pull/60) 🎉
+  - Fixed: Bugs and warnings involving older Zephyr header paths.
+    Resolves [#62](https://github.com/memfault/memfault-firmware-sdk/issues/62) and [#57](https://github.com/memfault/memfault-firmware-sdk/issues/57).
+    Thanks [@JordanYates](https://github.com/JordanYates) and
+    [@YHusain1](https://github.com/YHusain1) for reporting these issues
+
+## Android
+
+- Added: New best practices document for
+  [debugging Android battery life issues](/docs/best-practices/android-battery-debugging)
+- We did not publish a new version of the
+  [Android SDK](https://github.com/memfault/bort/) in August.
+
+## Linux
+
+- Improved: Documentation on
+  [why it’s recommended to source the Yocto build environment script](/docs/linux/coredumps/#automatic-upload-with-yocto)
+  (`bitbake` is required to upload the symbols)
+- We did not publish a new version of the
+  [Linux SDK](https://github.com/memfault/memfault-linux-sdk/) in August.
+
+## CLI
+
+- We did not publish a new version of the
+  [memfault-cli](https://pypi.org/project/memfault-cli/) in August.
