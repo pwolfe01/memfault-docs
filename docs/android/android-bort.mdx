@@ -28,6 +28,14 @@ The Bort SDK supports two data collection systems:
 We do not recommend collecting Bug Reports from production devices, because of
 the collection overhead, upload size and privacy implications.
 
+:::info
+
+By default, periodic Bug Report collection is disabled, and all Caliper data
+collection is enabled. This can be configured in the Memfault dashboard - see
+[Features and Configuration](#features-and-configuration).
+
+:::
+
 |                          | Bug Reports                                                                                                                              | Caliper _(Available from Bort 3.0)_                                                                                                                                                                                                         |
 | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Collection mechanism** | Pull: collects all system state, metrics & logs at a point in time. Events/metrics may be missed if they occur long enough ago.          | Event-driven: collects crashes as they occur using DropBoxManager, periodically collecting logs and metrics.                                                                                                                                |
