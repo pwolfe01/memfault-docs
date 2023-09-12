@@ -165,3 +165,42 @@ programs you want to be able to debug. See this
 for more info.
 
 <https://interrupt.memfault.com/blog/best-and-worst-gcc-clang-compiler-flags#-flto>
+
+## "Incomplete stacktrace" warning when viewing a coredump
+
+When viewing the stacktrace of threads captured in a coredump, a warning may
+show up indicating that the stacktrace is incomplete. This warning means that
+there were more stack frames available than space allocated to store them.
+
+<ImageFigure
+  src="/img/docs/mcu/incomplete_stacktrace.png"
+  alt="A thread backtrace with an orange alert symbol and the words 'Incomplete stacktrace'"
+  title="Incomplete stacktrace alert"
+>
+  Incomplete stacktrace alert.
+</ImageFigure>
+
+To get more stack frames, increase the stack size to collect for each thread in
+`memfault_platform_coredump_get_regions()`. For custom implementations of
+`memfault_platform_coredump_get_regions()`, modify the function directly to
+increase the stack size to collect for the threads of interest.
+
+For projects using a `memfault_platform_coredump_get_regions()` implementation
+provided by the SDK:
+
+- **Zephyr port**: increase `CONFIG_MEMFAULT_COREDUMP_STACK_SIZE_TO_COLLECT` in
+  your `prj.conf`. If it is not already being set in the `prj.conf`, choose a
+  value greater than the default (see
+  [`ports/zephyr/Kconfig`](https://github.com/memfault/memfault-firmware-sdk/blob/master/ports/zephyr/Kconfig)
+  for the default). Setting `CONFIG_MEMFAULT_COREDUMP_FULL_THREAD_STACKS=y` is
+  also an option, which will cause the full stacktrace to be collected for each
+  thread, thus overriding the value set by
+  `CONFIG_MEMFAULT_COREDUMP_STACK_SIZE_TO_COLLECT`. Note that setting
+  `CONFIG_MEMFAULT_COREDUMP_FULL_THREAD_STACKS=y` will likely increase the size
+  of coredumps without a strict ceiling on the size of the memory regions
+  allocated for thread stacks.
+- **FreeRTOS-based ports**: increase
+  `MEMFAULT_PLATFORM_ACTIVE_STACK_SIZE_TO_COLLECT` to increase the stack size
+  collected for the active thread only and
+  `MEMFAULT_PLATFORM_TASK_STACK_SIZE_TO_COLLECT` for the rest of the threads.
+- **Ram-backed port**: increase `MEMFAULT_PLATFORM_ACTIVE_STACK_SIZE_TO_COLLECT`
