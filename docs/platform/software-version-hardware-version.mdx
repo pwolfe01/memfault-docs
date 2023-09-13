@@ -55,8 +55,19 @@ implement as part of the integration.
 The Software Type is used to identify the separate pieces of software running on
 a given device. This can be images running on different MCUs (i.e `main-mcu-app`
 & `bluetooth-mcu`) or different images running on the same MCU (i.e
-`main-mcu-bootloader` & `main-mcu-app`). You can also use Software Types to
-distinguish between build variants (i.e. `main-mcu-dvt` & `main-mcu-evt`).
+`main-mcu-bootloader` & `main-mcu-app`).
+
+:::caution
+
+It is not recommended to use Software Types to distinguish between software
+build _variants_ (i.e. `main-mcu-development` & `main-mcu-prod`), because this
+does not play nicely with Memfault's concept of "Primary Software Type" (see
+below). We recommend encoding build variants into the Software Version instead,
+by suffixing the version (i.e. `1.0.0-development`).
+
+:::
+
+### Primary Software Type
 
 Memfault's platform uses the notion of "Primary Software Type" to identify the
 main software version for a device.
@@ -70,7 +81,9 @@ modified later from the Settings page. An example:
 
 The **Primary Software Type** is used to populate the Software Version field on
 the individual Device page, as well as when filtering for the device, and how it
-appears in various fleet-level charts.
+appears in various fleet-level charts. When [Memfault OTA][ota] is used to
+deploy software, the versions of OTA Releases are also expected to be derived
+from Software Versions of the Primary Software Type.
 
 You can configure the **Primary Software Type** in Settings –> Hardware –>
 Create Hardware Version.
@@ -81,6 +94,8 @@ Software Types must be between 1 and 128 characters long and can only contain
 the following characters: `a-z`, `A-Z`, `0-9` and `-_.+:`.
 
 :::
+
+[ota]: /docs/platform/ota
 
 ### MCU
 
