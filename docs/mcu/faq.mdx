@@ -5,6 +5,8 @@ sidebar_label: Frequently Asked Questions
 description: "Common questions when integrating the Memfault Firmware SDK"
 ---
 
+import incompleteStacktrace from "@site/static/img/docs/mcu/incomplete_stacktrace.png";
+
 ## Linker "Duplicate definition" error for `HardFault_Handler` etc.
 
 The Memfault SDK includes definitions for several exception handlers, for
@@ -173,9 +175,10 @@ show up indicating that the stacktrace is incomplete. This warning means that
 there were more stack frames available than space allocated to store them.
 
 <ImageFigure
-  src="/img/docs/mcu/incomplete_stacktrace.png"
+  src={incompleteStacktrace}
   alt="A thread backtrace with an orange alert symbol and the words 'Incomplete stacktrace'"
   title="Incomplete stacktrace alert"
+  pixelRatio={1.5}
 >
   Incomplete stacktrace alert.
 </ImageFigure>
