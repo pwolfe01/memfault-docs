@@ -1,4 +1,3 @@
-
 .figure {
     margin: 2em 1em 3em;
 }
@@ -24,4 +23,5 @@
     color: var(--ifm-color-content-secondary);
     font-size: 0.9em;
     margin-top: 12px;
+    text-align: center;
 }
