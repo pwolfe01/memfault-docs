@@ -37,7 +37,40 @@ Ingestion of Reboots Events may be
 
 :::
 
-### Tracking specific reset reasons
+### Platform-specific Reboots
+
+Each platform has its own capabilities in terms of collecting information on a
+reboot. To capture the reboot reason, your platform should implement
+`memfault_reboot_reason_get()`. On boot, the MCU SDK uses this function to
+determine a reboot reason from your platform's hardware. Then, it calls
+`memfault_reboot_tracking_boot()` to write the reason to the noinit region of
+RAM.
+
+The MCU SDK implements `memfault_reboot_reason_get()` for several platforms,
+including:
+
+- Atmel SAML1x
+- ESP32 w/ ESP-IDF
+- ESP8266 w/ ESP8266 SDK
+- nRF Connect SDK supported devices
+- Infineon PSoC 6
+- Dialog DA145xx/DA1468x/DA1469x
+- Mynewt supported devices
+- nRF5 SDK supported devices
+
+If your platform is not included in the above list, you will need to implement
+`memfault_reboot_reason_get()`. There are a few points to keep in mind when
+implementing this function for your platform:
+
+- The function should clear the reboot reason from the hardware before
+  completing. This guarantees that the next boot will receive the next reboot
+  reason.
+- The function should try to classify reboot reasons as specifically as
+  possible. Any reason marked as unknown (`kMfltRebootReason_Unknown`) or one of
+  the error reasons will cause the reboot to be classified as an "unexpected
+  reboot".
+
+### Imminent Reboots
 
 Sometimes resets take place due to software initiated behavior (i.e firmware
 update, button resets, etc). Recording when and where these types of resets take
@@ -67,40 +100,21 @@ void ota_finalize_and_reboot(void) {
 }
 ```
 
+:::note Reboot Precedence
+
+On boot, `memfault_reboot_tracking_boot()` will always be called, but if a
+reboot reason was marked with `memfault_reboot_tracking_mark_reset_imminent()`,
+that reboot reason will take precedence over the reboot reason that is found and
+recorded on boot with `memfault_reboot_reason_get()` and
+`memfault_reboot_tracking_boot()`.
+
+:::
+
 ### Reboot Reason IDs
 
 The full list of reboot reason values can be found in the source file
 [`reboot_reason_types.h`][reboot_reason_types.h] or in [this
 reference][docs-reboot-reason-ids].
-
-### Platform Implementation
-
-Each platform has its own capabilities in terms of collecting information on a
-reboot. To capture the reboot reason, your platform should implement
-`memfault_reboot_reason_get`. The MCU SDK uses this function to determine a
-reboot reason from your platform's hardware. The MCU SDK implements
-`memfault_reboot_reason_get` for several platforms, including:
-
-- Atmel SAML1x
-- ESP32 w/ ESP-IDF
-- ESP8266 w/ ESP8266 SDK
-- nRF Connect SDK supported devices
-- Infineon PSoC 6
-- Dialog DA145xx/DA1468x/DA1469x
-- Mynewt supported devices
-- nRF5 SDK supported devices
-
-If your platform is not included in the above list, you will need to implement
-`memfault_reboot_reason_get`. There are a few points to keep in mind when
-implementing this function for your platform:
-
-- The function should clear the reboot reason from the hardware before
-  completing. This guarantees that the next boot will receive the next reboot
-  reason.
-- The function should try to classify reboot reasons as specifically as
-  possible. Any reason marked as unknown (`kMfltRebootReason_Unknown`) or one of
-  the error reasons will cause the reboot to be classified as an "unexpected
-  reboot".
 
 For more information please see the
 [MCU SDK](https://github.com/memfault/memfault-firmware-sdk) source code.
