@@ -87,13 +87,18 @@ for details on how to upload files to Memfault using the API.
 
 :::note
 
-Only bug reports can be uploaded through the Memfault web application UI at this
-time.
+For Android, only bug reports can be uploaded through the Memfault web
+application UI at this time.
 
 :::
 
-You may upload individual bug reports via the Memfault UI by navigating to the
-**Issues** page and selecting **Manual Upload**.
+Bug reports can be captured either using the `adb bugreport` command or via the
+Developer Options menu on the device. For more information, please refer to the
+[Android documentation](https://developer.android.com/studio/debug/bug-report).
+
+Once you have captured a BugReport.zip file from a device, you can upload it via
+the Memfault UI by navigating to the **Issues** page and selecting **Manual
+Upload**.
 
 <p align="center">
   <img

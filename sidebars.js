@@ -157,6 +157,7 @@ module.exports = {
                 "linux/quickstart",
                 "linux/quickstart-raspberrypi",
                 "linux/integration-guide",
+                "linux/uploading-linux-diagnostics",
                 {
                     type: "category",
                     link: {
