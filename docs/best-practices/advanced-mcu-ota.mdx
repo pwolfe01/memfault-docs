@@ -124,6 +124,17 @@ $ memfault --org-token $ORG_TOKEN \
            build/stm32-fw.bin
 ```
 
+## Multiple OTA "Flavors"
+
+<!--
+  - different OTA payloads for different device configurations, even with the same hardware
+  - eg "algorithm a" vs "algorithm b"
+  - can be done with cohorts to deploy targeted OTA payloads, eg "1.2.3+algo-a" vs "1.2.3+algo-b"
+  - OR can be done with hardware_version, but device has to have settings to opt-in to the correct
+    payload, since the device requests the ota version
+
+>
+
 ## Multi-Component OTA
 
 <!--
