@@ -133,7 +133,7 @@ $ memfault --org-token $ORG_TOKEN \
   - OR can be done with hardware_version, but device has to have settings to opt-in to the correct
     payload, since the device requests the ota version
 
->
+-->
 
 ## Multi-Component OTA
 
@@ -209,3 +209,12 @@ Delta update paths should be generated:
 </p>
 For example, only generate Delta Releases for the 5 releases with the most devices,
 and apply a Full Release for all devices on less popular releases.
+
+## OTA Release Rollout Process Recommendations
+
+<!--
+  - use a targeted cohort, like `beta` or `internal`, to push OTA to before distributing to production devices
+  - use the "staged release" feature to roll out to a percentage of devices,
+    in steps: for example, 5% -> 25% -> 50% -> 100%, with a delay between each step for verifying stability
+  - especially for new devices, writing down an OTA playbook is a good idea (give example)
+-->
