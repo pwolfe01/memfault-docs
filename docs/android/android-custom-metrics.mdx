@@ -4,6 +4,9 @@ title: Android Custom Metrics
 sidebar_label: Custom Metrics
 ---
 
+import Tabs from "@theme/Tabs";
+import TabItem from "@theme/TabItem";
+
 :::info
 
 Reporting APIs are available from Bort 4.0 onwards.
@@ -59,16 +62,125 @@ configured and used in the Memfault dashboard.
 
 ## Including the Reporting SDK
 
-Custom Metrics can be recorded from any Java/Kotlin application, by including
-the `reporting-lib` library. This library reports metrics to the
-`memfault_structured` system service (The main Bort application is not required
-to be started for every value recorded). The latest version of the library is
-`1.1`.
+Custom Metrics can be recorded from any application on a device, by including
+the appropriate library. Kotlin/Java/C/C++ applications are supported, built
+using Gradle/Make/Soong. Instructions for each build system:
 
-To add the library,
-[follow these instructions](/docs/android/custom-events#add-the-reporting-lib-library).
+<Tabs groupId="build-systems">
+  <TabItem value="gradle" label="Gradle (Kotlin/Java)" default>
+For apps that are build outside of the AOSP build system using Gradle, the
+easiest way to include the `reporting-lib` published on Maven Central.
 
-A C/C++ library will be added in a future release.
+Ensure that Maven Central is included in your project's root `build.gradle`
+file:
+
+```gradle
+repositories {
+   mavenCentral()
+   ...
+}
+```
+
+Then in your app's `build.gradle` file, add:
+
+```gradle
+dependencies {
+    implementation 'com.memfault.bort:reporting-lib:1.2'
+    ...
+}
+```
+
+</TabItem>
+<TabItem value="make-java" label="Make (Java)">
+Once the Bort SDK has been integrated, a target called `memfault-reporting-lib` will be available.
+This is a static Java library that will need to be linked to your app's build
+target.
+
+:::note
+
+This is supported from Bort 4.9.0.
+
+:::
+
+Add the following to your app's `Android.mk` file when using the AOSP Make build
+system to build a java app:
+
+```makefile
+LOCAL_STATIC_ANDROID_LIBRARIES := memfault-reporting-lib
+```
+
+</TabItem>
+  <TabItem value="make-native" label="Make (C/C++)">
+      Once the Bort SDK has been integrated, a target called `libmflt-reporting` will be available.
+This is a native (C/C++) library that will need to be linked to your app's build
+target.
+
+Add the following to your app's `Android.mk` file:
+
+```makefile
+LOCAL_SHARED_LIBRARIES := libmflt-reporting
+```
+
+</TabItem>
+<TabItem value="soong-native" label="Soong/BP (C/C++)">
+  Once the Bort SDK has been integrated, a target called `libmflt-reporting` will be available.
+This is a native (C/C++) library that will need to be linked to your app's build
+target.
+
+Add the following to your app's `Android.bp` file:
+
+```
+shared_libs: ["libmflt-reporting"],
+```
+
+</TabItem>
+</Tabs>
+
+Depending on the language used, import the Reporting library in each file where
+metrics will be recorded:
+
+<Tabs
+  groupId="languages">
+<TabItem value="kotlin" label="Kotlin" default>
+
+Depending how the library is used, multiple imports may be required. The Initial
+import
+
+```kotlin
+import com.memfault.bort.reporting.Reporting
+```
+
+</TabItem>
+<TabItem value="java" label="Java">
+
+For gradle users:
+
+```java
+import com.memfault.bort.reporting.Reporting;
+```
+
+For make:
+
+```java
+import com.memfault.bort.java.reporting.Reporting;
+```
+
+</TabItem>
+<TabItem value="c" label="C">
+
+```clike
+#include <reporting.h>
+```
+
+</TabItem>
+<TabItem value="cpp" label="C++">
+
+```cpp
+#include <reporting.h>
+```
+
+</TabItem>
+</Tabs>
 
 ## Recording Metrics
 
@@ -82,32 +194,162 @@ times during a reporting period, the the metric report will contain this value
 
 The regular "heartbeat" metric `Report` is accessed using:
 
-```
+<Tabs
+  groupId="languages">
+  <TabItem value="kotlin" label="Kotlin" default>
+
+```kotlin
 Reporting.report()
 ```
+
+</TabItem>
+<TabItem value="java" label="Java">
+
+```java
+Reporting.report()
+```
+
+</TabItem>
+<TabItem value="c" label="C">
+
+```clike
+metric_report_t report = metric_report_new();
+```
+
+The report should be destroyed once no longer required, if appropriate for your
+application lifecycle:
+
+```clike
+metric_report_destroy(report);
+```
+
+</TabItem>
+<TabItem value="cpp" label="C++">
+
+```cpp
+auto report = std::make_unique<Report>();
+```
+
+</TabItem>
+</Tabs>
 
 Custom Reporting periods may be available in a future release of the SDK.
 
 Individual metrics are created with methods on the `Report` class e.g.
 
-```
+<Tabs
+  groupId="languages">
+  <TabItem value="kotlin" label="Kotlin" default>
+
+```kotlin
 Reporting.report().counter("my-counter")
 ```
+
+</TabItem>
+<TabItem value="java" label="Java">
+
+```java
+Reporting.report().counter("my-counter");
+```
+
+</TabItem>
+  <TabItem value="c" label="C">
+
+```clike
+metric_report_counter(report, "my-counter", true);
+```
+
+</TabItem>
+    <TabItem value="cpp" label="C++">
+
+```cpp
+report->counter("native_counter_cpp");
+```
+
+</TabItem>
+</Tabs>
 
 We recommend creating constants to define each metric that you will use, so that
 configuration (naming, defining aggregations) only has to happen in one place
 e.g.
 
-```
+<Tabs
+  groupId="languages">
+  <TabItem value="kotlin" label="Kotlin" default>
+
+```kotlin
 val distributionMetric = Reporting.report().distribution("my-distribution", numericAggs(NumericAgg.MEAN, NumericAgg.MIN))
 ```
 
-Then we can use this metric to record values from elsewhere in our codebase:
+</TabItem>
+<TabItem value="java" label="Java">
 
+```java
+Distribution distributionMetric = Reporting.report().distribution("my-distribution", Arrays.asList(NumericAgg.MEAN, NumericAgg.MIN));
 ```
+
+</TabItem>
+  <TabItem value="c" label="C">
+
+```clike
+metric_aggregation_t aggrs[] = {MEAN, MIN};
+metric_distribution_t distribution = metric_report_distribution(report, "my-distribution", aggrs, 2);
+```
+
+The metric should be destroyed once no longer required, if appropriate for your
+application lifecycle:
+
+```clike
+metric_distribution_destroy(distribution);
+```
+
+</TabItem>
+    <TabItem value="cpp" label="C++">
+
+```cpp
+auto distribution = report->distribution("my-distribution", {MEAN, MIN});
+```
+
+</TabItem>
+</Tabs>
+
+Then we can use this metric to record values from anywhere in our codebase:
+
+<Tabs
+  groupId="languages">
+  <TabItem value="kotlin" label="Kotlin" default>
+
+```kotlin
 distributionMetric.record(6.89)
 distributionMetric.record(9.86)
 ```
+
+</TabItem>
+<TabItem value="java" label="Java">
+
+```java
+distributionMetric.record(6.89);
+distributionMetric.record(9.86);
+```
+
+</TabItem>
+  <TabItem value="c" label="C">
+
+```clike
+metric_distribution_record_double(distribution, 6.89);
+metric_distribution_record_double(distribution, 9.86);
+```
+
+</TabItem>
+    <TabItem value="cpp" label="C++">
+
+```cpp
+distribution->record(6.89);
+distribution->record(9.86);
+```
+
+</TabItem>
+</Tabs>
 
 ## Metric Types
 
@@ -122,17 +364,78 @@ sum in the metric report.
 
 Create a metric counter named `disconnection-events`:
 
-```
+<Tabs
+  groupId="languages">
+  <TabItem value="kotlin" label="Kotlin" default>
+
+```kotlin
 val disconnectionCounter = Reporting.report().counter("disconnection-events")
 ```
 
+</TabItem>
+<TabItem value="java" label="Java">
+
+```java
+Counter disconnectionCounter = Reporting.report().counter("disconnection-events");
+```
+
+</TabItem>
+  <TabItem value="c" label="C">
+
+```clike
+metric_counter_t disconnectionCounter = metric_report_counter(report, "disconnection-events", true);
+```
+
+</TabItem>
+    <TabItem value="cpp" label="C++">
+
+```cpp
+auto disconnectionCounter = report->counter("disconnection-events");
+```
+
+</TabItem>
+</Tabs>
+
 Then record values:
 
-```
+<Tabs
+  groupId="languages">
+  <TabItem value="kotlin" label="Kotlin" default>
+
+```kotlin
 disconnectionCounter.increment()
 disconnectionCounter.incrementBy(4)
 disconnectionCounter.incrementBy(7.9)
 ```
+
+</TabItem>
+<TabItem value="java" label="Java">
+
+```java
+disconnectionCounter.increment();
+disconnectionCounter.incrementBy(4);
+disconnectionCounter.incrementBy(7.9);
+```
+
+</TabItem>
+  <TabItem value="c" label="C">
+
+```clike
+metric_counter_increment(disconnectionCounter);
+metric_counter_increment_by(disconnectionCounter, 2);
+```
+
+</TabItem>
+    <TabItem value="cpp" label="C++">
+
+```cpp
+disconnectionCounter.increment();
+disconnectionCounter.incrementBy(4);
+disconnectionCounter.incrementBy(7.9);
+```
+
+</TabItem>
+</Tabs>
 
 This will create a metric in Memfault named `disconnection-events.sum`. In the
 example above, this would have a value of `12.9` for the current reporting
@@ -154,18 +457,84 @@ Several aggregations are available to use.
 
 Create a distribution metric named `rssi`, which tracks `MEAN` and `MIN` values:
 
-```
+<Tabs
+  groupId="languages">
+  <TabItem value="kotlin" label="Kotlin" default>
+
+```kotlin
 val rssiMetric = Reporting.report().distribution("rssi", numericAggs(NumericAgg.MEAN, NumericAgg.MIN))
 ```
 
+</TabItem>
+<TabItem value="java" label="Java">
+
+```java
+Distribution rssiMetric = Reporting.report().distribution("rssi", Arrays.asList(NumericAgg.MEAN, NumericAgg.MIN));
+```
+
+</TabItem>
+  <TabItem value="c" label="C">
+
+```clike
+metric_aggregation_t aggrs[] = {MEAN, MIN};
+metric_distribution_t rssiMetric = metric_report_distribution(report, "rssi", aggrs, 2);
+```
+
+</TabItem>
+    <TabItem value="cpp" label="C++">
+
+```cpp
+auto rssiMetric = report->distribution("rssi", {MEAN, MIN});
+```
+
+</TabItem>
+</Tabs>
+
 Then record values periodically:
 
-```
+<Tabs
+  groupId="languages">
+  <TabItem value="kotlin" label="Kotlin" default>
+
+```kotlin
 rssiMetric.record(-38.68)
 rssiMetric.record(-39.83)
 rssiMetric.record(-43.67)
 rssiMetric.record(-78.89)
 ```
+
+</TabItem>
+<TabItem value="java" label="Java">
+
+```java
+rssiMetric.record(-38.68);
+rssiMetric.record(-39.83);
+rssiMetric.record(-43.67);
+rssiMetric.record(-78.89);
+```
+
+</TabItem>
+  <TabItem value="c" label="C">
+
+```clike
+metric_distribution_record_double(rssiMetric, -38.68);
+metric_distribution_record_double(rssiMetric, -39.83);
+metric_distribution_record_double(rssiMetric, -43.67);
+metric_distribution_record_double(rssiMetric, -78.89);
+```
+
+</TabItem>
+    <TabItem value="cpp" label="C++">
+
+```cpp
+rssiMetric->record(-38.68);
+rssiMetric->record(-39.83);
+rssiMetric->record(-43.67);
+rssiMetric->record(-78.89);
+```
+
+</TabItem>
+</Tabs>
 
 This will create one metric in Memfault to track each requested aggregation:
 
@@ -198,9 +567,16 @@ useful on the Device Timeline as part of the Metric Report.
 Tracks state transitions - for example, the connection state of a peripheral
 device or enabled state of a device function.
 
-State trackers track state using an `enum`:
+When using a supported language (Kotlin/Java), `enum`s can be tracked directly.
 
-```
+Create a state tracker named `connection-state`, tracking the total time spent
+in each state:
+
+<Tabs
+  groupId="languages">
+  <TabItem value="kotlin" label="Kotlin" default>
+
+```kotlin
 enum class ConnectionState {
     DISCONNECTED,
     CONNECTING,
@@ -208,21 +584,88 @@ enum class ConnectionState {
 }
 ```
 
-Create a state tracker named `connection-state`, tracking the total time spent
-in each state:
-
-```
+```kotlin
 private val connectionStateMetric = Reporting.report().stateTracker<ConnectionState>("connection-state", statsAggs(StateAgg.TIME_TOTALS))
 ```
 
+</TabItem>
+<TabItem value="java" label="Java">
+
+```java
+enum ConnectionState {
+    DISCONNECTED,
+    CONNECTING,
+    CONNECTED,
+}
+```
+
+```java
+StateTracker<ConnectionState> connectionStateMetric = Reporting.report().stateTracker("connection-state", Arrays.asList(StateAgg.TIME_TOTALS));
+```
+
+</TabItem>
+  <TabItem value="c" label="C">
+
+```clike
+metric_aggregation_t aggrs[] = {TIME_TOTALS};
+metric_string_state_tracker_t connectionStateMetric = metric_report_string_state_tracker(report, "connection-state", aggrs, 1);
+```
+
+</TabItem>
+    <TabItem value="cpp" label="C++">
+
+```cpp
+auto connectionStateMetric = report->stringStateTracker("connection-state", {TIME_TOTALS});
+```
+
+</TabItem>
+</Tabs>
+
 Then record state transitions as they occur:
 
-```
+<Tabs
+  groupId="languages">
+  <TabItem value="kotlin" label="Kotlin" default>
+
+```kotlin
 connectionStateMetric.state(DISCONNECTED)
 connectionStateMetric.state(CONNECTING)
 connectionStateMetric.state(CONNECTED)
 connectionStateMetric.state(DISCONNECTED)
 ```
+
+</TabItem>
+<TabItem value="java" label="Java">
+
+```java
+connectionStateMetric.state(DISCONNECTED);
+connectionStateMetric.state(CONNECTING);
+connectionStateMetric.state(CONNECTED);
+connectionStateMetric.state(DISCONNECTED);
+```
+
+</TabItem>
+  <TabItem value="c" label="C">
+
+```clike
+metric_string_state_tracker_state(connectionStateMetric, "DISCONNECTED");
+metric_string_state_tracker_state(connectionStateMetric, "CONNECTING");
+metric_string_state_tracker_state(connectionStateMetric, "CONNECTED");
+metric_string_state_tracker_state(connectionStateMetric, "DISCONNECTED");
+```
+
+</TabItem>
+    <TabItem value="cpp" label="C++">
+
+```cpp
+connectionStateMetric->state("DISCONNECTED");
+connectionStateMetric->state("CONNECTING");
+connectionStateMetric->state("CONNECTED");
+connectionStateMetric->state("DISCONNECTED");
+```
+
+</TabItem>
+</Tabs>
 
 This creates one metric for each state:
 
@@ -265,17 +708,79 @@ included in the Metric Report, at the end of the reporting period.
 Create string/numeric property trackers (named
 `device-color`/`first-boot-time`):
 
-```
+<Tabs
+  groupId="languages">
+  <TabItem value="kotlin" label="Kotlin" default>
+
+```kotlin
 val deviceColor = Reporting.report().stringProperty("device-color")
 val firstBootTime = Reporting.report().numberProperty("first-boot-time")
 ```
 
+</TabItem>
+<TabItem value="java" label="Java">
+
+```java
+StringProperty deviceColor = Reporting.report().stringProperty("device-color");
+NumberProperty firstBootTime = Reporting.report().numberProperty("first-boot-time");
+```
+
+</TabItem>
+  <TabItem value="c" label="C">
+
+```clike
+metric_string_prop_t deviceColor = metric_report_string_prop(report, "device-color", true);
+metric_number_prop_t firstBootTime = metric_report_number_prop(report, "first-boot-time", true);
+```
+
+</TabItem>
+    <TabItem value="cpp" label="C++">
+
+```cpp
+auto deviceColor = report->stringProperty("device-color");
+auto firstBootTime = report->numberProperty("first-boot-time");
+```
+
+</TabItem>
+</Tabs>
+
 Then record values for these properties:
 
-```
+<Tabs
+  groupId="languages">
+  <TabItem value="kotlin" label="Kotlin" default>
+
+```kotlin
 deviceColor.update("orange")
 firstBootTime.update(1642794263)
 ```
+
+</TabItem>
+<TabItem value="java" label="Java">
+
+```java
+deviceColor.update("orange");
+firstBootTime.update(1642794263);
+```
+
+</TabItem>
+  <TabItem value="c" label="C">
+
+```clike
+metric_string_prop_update(deviceColor, "orange");
+metric_number_prop_update(firstBootTime, 1642794263);
+```
+
+</TabItem>
+    <TabItem value="cpp" label="C++">
+
+```cpp
+deviceColor->update("orange");
+firstBootTime->update(1642794263);
+```
+
+</TabItem>
+</Tabs>
 
 This creates one metric for each property, with the last reported value for each
 reporting period:
@@ -302,16 +807,75 @@ on the device timeline.
 
 Create a metric event named `failure`:
 
-```
+<Tabs
+  groupId="languages">
+  <TabItem value="kotlin" label="Kotlin" default>
+
+```kotlin
 val failureEvent = Reporting.report().event("failure")
 ```
 
+</TabItem>
+<TabItem value="java" label="Java">
+
+```java
+Event failureEvent = Reporting.report().event("failure");
+```
+
+</TabItem>
+  <TabItem value="c" label="C">
+
+```clike
+metric_event_t failureEvent = metric_report_event(report, "failure", false);
+```
+
+</TabItem>
+    <TabItem value="cpp" label="C++">
+
+```cpp
+auto failureEvent = report->event("failure");
+```
+
+</TabItem>
+</Tabs>
+
 Then record events:
 
-```
+<Tabs
+  groupId="languages">
+  <TabItem value="kotlin" label="Kotlin" default>
+
+```kotlin
 failureEvent.add("timeout")
 failureEvent.add("code 403")
 ```
+
+</TabItem>
+<TabItem value="java" label="Java">
+
+```java
+failureEvent.add("timeout");
+failureEvent.add("code 403");
+```
+
+</TabItem>
+  <TabItem value="c" label="C">
+
+```clike
+metric_event_add(failureEvent, "timeout");
+metric_event_add(failureEvent, "code 403");
+```
+
+</TabItem>
+    <TabItem value="cpp" label="C++">
+
+```cpp
+failureEvent->add("timeout");
+failureEvent->add("code 403");
+```
+
+</TabItem>
+</Tabs>
 
 By default, this will not include any metrics in the heartbeat report; values
 will be visible on timeline using HRT. To include an event count in the report,
@@ -354,19 +918,19 @@ object RecordMetrics {
 We can then record values from wherever we like in the application, without
 having to recreate the metric configuration:
 
-```
+```kotlin
 disconnectionCounter.incrementBy(4)
 ```
 
-```
+```kotlin
 rssiMetric.record(-43.67)
 ```
 
-```
+```kotlin
 connectionStateMetric.state(CONNECTED)
 ```
 
-```
+```kotlin
 deviceColor.update("orange")
 firstBootTime.update(1642794263)
 ```
