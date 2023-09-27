@@ -4,6 +4,8 @@ title: Enable Compact Logs
 sidebar_label: Compact Logs
 ---
 
+import ProjectAwareTabs from "@site/src/components/ProjectAwareTabs";
+
 This tutorial will cover how to enable the compact log feature in the
 [Memfault Firmware SDK](https://github.com/memfault/memfault-firmware-sdk). When
 compact logging is enabled, format strings will be replaced with an integer id
@@ -50,15 +52,22 @@ So in this example we are able to reduce the storage occupied by 88%!
 
 ### 1. Enable `MEMFAULT_COMPACT_LOG_ENABLE`
 
-Add the following to your projects `memfault_platform_config.h`:
+Add the following to `memfault_platform_config.h`:
 
-```c
-//! @file memfault_platform_config.h
+```c title="memfault_platform_config.h"
 
 #define MEMFAULT_COMPACT_LOG_ENABLE 1
 ```
 
-### 2. Add a log fmt section to your linker script
+### 2. Add a `log fmt` section to your linker script
+
+Select your toolchain below for the required linker script modifications.
+
+<ProjectAwareTabs
+  defaultValue="GCC"
+  queryString="toolchain"
+>
+  <TabItem value="GCC">
 
 Locate the linker script for your project (usually ends with `.ld`) and add the
 following to your linker script
@@ -75,6 +84,28 @@ following to your linker script
         KEEP(*(log_fmt))
     }
 ```
+
+</TabItem>
+<TabItem value="IAR">
+
+For IAR's linker, add the following to the `.icf` file for the project:
+
+```linker-script
+define symbol MEMFAULT_COMPACT_LOGS_SIZE = 10K;
+
+/* define this symbol to 0, which is used by the compact log implementation */
+define exported symbol __start_log_fmt = 0;
+
+keep { readonly section .log_fmt_hdr, readonly section log_fmt };
+
+/* the region is placed at address 0. IAR will override the region location
+  to 0 anyway since it contains only "__no_alloc" symbols */
+define region MEMFAULT_COMPACT_LOGS = mem:[from 0 size MEMFAULT_COMPACT_LOGS_SIZE];
+"no_load_region": place noload at start of MEMFAULT_COMPACT_LOGS {readonly section .log_fmt_hdr, readonly section log_fmt};
+```
+
+</TabItem>
+</ProjectAwareTabs>
 
 ## Host Decoding
 
@@ -107,8 +138,9 @@ empty. This particular extension has been implemented in most other modern
 compilers including ARM Compiler 5, Clang & iccarm. All you need to do is make
 sure you have enabled gnu extensions for your compiler of choice.
 
-For GCC, this can be accomplished by adding `-std=gnu11` as an argument to your
-compiler flag list
+For GCC, this can be accomplished by adding `-std=gnu11` (`-std=gnu++11` for
+C++) as an argument to your compiler flag list. IAR supports the required
+dialect with the default language settings.
 
 ### I'm seeing an incorrect pointer value when trying to use the %p formatter.
 
