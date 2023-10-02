@@ -53,68 +53,51 @@ SDK, under
 ### Clone Memfault SDK
 
 Using a [Git](https://git-scm.com/) client, clone the `memfault-firmware-sdk`
-repository from:
+repository:
 
 ```
-https://github.com/memfault/memfault-firmware-sdk.git
+git clone https://github.com/memfault/memfault-firmware-sdk.git
 ```
 
-The Memfault SDK does not need to be located within the `esp` directory, you may
+Note, the Memfault SDK **does not need** to be located within the `esp` directory, you may
 place it anywhere.
 
 ### Add Memfault SDK to the ESP-IDF CMake Build System
 
-In your top level `CMakeLists.txt`, you can register the Memfault esp-idf port
-as a "component" by simply including `ports/esp_idf/memfault.cmake`:
+In your top level `CMakeLists.txt`, you will need to make two changes
 
-```c
+  1. Register Memfault esp-idf as a "component"
+  2. Add a POST_BUILD command to tag each binary with a build id which Memfault uses to uniquely identify it
+
+:::note
+
+The POST_BUILD command depends on `pyelftools` so you may need to install it by
+running `pip install pyelftools`.
+
+:::
+
+The end result should look something like this:
+
+```bash
 # CMakeLists.txt (top-level)
-# [...]
+cmake_minimum_required(VERSION 3.16)
 
+# XXX Item 1 to add for Memfault
+#  Update "/path/to" appropriately below
 set(MEMFAULT_FIRMWARE_SDK /path/to/memfault-firmware-sdk)
 include(${MEMFAULT_FIRMWARE_SDK}/ports/esp_idf/memfault.cmake)
 
-include($ENV{IDF_PATH}/tools/cmake/project.cmake)
-project(<YOUR_PROJECT>)
-```
-
-### Add Memfault Build ID to the ESP-IDF CMake Build System
-
-It is recommended that you use a build ID to uniquely identify each build. Do
-this by including Memfault build ID generation by adding a custom post-build
-step to your top level `CMakeLists.txt`.
-
-```c
-# CMakeLists.txt (top-level)
 # [...]
-
-# Be sure to set this variable appropriately
-set(MEMFAULT_FIRMWARE_SDK /path/to/memfault-firmware-sdk)
-include(${MEMFAULT_FIRMWARE_SDK}/ports/esp_idf/memfault.cmake)
-
-include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 project(<YOUR_PROJECT>)
 
+# XXX Item 2 to add for Memfault
 add_custom_command(TARGET ${CMAKE_PROJECT_NAME}.elf
   POST_BUILD
   COMMAND
   python ${MEMFAULT_FIRMWARE_SDK}/scripts/fw_build_id.py ${CMAKE_PROJECT_NAME}.elf)
 ```
 
-The `fw_build_id.py` script adds a build ID that changes whenever the binary
-changes. You can use this build ID as part of your software version reported by
-`memfault_platform_get_device_info()`. See the demo app in
-`<PATH_TO_MEMFAULT_FIRMWARE_SDK>/examples/esp32/apps/memfault_demo_app` for an
-example of how to use the build ID in your code.
-
-:::note
-
-`fw_build_id_py` depends on `pyelftools` so you may need to install it by
-running `pip install pyelftools`.
-
-:::
-
-### Add the Memfault Porting Files
+### Add the Memfault Configuration Files
 
 There are a few files that you must fill in that Memfault requires. There are
 template versions in `<PATH_TO_MEMFAULT_FIRMWARE_SDK>/ports/templates/`.
@@ -122,7 +105,9 @@ Assuming a typical ESP32 project structure with a root directory and a `main`
 project sub-directory it is simplest to copy these files into `main`, e.g.
 
 ```bash
-cp <PATH_TO_MEMFAULT_FIRMWARE_SDK>/ports/templates/* .
+cd <PATH_TO_PROJECT_ROOT>
+mkdir -p memfault
+cp <PATH_TO>/memfault-firmware-sdk/ports/templates/*config* .
 ```
 
 When you are done, you should have the following directory structure in your
@@ -134,9 +119,6 @@ project-root/
 └── main
     | CMakeLists.txt  # Project-level
     //...
-    | # Files where port / glue layer to your platform will be implemented
-    ├── memfault_platform_port.c
-    |
     | # Configuration Headers
     ├── memfault_metrics_heartbeat_config.def
     ├── memfault_trace_reason_user_config.def
@@ -274,9 +256,7 @@ void memfault_platform_get_device_info(sMemfaultDeviceInfo *info) {
     .device_serial = "ESP32_DEMOSERIAL",
     .software_type = "esp32-main",
 
-    // It is recommended to use the build ID script. Below is safe to
-    // call regardless.
-    .software_version = memfault_create_unique_version_string("1.0.0"),
+    .software_version = "1.0.0-dev",
     .hardware_version = "esp-wrover-kit",
   };
 }
