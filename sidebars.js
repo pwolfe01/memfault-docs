@@ -230,7 +230,10 @@ module.exports = {
             link: {
                 type: "generated-index",
             },
-            items: ["reference/reference-reboot-reason-ids"],
+            items: [
+                "reference/reference-fqdn",
+                "reference/reference-reboot-reason-ids",
+            ],
         },
     ],
 };

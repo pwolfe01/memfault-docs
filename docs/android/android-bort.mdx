@@ -518,9 +518,34 @@ The use of MAR files is _required_ to use Memfault's _Fleet Sampling_ feature.
 :::info
 
 This method of uploading files from the Bort SDK is deprecated as of Bort 4.1,
-and will be completely removed in Bort 4.6.0.
+and was completely removed in Bort 4.6.0.
 
 :::
 
-This configuration would upload individual files to Memfault within 15 After the
-data is collected from the system, it is uploaded up to 15 minutes later.
+This configuration would upload individual files to Memfault. After the data is
+collected from the system, it is uploaded up to 15 minutes later.
+
+### Sync Behavior and Triggers
+
+Memfault uses the Android JobScheduler APIs to schedule its work following
+Android's best practices.
+
+The "Allow Uploads on Metered Networks" and "Allow OTA downloads on Metered
+Networks" settings available in your
+[Project Settings - Data Sources](https://app.memfault.com/organizations/-/projects/-/settings/data-sources)
+configure Memfault to put either a
+[NetworkType.CONNECTED](https://developer.android.com/reference/androidx/work/NetworkType#CONNECTED)
+(if true) or
+[NetworkType.UNMETERED](https://developer.android.com/reference/androidx/work/NetworkType#UNMETERED)
+constraint on its network requests.
+
+Metrics, logs, and DropBoxManager Entries are uploaded every 2 hours by default.
+OTAs are checked for every 12 hours. Both settings can be adjusted if desired by
+contacting support.
+
+### Retries
+
+OTA requests will retry linearly at 15m intervals (15m, 30m, 45m, ..).
+
+All other requests will retry exponentially starting at 5m (5m, 10m, 20m, 40m,
+..).
