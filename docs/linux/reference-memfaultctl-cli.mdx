@@ -17,24 +17,31 @@ Running `memfaultctl --help` prints the following:
 
 ```console
 # memfaultctl -h
-Usage: memfaultctl [OPTION] <COMMAND> ...
+Usage: memfaultctl [-c <config-file>] [-v] [-V] <command> [<args>]
 
-  -c <config file>                           : Use configuration file
-  -h                                         : Display this help and exit
-  -v                                         : Show version information
+A command line utility to adjust memfaultd configuration and trigger specific events for testing purposes. For further reference, see: https://docs.memfault.com/docs/linux/reference-memfaultctl-cli
+
+Options:
+  -c, --config-file use configuration file
+  -v, --version     show version information
+  -V, --verbose     verbose output
+  --help            display usage information
 
 Commands:
-  enable-data-collection                     : Enable data collection and restart memfaultd
-  disable-data-collection                    : Disable data collection and restart memfaultd
-  enable-dev-mode                            : Enable developer mode and restart memfaultd
-  disable-dev-mode                           : Disable developer mode and restart memfaultd
-  reboot [--reason <n>]                      : Register reboot reason and call 'reboot'
-  request-metrics                            : Flush collectd metrics to Memfault now
-  show-settings                              : Show memfaultd settings
-  sync                                       : Flush memfaultd queue to Memfault now
-  trigger-coredump [segfault|divide-by-zero] : Trigger a coredump and immediately reports it to Memfault (defaults to segfault)
-  write-attributes <VAR1=VAL1 ...>           : Write device attribute(s) to Memfaultd
-
+  enable-data-collection
+                    enable data collection and restart memfaultd
+  disable-data-collection
+                    disable data collection and restart memfaultd
+  enable-dev-mode   enable developer mode and restart memfaultd
+  disable-dev-mode  disable developer mode and restart memfaultd
+  export            export (and delete) memfault data
+  reboot            register reboot reason and call 'reboot'
+  request-metrics   flush collectd metrics to Memfault now
+  show-settings     show memfaultd settings
+  sync              Upload all pending data to Memfault now
+  trigger-coredump  trigger a coredump and immediately reports it to Memfault
+                    (defaults to segfault)
+  write-attributes  write device attribute(s) to memfaultd
 ```
 
 The `--config-file` path defaults to `/etc/memfaultd.conf`. The settings you add
@@ -45,9 +52,8 @@ in `/etc/memfaultd.conf` extend the built-in configuration file.
 Enabling developer mode will change some settings of `memfaultd` to make
 development and testing easier:
 
-- Coredumps will not be rate-limited on device. All crashes will be reported to
-  Memfault immediately (queue is processed immediately);
-- `write-attributes` events will be flushed immediately to Memfault.
+- Coredumps will not be rate-limited on device.
+- Fleet sampling will be disabled (all data collected will be uploaded).
 
 To enable developer mode, use `memfaultctl enable-dev-mode`. This setting will
 be persisted across reboots. To disable developer mode, use
@@ -74,6 +80,63 @@ This setting is persisted across reboots and updates. To disable developer mode,
 use `memfaultctl disable-dev-mode`.
 
 [developer-mode]: /docs/linux/reference-memfaultctl-cli#developer-mode
+
+### `export`
+
+```console
+# memfaultctl export --help
+Usage: memfaultctl export [-n] -o <output> [-f <format>]
+
+export (and delete) memfault data
+
+Options:
+  -n, --do-not-delete
+                    do not delete the data from memfault mar_staging
+  -o, --output      where to write the MAR data (or '-' for standard output)
+  -f, --format      output format (mar, chunk or chunk-wrapped)
+  --help            display usage information
+```
+
+Call this command to export data collected by `memfaultd` to an output file.
+This is typically used on devices that do not have a direct connection to the
+Internet and where data will be uploaded via a proxy (a mobile application for
+example).
+
+The output file size will be limited to approximately 10MB, you may need to call
+the command multiple times to export all the data. A success return code and an
+output file of 0 bytes is a sign that there is no data to export.
+
+The output file is specified with the `-o` option. If you use `-o -`, the data
+will be streamed to the standard output. Success or error messages are always
+logged to the standard error (stderr) so they don't interfere with exported
+data.
+
+Once the data has been exported and completely written to the output,
+`memfaultd` will delete it from the MAR staging area. You can use the `-n`
+option to download without deleting the data (in that case you will only have
+access to the first file if there is more than 10MB of data to export).
+
+Memfault SDK for Linux currently support three export formats:
+
+- `-f zip` (default): the data will be exported as a zip file containing a
+  folder for each MAR event.
+- `-f chunk` the data is exported as one [Memfault chunk][memfault-chunk] (same
+  format is used by the Memfault MCU SDK).
+- `-f chunk-wrapped` the data is exported as one Memfault chunk and a 8 bytes
+  header is added with the four bytes `CHNK` and the size of the data as one
+  big-endian uint32.
+
+[memfault-chunk]: /docs/mcu/data-from-firmware-to-the-cloud#introduction
+
+Example:
+
+```console
+$ memfaultctl export -o export1.zip
+Export saved and data cleared from memfaultd.
+
+$ memfaultctl export -o export2.zip
+Nothing to export right now. You may want to try `memfaultctl sync`.
+```
 
 ### `reboot`
 

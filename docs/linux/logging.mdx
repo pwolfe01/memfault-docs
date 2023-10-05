@@ -75,10 +75,10 @@ Fluent-bit provides a rich set of [input][fluent-bit-inputs] and
 Our default configuration for [fluent-bit][fluent-bit-default-conf] sets up
 collection of kernel and systemd log messages.
 
-Unlike other systems (like metrics or OTA), `memfaultd` does not generate the
-`fluent-bit` configuration file. It just expects a connection from `fluent-bit`
-on the default fluent-bit TCP port 5170. Fluent-bit messages are expected to be
-delivered in the fluent-bit native msgpack format.
+`memfaultd` does not generate the `fluent-bit` configuration file. It just
+expects a connection from `fluent-bit` on the default fluent-bit TCP port 5170.
+Fluent-bit messages are expected to be delivered in the fluent-bit native
+msgpack format.
 
 This is the required output configuration:
 

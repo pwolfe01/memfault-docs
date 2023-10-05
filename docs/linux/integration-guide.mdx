@@ -1,6 +1,6 @@
 ---
 id: integration-guide
-title: Integration Guide
+title: Yocto Integration Guide
 sidebar_label: Integration Guide
 ---
 
@@ -41,7 +41,6 @@ Memfault cloud, enabling one or more of the following features:
   to work on these releases of Yocto:
   - [`4.0 kirkstone`][yocto-kirkstone]
   - [`3.1 dunfell`][yocto-dunfell]
-- Your project uses [`systemd`][systemd-homepage] as the init system.
 
 Optionally:
 
@@ -130,12 +129,20 @@ not have this issue.
 
 </details>
 
-### Use systemd as your init system
+### Authorize Memfault License
 
-`memfaultd` currently depends on systemd to:
+Since `memfaultd` has a commercial license, you'll need to add an exception for
+it, for example in your `local.conf`:
 
-- restart services it cooperates with, for example, collectd and swupdate;
-- detect when a reboot was requested by the user;
+```
+LICENSE_FLAGS_ACCEPTED:append = " commercial_memfaultd"
+```
+
+### (Optional) Use systemd as your init system
+
+`memfaultd` will work with or without systemd. When systemd is available, it
+will automatically be used to detect normal reboots and shutdowns (refer to our
+[reboot reason tracking guide][docs-linux-reboot]).
 
 To use `systemd` as an init system (using `poky`), add to your `conf/local.conf`
 file:
@@ -148,14 +155,28 @@ DISTRO_FEATURES_BACKFILL_CONSIDERED:append = "sysvinit"
 VIRTUAL-RUNTIME_initscripts = ""
 ```
 
-### Authorize Memfault License
+### (Optional) Use OpenSSL instead of rust-tls
 
-Since `memfaultd` has a commercial license, you'll need to add an exception for
-it, for example in your `local.conf`:
+By default, `memfaultd` will use the [`rustls`][rustls-homepage] TLS library,
+which is a full TLS implementation in Rust. We recommend this option for most
+users.
+
+In some scenario you may want to use OpenSSL:
+
+- To avoid having two SSL implementations in the system and minimize the size of
+  the final image.
+- For architectures which are not supported by `rustls` (notably, `mips`
+  variants).
+
+To use OpenSSL, set the `openssl-tls` feature on the `memfaultd` recipe.
+
+For example, in your Yocto `build/local.conf`:
 
 ```
-LICENSE_FLAGS_ACCEPTED:append = " commercial_memfaultd"
+PACKAGECONFIG:pn-memfaultd := "swupdate collectd coredump logging openssl-tls"
 ```
+
+[rustls-homepage]: https://github.com/rustls/rustls
 
 ### (Optional) Add meta-swupdate for OTA
 
