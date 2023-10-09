@@ -41,7 +41,7 @@ ELF as part of a post-build step.
 For example, using CMake, this can be achieved by adding a custom command to the
 target:
 
-```bash
+```cmake
 add_custom_command(TARGET ${YOUR_EXECUTABLE_NAME} POST_BUILD
   COMMAND python ${MEMFAULT_SDK_ROOT}/scripts/fw_build_id.py ${YOUR_EXECUTABLE_NAME}
 )

@@ -18,24 +18,11 @@ not, the
 [official getting started guide](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/get-started/index.html)
 is a great resource!
 
-The integration works for all versions of ESP-IDF between 3.x and 5.0.
+The integration works for all versions of ESP-IDF between 3.x and 5.1.1.
 
 This integration is tested on the
 [ESP32-WROVER-KIT V4.1](https://docs.espressif.com/projects/esp-idf/en/v4.4.1/esp32/hw-reference/esp32/get-started-wrover-kit.html),
 but applies similarly to any ESP32-based board.
-
-:::note
-
-Currently Memfault supports the following ESP32 part families. If it's not
-listed, we might be working on it already! Drop us a note at
-[support@memfault.com](mailto:support@memfault.com) and we'll let you know!
-
-- [ESP32 (Xtensa)](https://docs.espressif.com/projects/esp-idf/en/v5.0.1/esp32/get-started/index.html)
-- [ESP32-S2 (Xtensa)](https://docs.espressif.com/projects/esp-idf/en/v5.0.1/esp32s2/get-started/index.html)
-- [ESP32-S3 (Xtensa)](https://docs.espressif.com/projects/esp-idf/en/v5.0.1/esp32s3/get-started/index.html)
-- [ESP32-C3/C6 (RISC-V)](https://docs.espressif.com/projects/esp-idf/en/v5.0.1/esp32c3/get-started/index.html)
-
-:::
 
 :::tip
 
@@ -50,71 +37,80 @@ SDK, under
 
 :::
 
-### Clone Memfault SDK
+## Overview
+
+Follow these steps to integrate the Memfault Firmware SDK into an ESP-IDF
+project:
+
+- [1. Clone Memfault SDK](#1-clone-memfault-sdk)
+- [2. Add Memfault SDK to the ESP-IDF CMake Build System](#2-add-memfault-sdk-to-the-esp-idf-cmake-build-system)
+- [3. Add the Memfault Configuration Files](#3-add-the-memfault-configuration-files)
+- [4. Enable Coredump Collection in sdkconfig](#4-enable-coredump-collection-in-sdkconfig)
+- [5. Create a Coredump Flash Partition](#5-create-a-coredump-flash-partition)
+- [6. Implement `memfault_platform_get_device_info()`](#6-implement-memfault_platform_get_device_info)
+- [7. Initializing Memfault](#7-initializing-memfault)
+- [8. Configure Memfault Project Key](#8-configure-memfault-project-key)
+- [9. Regenerate sdkconfig and recompile](#9-regenerate-sdkconfig-and-recompile)
+
+## Detailed Walkthrough
+
+### 1. Clone Memfault SDK
 
 Using a [Git](https://git-scm.com/) client, clone the `memfault-firmware-sdk`
-repository from:
+repository:
 
+```bash
+git clone https://github.com/memfault/memfault-firmware-sdk.git
 ```
-https://github.com/memfault/memfault-firmware-sdk.git
+
+Note, the Memfault SDK **does not need** to be located within the `esp`
+directory, you may place it anywhere.
+
+It might be preferrable to add the Memfault SDK as a submodule to your project,
+so it is tracked as part of the project's git repository:
+
+```bash
+# add the Memfault SDK as a submodule, in third-party/memfault-firmware-sdk
+git submodule add https://github.com/memfault/memfault-firmware-sdk.git third-party/memfault-firmware-sdk
 ```
 
-The Memfault SDK does not need to be located within the `esp` directory, you may
-place it anywhere.
+### 2. Add Memfault SDK to the ESP-IDF CMake Build System
 
-### Add Memfault SDK to the ESP-IDF CMake Build System
+In your top level `CMakeLists.txt`, you will need to make two changes
 
-In your top level `CMakeLists.txt`, you can register the Memfault esp-idf port
-as a "component" by simply including `ports/esp_idf/memfault.cmake`:
+1. Register Memfault esp-idf as a "component"
+2. Add a `POST_BUILD` command to tag each binary with a build id which Memfault
+   uses to uniquely identify it
 
-```c
+:::note
+
+The `POST_BUILD` command depends on the python `pyelftools` package, so you may
+need to install it by running `pip install pyelftools`.
+
+:::
+
+The end result should look something like this:
+
+```cmake
 # CMakeLists.txt (top-level)
-# [...]
+cmake_minimum_required(VERSION 3.16)
 
+# TODO: Item 1 to add for Memfault
+#  Update "/path/to" appropriately below
 set(MEMFAULT_FIRMWARE_SDK /path/to/memfault-firmware-sdk)
 include(${MEMFAULT_FIRMWARE_SDK}/ports/esp_idf/memfault.cmake)
 
-include($ENV{IDF_PATH}/tools/cmake/project.cmake)
-project(<YOUR_PROJECT>)
-```
-
-### Add Memfault Build ID to the ESP-IDF CMake Build System
-
-It is recommended that you use a build ID to uniquely identify each build. Do
-this by including Memfault build ID generation by adding a custom post-build
-step to your top level `CMakeLists.txt`.
-
-```c
-# CMakeLists.txt (top-level)
 # [...]
-
-# Be sure to set this variable appropriately
-set(MEMFAULT_FIRMWARE_SDK /path/to/memfault-firmware-sdk)
-include(${MEMFAULT_FIRMWARE_SDK}/ports/esp_idf/memfault.cmake)
-
-include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 project(<YOUR_PROJECT>)
 
+# TODO: Item 2 to add for Memfault
 add_custom_command(TARGET ${CMAKE_PROJECT_NAME}.elf
   POST_BUILD
   COMMAND
   python ${MEMFAULT_FIRMWARE_SDK}/scripts/fw_build_id.py ${CMAKE_PROJECT_NAME}.elf)
 ```
 
-The `fw_build_id.py` script adds a build ID that changes whenever the binary
-changes. You can use this build ID as part of your software version reported by
-`memfault_platform_get_device_info()`. See the demo app in
-`<PATH_TO_MEMFAULT_FIRMWARE_SDK>/examples/esp32/apps/memfault_demo_app` for an
-example of how to use the build ID in your code.
-
-:::note
-
-`fw_build_id_py` depends on `pyelftools` so you may need to install it by
-running `pip install pyelftools`.
-
-:::
-
-### Add the Memfault Porting Files
+### 3. Add the Memfault Configuration Files
 
 There are a few files that you must fill in that Memfault requires. There are
 template versions in `<PATH_TO_MEMFAULT_FIRMWARE_SDK>/ports/templates/`.
@@ -122,21 +118,23 @@ Assuming a typical ESP32 project structure with a root directory and a `main`
 project sub-directory it is simplest to copy these files into `main`, e.g.
 
 ```bash
-cp <PATH_TO_MEMFAULT_FIRMWARE_SDK>/ports/templates/* .
+cd <PATH_TO_PROJECT_ROOT>
+mkdir -p memfault
+cp <PATH_TO>/memfault-firmware-sdk/ports/templates/*config* .
 ```
+
+Note that only the `*config*` files are copied, _not_ the
+`memfault_platform_port.c` file.
 
 When you are done, you should have the following directory structure in your
 project:
 
-```
+```bash
 project-root/
 ├── CMakeLists.txt  # Top-level
 └── main
     | CMakeLists.txt  # Project-level
     //...
-    | # Files where port / glue layer to your platform will be implemented
-    ├── memfault_platform_port.c
-    |
     | # Configuration Headers
     ├── memfault_metrics_heartbeat_config.def
     ├── memfault_trace_reason_user_config.def
@@ -144,25 +142,20 @@ project-root/
     └── memfault_platform_config.h
 ```
 
-### Add Sources to Build System
+The directory with the config files should be added to the includes in the
+project.
 
-Edit the project-level `CMakeLists.txt` file in `main` and add
-`memfault_platform_port.c` to the `SRCS` variable and
-`${MEMFAULT_FIRMWARE_SDK}/ports/include` to the `INCLUDE_DIRS` variable. It
-should look something like below. You defined the variable
-`MEMFAULT_FIRMWARE_SDK` in the top-level `CMakeLists.txt` file.
+With the structure above, the Project-level `CMakeLists.txt` file should have
+the `"."` path added to the `INCLUDE_DIRS` variable:
 
-```c
+```cmake
 # CMakeLists.txt (project-level)
 idf_component_register(
-  SRCS
-  # [Your project souces]
-  memfault_platform_port.c
+  ...
 
   INCLUDE_DIRS
   # [Other project include directories]
   .
-  ${MEMFAULT_FIRMWARE_SDK}/ports/include
 )
 ```
 
@@ -172,16 +165,12 @@ Quotes on filenames and paths without spaces are not required in CMake lists.
 
 :::
 
-### Enable Coredump Collection in sdkconfig
+### 4. Enable Coredump Collection in sdkconfig
 
 By default, the esp-idf uses the `CONFIG_ESP32_ENABLE_COREDUMP_TO_NONE=y`. You
 will need to update `sdkconfig` (either via `idf.py menuconfig` or manually) to
 `CONFIG_ESP32_ENABLE_COREDUMP_TO_FLASH=y`. The change you will see in the
 `sdkconfig` file will look something like:
-
-Note: The remainder of the `COREDUMP` settings, including
-`CONFIG_ESP_COREDUMP_DATA_FORMAT_ELF`, do not affect the Memfault coredump. They
-are specific to the ESP-IDF coredump features.
 
 ```diff
 diff --git a/sdkconfig b/sdkconfig
@@ -196,7 +185,14 @@ index a49446d..83a81a8 100644
 +CONFIG_ESP32_ENABLE_COREDUMP_TO_FLASH=y
 ```
 
-### Create a Coredump Flash Partition
+This can also be done in `sdkconfig.defaults` if your project does not version
+control the `sdkconfig` file (will require a `fullclean` build to take effect).
+
+Note: The remainder of the `COREDUMP` settings, including
+`CONFIG_ESP_COREDUMP_DATA_FORMAT_ELF`, do not affect the Memfault coredump. They
+are specific to the ESP-IDF coredump features.
+
+### 5. Create a Coredump Flash Partition
 
 You will need to allocate an internal flash partition to store panic data. Edit
 your `partitions.csv` file to add a _coredump_ partion. If you do not have a
@@ -243,40 +239,29 @@ partition CSV file". Optionally, you can edit the sdkconfig file directly
 
 <ProjectAwareCreateAProject />
 
-### Implement Changes for Your Project to Incorporate Memfault
-
-#### Metrics and Trace Definitions
-
-The [device metrics](/docs/mcu/metrics-api) and
-[trace event](/docs/mcu/trace-events) subsystems require configuration files to
-be added to your include path (`memfault_metrics_heartbeat_config.def` &
-`memfault_trace_reason_user_config.def`, respectively). Because you copied them
-to your `main` directory these files' locations should be known to CMake.
-
-#### `memfault_platform_get_device_info()`
+### 6. Implement `memfault_platform_get_device_info()`
 
 When a panic occurs, information is collected to uniquely identify the device
-and version of software running. Update the implementation of the function
-`memfault_platform_get_device_info()` in `memfault_platform_port.c` by setting
-the fields shown in the returned `sMemfaultDeviceInfo` struct.
+and version of software running. Add an implementation of the function
+`memfault_platform_get_device_info()` to your project (either to an existing c
+file, or a new one that's included in the project CMakeLists.txt). The
+`memfault_platform_get_device_info()` function sets the fields shown in the
+returned `sMemfaultDeviceInfo` struct:
 
 ```c
-// memfault_platform_port.c
-
-// [... other code ...]
-
 // NOTE: This needs to be safe to call from the exception handler so
-// if you are reading from data from subsytems which uses locking esp_efuse_*
-// you will need to pre-populate the data on bootup.
+// if you are reading from data from subsytems which uses locking, eg
+// esp_efuse_*, you will need to pre-populate the data on bootup, for example
+// with a 'memfault_platform_get_device_info_boot()` function, called prior to
+// 'memfault_boot()' on system startup
 void memfault_platform_get_device_info(sMemfaultDeviceInfo *info) {
-  // platform specific version information
+  // Platform specific version information. Note that all of the fields need to
+  // have static lifetime, because they're accessed after this function returns.
+  static sMemfaultDeviceInfo s_device_info
   *info = (sMemfaultDeviceInfo) {
     .device_serial = "ESP32_DEMOSERIAL",
     .software_type = "esp32-main",
-
-    // It is recommended to use the build ID script. Below is safe to
-    // call regardless.
-    .software_version = memfault_create_unique_version_string("1.0.0"),
+    .software_version = "1.0.0-dev",
     .hardware_version = "esp-wrover-kit",
   };
 }
@@ -289,21 +274,22 @@ functions until `esp_read_mac` has been called at least once, as they only
 return the in memory copy of the MAC address while `esp_read_mac` properly
 fetches it from flash if it has not been loaded yet.
 
-See an example in the Memfault SDK
-[esp32 example](https://github.com/memfault/memfault-firmware-sdk/blob/d85d4b2694c4174f3338708c1b693fc70a7b6d95/examples/esp32/apps/memfault_demo_app/main/memfault/memfault_platform_device_info.c#L37).
+See an example implementation in the Memfault SDK
+[esp32 example](https://github.com/memfault/memfault-firmware-sdk/blob/d85d4b2694c4174f3338708c1b693fc70a7b6d95/examples/esp32/apps/memfault_demo_app/main/memfault/memfault_platform_device_info.c#L37),
+which can be copied into your project as a starting point.
 
 Note: there is a non-zero chance of overlapping addresses from Espressif, so it
 is not recommended for large production fleets of devices. As many as 20
 duplicates in a set of 4000 chips have been reported in ESP-IDF user forums.
 
-#### Initializing Memfault
+### 7. Initializing Memfault
 
-When working with Memfault Firmware SDK version 0.40.0 and above, you will need
-to initialize the SDK from your application. This can be done simply by adding a
-call to `memfault_boot` from `main_app`. We recommend doing this as early as
-possible in your initialization process, so Memfault components can begin
-capturing data. Additionally, you should initialize any dependencies used by
-`memfault_platform_get_device_info` as this is called within `memfault_boot`.
+You will need to initialize the SDK from your application. This can be done
+simply by adding a call to `memfault_boot()` from your `main_app()` during
+system boot. We recommend doing this as early as possible in your initialization
+process, so Memfault components can begin capturing data. Be sure to first
+initialize any dependencies used by `memfault_platform_get_device_info()` as
+this is called within `memfault_boot`.
 
 Here's a code example:
 
@@ -311,8 +297,6 @@ Here's a code example:
 #include "memfault/esp_port/core.h"
 
 void app_main() {
-  // Initialize any components that are dependencies of memfault_platform_get_device_info
-
   memfault_boot();
 
   // Remainder of your main task
@@ -322,7 +306,7 @@ void app_main() {
 When using SDK versions prior to 0.40.0, an additional step is required. You
 will need to explicitly set `CONFIG_MEMFAULT_AUTOMATIC_INIT=n` in your project.
 
-#### Configure Memfault Project Key
+### 8. Configure Memfault Project Key
 
 The project key is set via a Kconfig variable, `MEMFAULT_PROJECT_KEY`.
 
@@ -341,22 +325,27 @@ In ESP-IDF this can be set in a few different places:
   `sdkconfig.memfault_project_key`, and include the file when building:
 
   ```bash
-  $ idf.py build -DSDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.memfault_project_key"
+  idf.py build -DSDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.memfault_project_key"
   ```
 
-### Regenerate sdkconfig and recompile
+### 9. Regenerate sdkconfig and recompile
 
 Assuming that your project has already been built before adding Memfault you
 will need to rebuild now that the Memfault SDK has been integrated into your
 ESP-IDF project.
 
+_Note that below we recommend doing a `fullclean` build. This is not strictly
+required, but can help pick up all the cmake changes. See the ESP-IDF docs
+[here](https://docs.espressif.com/projects/esp-idf/en/v5.1.1/esp32/api-guides/tools/idf-py.html#delete-the-entire-build-contents-fullclean)
+for details_
+
 ```bash
-$ idf.py clean
-$ idf.py menuconfig  # Verify your settings
-$ idf.py build
+idf.py fullclean
+idf.py menuconfig  # Verify your settings if necessary
+idf.py build
 ```
 
-### Testing things out
+## Testing things out
 
 _With UART console_
 
@@ -365,25 +354,26 @@ some extra CLI commands so you can easily try things out! Flash and connect to
 the esp32 dev board's UART console.
 
 ```bash
-$ idf.py -p /dev/ttyUSB1 flash monitor
+idf.py flash monitor
 ```
 
 :::note
 
-Your serial port specification may differ.
+You may need to select a specific serial port, see the `--help` for the `idf.py`
+tool for details.
 
 :::
 
 As a first step you can try collecting and sending a coredump with the following
 commands:
 
-```
-// force a crash
+```bash
+# force a crash
 esp32> crash 3
-// wait for reboot
-// join network
+# wait for reboot
+# join network
 esp32> join <SSID> <PASSWORD>
-// Post data
+# Post data
 esp32> post_chunks
 ```
 
@@ -399,32 +389,19 @@ inserting an assert that will fail, e.g.
 
 <EnableServerSideDeveloperMode />
 
-### Publish data to the Memfault cloud
+## Publish data to the Memfault cloud
 
 With the esp-idf, data can be posted anytime you are connected to the internet
-by calling the following code. We recommend running it at a periodic interval.
-If there is no new data to send, the call reduces to a no-op. The same logic can
-also be invoked via the memfault CLI with the `mflt post_chunks` mentioned
-above.
+by calling the `memfault_esp_port_http_client_post_data()` function.
+
+We recommend running it at a periodic interval. If there is no new data to send,
+the call reduces to a no-op. The same function can also be invoked via the
+memfault CLI with the `mflt post_chunks` mentioned above.
 
 ```c
-#include "memfault/core/debug_log.h"
-#include "memfault/http/http_client.h"
-
-int memfault_post_data(void) {
-  sMfltHttpClient *http_client = memfault_http_client_create();
-  if (!http_client) {
-    MEMFAULT_LOG_ERROR("Failed to create HTTP client");
-    return -1;
-  }
-  const eMfltPostDataStatus rv = memfault_http_client_post_data(http_client);
-  if (rv < 0) {
-    MEMFAULT_LOG_ERROR("%s error: %d", __func__, rv);
-  }
-  const uint32_t timeout_ms = 30 * 1000;
-  memfault_http_client_wait_until_requests_completed(http_client, timeout_ms);
-  memfault_http_client_destroy(http_client);
-  return rv;
+int rv = memfault_esp_port_http_client_post_data();
+if (rv != 0) {
+  MEMFAULT_LOG_ERROR("Unable to post Memfault data, error %d", rv);
 }
 ```
 
@@ -434,5 +411,5 @@ int memfault_post_data(void) {
 
 By default in Memfault Firmware SDK versions 0.40.0 and above, the Memfault
 library is not initialized automatically. See the
-[previous section](#initializing-memfault) for more info. For SDK versions prior
-to 0.40.0, a Kconfig exists but is deprecated and not supported for use.
+[previous section](#7-initializing-memfault) for more info. For SDK versions
+prior to 0.40.0, a Kconfig exists but is deprecated and not supported for use.
