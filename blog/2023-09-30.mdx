@@ -1,0 +1,164 @@
+---
+title: September 2023
+---
+
+## Software versions displayed in Device Timeline
+
+Device Timeline now includes a visualization of the active software version on
+the device alongside the metric and traces information. This allows a user to
+very quickly associate any metric behavior, crash or reboot event with the
+active software version at the time.
+
+![2023-09-30-Software-Version-In-Device-Timeline.png](/img/blog/2023-09-30-Software-Version-In-Device-Timeline.png)
+
+As demonstrated in the screenshot, this should also make it very easy to
+identify if a change of behavior coincides with a change in software version.
+The software version is now displayed by default across all Devices on all
+platforms.
+
+### Best Practice Guide: Using MQTT with Memfault
+
+We have released a new best practices guide covering the use of the MQTT
+protocol with Memfault. Correct set-up for your MQTT implementation is critical
+as errors in set-up can result in data loss or data being decoded incorrectly
+rendering it impossible for Memfault to deliver accurate insights.
+
+![2023-09-30-Using-MQTT-With-Memfault.png](/img/blog/2023-09-30-Using-MQTT-With-Memfault.png)
+
+The guide provides a basic introduction to MQTT and specific advice for users
+looking to optimize their MQTT stack to ensure reliable data delivery to
+Memfault. Topics covered include:
+
+- Publishing QoS settings
+- Topic architecture and recommended topic structure
+- Minimizing publishing overheads with topic aliases
+- Choosing an MQTT payload size
+- Device and Service examples
+
+[Read the full MQTT guide](/docs/best-practices/mqtt-with-memfault/) in our best
+practice documentation.
+
+<!-- truncate -->
+
+## General
+
+- Added: New swimlane on the Device Timeline to display the software versions
+  over time.
+- Added: New
+  “[Using MQTT with Memfault](/docs/best-practices/mqtt-with-memfault/)” best
+  practices doc
+- Added: New
+  “[Uploading Linux Diagnostic Data](/docs/linux/uploading-linux-diagnostics/)”
+  guide in the docs
+- Added: New `incomplete stacktrace`
+  [FAQ troubleshooting doc](/docs/mcu/faq/#incomplete-stacktrace-warning-when-viewing-a-coredump),
+  and a link to it from a warning tooltip if the issue arises in the app.
+- Added: The ability for users to resize Device Timeline lanes both horizontally
+  and vertically, with dynamic text resizing.
+- Added: Logs in the Coredump view now have a copy button to enable easier
+  extraction of the content without requiring a manual download of the file.
+- Added: Ability to select a software type in the software version dashboard
+  charts
+- Added: Sample count in the data information for
+  [metric percentile charts](/docs/platform/charts/#metric-charts)
+- Added: Multiple improvements to support a more platform-agnostic experience
+  within a single project. Improvements include: the ability to process symbol
+  files from multiple platforms within a single project, enabling manual
+  Coredump uploads from all platforms within a single project and link to
+  supporting docs, the capability to display multiple Coredump types within the
+  coredump swimlane, always showing reboot event details, showing software types
+  alongside the versions in the traces list tab for Devices.
+- Improved: Various timeline-related UI features, including: fix tooltip with
+  stale end time on the Device Timeline, link connecting trace in the Coredump
+  timeline popover, remove double-click to zoom out action in timeline.
+- Improved: Multiple crash-related UI features, including: prevent errors when
+  searching for Issues with only a `reason` criteria set, enable caching of very
+  large symbol files within the browser, handle empty heap analysis without
+  erroring.
+- Improved: Other UI glitches, including: add the list of ancestors that lead to
+  the current must-pass-though release in the column header tooltip of
+  [the version matrix](/docs/platform/ota/#cohort-version-management), better
+  software version search that matches the display string, and fall back to
+  using user’s email for comment avatars.
+- Improved: Removed the requirement for Memfault metadata to be present on a
+  Coredump in order to process it into our system, enabling easier integration
+  testing when evaluating Memfault’s system capabilities.
+- Fixed: When importing Devices in bulk via CSV, the Devices now
+  [respect the project's default fleet sampling aspect resolution settings for debugging and monitoring](/docs/platform/fleet-sampling/#fleet-sampling-aspects).
+  Previously, the new Devices were defaulting to off for all aspect resolutions,
+  ignoring the project settings.
+- Fixed: Qualcomm Coredump processing issues: Use the lowest-indexed ELF that’s
+  available (instead of expecting that ELF file to be event 0), process p0
+  minicoredumps without requiring a symbol file and better handle logs with
+  `NULL` characters.
+
+## MCU
+
+- SDK versions
+  [1.2.2](https://github.com/memfault/memfault-firmware-sdk/blob/master/CHANGES.md#122---sept-5-2023),
+  [1.2.3](https://github.com/memfault/memfault-firmware-sdk/blob/master/CHANGES.md#123---sept-12-2023),
+  [1.2.4](https://github.com/memfault/memfault-firmware-sdk/blob/master/CHANGES.md#124---sept-12-2023),
+  [1.2.5](https://github.com/memfault/memfault-firmware-sdk/blob/master/CHANGES.md#125---sept-18-2023),
+  [1.3.0](https://github.com/memfault/memfault-firmware-sdk/blob/master/CHANGES.md#130---sept-20-2023),
+  [1.3.1](https://github.com/memfault/memfault-firmware-sdk/blob/master/CHANGES.md#131---sept-21-2023)
+  and
+  [1.3.2](https://github.com/memfault/memfault-firmware-sdk/blob/master/CHANGES.md#132---sept-26-2023)
+  were released. Some highlights:
+  - Added: Update include paths for CMSIS headers for upcoming Zephyr support.
+    Thanks [@gmarull](https://github.com/gmarull) for the patch!
+  - Added: Support for Memfault Compact Logs for C++ source files. Compact
+    logging can be enabled by setting `MEMFAULT_LOG_COMPACT_ENABLE=1`.
+    See [the docs](/docs/mcu/compact-logs/) for more details.
+  - Added: The current MCU SDK version is now included in the http client user
+    agent header
+  - Added: A new Kconfig `CONFIG_MEMFAULT_COREDUMP_COMPUTE_THREAD_STACK_USAGE`,
+    to control whether thread stack usage is computed and collected on device
+    during a coredump.
+  - Added: A `heartbeat` cli command to the ESP-IDF port that does the same
+    thing as in Memfault's default demo console + Zephyr's console.
+  - Added: Ability for a user application to override the Zephyr implementation
+    of `memfault_metrics_heartbeat_collect_data`.
+  - Fixed: Corrected the heartbeat metrics key definition to include
+    configuration to generate a consistent key index across the application.
+    This regressed in version 1.0.1 of the SDK.
+  - Changed: Use `<cmsis_core.h>` instead of `<nmi.h>`. Thanks
+    [@kmeinhar](https://github.com/kmeinhar) for this change!
+    (see [#64](https://github.com/memfault/memfault-firmware-sdk/pull/64))
+  - Changed: Removed an unused root certificate and adjusted the order of certs
+    to minimize additional TLS handshakes; This update is trickled down
+    from [DigiCert's pivot in March 2023](https://knowledge.digicert.com/generalinformation/digicert-root-and-intermediate-ca-certificate-updates-2023.html) to
+    their G2 root cert as their default certificate.
+
+## Android
+
+- SDK version
+  [4.9.0](https://github.com/memfault/bort/blob/master/CHANGELOG.md#v490---september-5-2023)
+  was released. Some highlights:
+  - Added: Introduced a
+    [new pure java-based reporting library](/docs/android/android-custom-metrics/#including-the-reporting-sdk).
+    This is easier to use in apps and services built by Android.mk and Soong
+    build systems.
+  - Changed: Minimized disk writes by StructuredLogd.
+    [Property metrics](/docs/android/android-custom-metrics/#string--number-properties)
+    are now kept in memory instead of being sent to StructuredLogd. Metric
+    metadata is not re-written if unchanged.
+
+## Linux
+
+- SDK versions
+  [1.6.0](https://github.com/memfault/memfault-linux-sdk/blob/kirkstone/CHANGELOG.md)
+  and
+  [1.7.0](https://github.com/memfault/memfault-linux-sdk/blob/kirkstone/CHANGELOG.md)
+  were released. Some highlights:
+  - Added: `memfaultd` now supports exporting its data in multiple formats via
+    it's built-in HTTP server.
+  - Fixed: Fluent Bit changed their output format in version 2.1. This version
+    of `memfaultd` supports both the old and new format.
+  - Changed: `memfaultd` will now default to using a Rust TLS library in place
+    of OpenSSL.
+  - Changed: `memfaultd` does not require `systemd` anymore.
+
+## CLI
+
+- We did not publish a new version of the
+  [memfault-cli](https://pypi.org/project/memfault-cli/) in September 2023.
