@@ -9,13 +9,14 @@ kind of content used by each endpoint.
 
 ### Memfault FQDNs
 
-| FQDNs                                 | Usage                                                        |
-| ------------------------------------- | ------------------------------------------------------------ |
-| api.memfault.com (Web)                | <a href="https://api-docs.memfault.com/">Memfault API</a>    |
-| app.memfault.com (Web)                | <a href="https://app.memfault.com/">Memfault app</a>         |
-| chunks.memfault.com (MCU)             | <a href="https://mflt.io/data-to-cloud">Uploading Chunks</a> |
-| device.memfault.com                   | Uploading events (from a device)                             |
-| files.memfault.com                    | Uploading files (from a device)                              |
-| ingress.memfault.com (CLI, Cloud SDK) | Uploading coredumps, events manually                         |
-| memfault-prod-east1.s3.amazonaws.com  | Serving file assets                                          |
-| ota-cdn.memfault.com                  | Serving OTA assets                                           |
+| FQDNs                                 | Usage                                                        | Protocol | Port | Used By Device?         |
+| ------------------------------------- | ------------------------------------------------------------ | -------- | ---- | ----------------------- |
+| memfault.com                          | Marketing webpage                                            | TCP      | 443  | No                      |
+| api.memfault.com (Web)                | <a href="https://api-docs.memfault.com/">Memfault API</a>    | TCP      | 443  | Yes (Bort < v4.10 Only) |
+| app.memfault.com (Web)                | <a href="https://app.memfault.com/">Memfault app</a>         | TCP      | 443  | No                      |
+| chunks.memfault.com (MCU)             | <a href="https://mflt.io/data-to-cloud">Uploading Chunks</a> | TCP      | 443  | Yes (MCU Only)          |
+| device.memfault.com                   | Used by devices to query the Memfault API                    | TCP      | 443  | Yes                     |
+| files.memfault.com                    | Uploading files (from a device)                              | TCP      | 443  | Yes                     |
+| ingress.memfault.com (CLI, Cloud SDK) | Uploading coredumps, events manually                         | TCP      | 443  | Yes                     |
+| memfault-prod-east1.s3.amazonaws.com  | Serving file assets                                          | TCP      | 443  | Yes                     |
+| ota-cdn.memfault.com                  | Serving OTA assets                                           | TCP      | 443  | Yes                     |
