@@ -200,7 +200,7 @@ your `partitions.csv` file to add a _coredump_ partion. If you do not have a
 your top-level project directory where the `sdkconfig` file is located.
 Depending on your chip's Flash size you may need to modify the _storage_
 partition size in order to fit the _coredump_ partition. Check the Flash chip
-size in `menuconfig`, see `(Top) -> Serial flasher config` and check the "Flash
+size in `menuconfig`, see `(Top) → Serial flasher config` and check the "Flash
 Size" entry. Be sure to specify a custom partition file in the sdkconfig (see
 note below).
 
@@ -231,7 +231,7 @@ coredump, data, coredump,,        256K,
 
 Be sure to indicate the actual name you chose for the partion file in the
 `sdkconfig` file. This can be done easily by running `idf.py menuconfig`,
-selecting `(Top) -> Partition Table`, and setting the name of the "Custom
+selecting `(Top) → Partition Table`, and setting the name of the "Custom
 partition CSV file". Optionally, you can edit the sdkconfig file directly
 (search for the variables prefixed with `CONFIG_PARTITION_TABLE_`).
 

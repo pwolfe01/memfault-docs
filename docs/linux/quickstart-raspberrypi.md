@@ -193,7 +193,7 @@ Copy it out of the Docker container:
 
 You can now visit your project in Memfault Dashboard and:
 
-- Click on "Software" -> "OTA Releases" -> "Create Release"
+- Click on "Software" → "OTA Releases" → "Create Release"
   - Version is 0.0.2
   - Click "Create"
 - Click "Add OTA Payload to Release"
@@ -211,7 +211,7 @@ This version is now available and will be installed automatically!
 By default swupdate only contacts the OTA server every 12 hours. This is way
 too long when testing new releases. You can adjust this in your Cohort settings.
 
-Go to Fleet -> Cohorts -> default -> Settings and set "Hawkbit Polling
+Go to Fleet → Cohorts → default → Settings and set "Hawkbit Polling
 Interval" to "Development mode".
 
 With this setting, the device will check for update every minute. If your device
