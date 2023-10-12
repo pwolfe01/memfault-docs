@@ -224,9 +224,8 @@ applicable.
 ### Choosing Among Multiple Applicable OTA Releases
 
 If a device has multiple possible update paths, the following rules of
-precedence apply to determine which release is selected.
-
-The following rules apply to all active Releases per Cohort:
+precedence apply to all active Releases per Cohort to determine which release is
+selected:
 
 1. Use a Delta Release whose From Version matches the current version of the
    device.
@@ -235,8 +234,19 @@ The following rules apply to all active Releases per Cohort:
 3. Otherwise, use a Full Release with the highest To Version greater than the
    current version of the device.
 
-In short, the precedence can be summarized like so: **Delta Release** > **MPT
+:::important
+
+The precedence can be roughly summarized as: **Delta Release** > **MPT
 Release** > **Full Release**.
+
+Due to this precedence, Devices can "bypass" must-pass-through Releases via a
+Delta Release. Consequently, a Delta Release must include all information to get
+from version `A->B`.
+
+This is especially useful for defining upgrade paths from factory versions to
+the latest major version (or similar).
+
+:::
 
 An example:
 
