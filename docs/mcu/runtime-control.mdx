@@ -46,22 +46,33 @@ mechanisms will still be enabled as usual (eg coredump saving, metrics, etc).
 
 ## Zephyr (including nRF Connect SDK)
 
-This will depend on if `CONFIG_MEMFAULT_HTTP_PERIODIC_UPLOAD=y` is used.
+The below options apply to internet-connected devices running Zephyr RTOS.
 
-### CONFIG_MEMFAULT_HTTP_PERIODIC_UPLOAD=y
+### On-demand HTTP upload
 
-These instructions are based on
-[the example in the nrf-connect SDK](https://github.com/nrfconnect/sdk-nrf/tree/master/samples/nrf9160/memfault):
+Call the
+[`memfault_zephyr_port_post_data()`](https://github.com/memfault/memfault-firmware-sdk/blob/60712aa05b2943f2d0085aadd79932037ed22ac2/ports/zephyr/include/memfault/ports/zephyr/http.h#L26-L31)
+function to push any staged Memfault data to the cloud.
 
-1. disable `MEMFAULT_HTTP_PERIODIC_UPLOAD` in Kconfig (i.e. in your prj.conf)
-2. Add this content to one of your source files (eg main or wherever makes
-   sense):
-   https://github.com/memfault/memfault-firmware-sdk/blob/4ec7a0c61f9c8c94c74c0d31ca0e76c190010bfc/ports/zephyr/common/memfault_http_periodic_upload.c
-3. use `k_timer_start` and `k_timer_stop` on that timer to control the automatic
+### Automatic HTTP upload
+
+Memfault has a built in automatic HTTP upload option that can be enabled using
+the Kconfig option, `CONFIG_MEMFAULT_HTTP_PERIODIC_UPLOAD=y`.
+
+This installs a Zephyr timer at system startup, that periodically triggers the
+automatic HTTP upload operation. The Kconfig option
+`CONFIG_MEMFAULT_HTTP_PERIODIC_UPLOAD_INTERVAL_SECS` controls the interval.
+
+Note that the first upload will be triggered at a random interval, less than the
+configured interval. Uploads after that will be at the configured interval.
+
+### Controlling the automatic HTTP upload
+
+If enabled, disable `CONFIG_MEMFAULT_HTTP_PERIODIC_UPLOAD=n`
+
+1. Copy this content into the application (into an existing file, or a new one,
+   make sure it's registered in the `CMakeLists.txt`), and remove the Kconfig
+   flags as necessary:
+   [`memfault_http_periodic_upload.c`](https://github.com/memfault/memfault-firmware-sdk/blob/60712aa05b2943f2d0085aadd79932037ed22ac2/ports/zephyr/common/memfault_http_periodic_upload.c)
+2. use `k_timer_start` and `k_timer_stop` on that timer to control the automatic
    posting of data
-
-### CONFIG_MEMFAULT_HTTP_PERIODIC_UPLOAD=n
-
-If `CONFIG_MEMFAULT_HTTP_PERIODIC_UPLOAD=n` (default), you'll need to follow the
-[overall strategy](#overall-strategy) explained above when disabling the chunks
-sending.
