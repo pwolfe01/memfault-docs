@@ -218,6 +218,20 @@ $ memfault \
     --dbg-image tmp/deploy/images/raspberrypi3/base-image-raspberrypi3-dbg.tar.bz2
 ```
 
+:::tip TMPDIR
+
+<p>
+  By default <code>upload-yocto-symbols</code> will use a default temporary
+  directory in your system such as <code>/tmp</code> to extract the debug
+  symbols. This can use significant space and if you'd like to use a different
+  location in your filesystem, you can do so with the{" "}
+  <a href="https://en.wikipedia.org/wiki/TMPDIR">
+    <code>TMPDIR</code>
+  </a>{" "}
+  environment variable&nbsp;:
+  <code>TMPDIR=&lt;desired directory&gt; memfault ...</code>.
+</p>
+
 :::note Project and Organization slugs and keys
 
 <p>
